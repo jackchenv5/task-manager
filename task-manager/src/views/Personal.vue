@@ -216,7 +216,10 @@ scheduler.config.lightbox.sections = [
     scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
     var myEvents = [
     {id:1, text:"任务 1", start_date:"2025-02-12 10:00", end_date:"2025-02-13 12:00"},
-    {id:2, text:"任务 2", start_date:"2025-02-13 14:00", end_date:"2025-02-13 16:00"}
+    {id:2, text:"任务 2", start_date:"2025-02-13 14:00", end_date:"2025-02-13 16:00"},
+    {id:3, text:"任务 3", start_date:"2025-02-17 14:00", end_date:"2025-02-21 16:00"},
+    {id:4, text:"任务 4", start_date:"2025-02-24 14:00", end_date:"2025-02-28 16:00"},
+    {id:5, text:"任务 5", start_date:"2025-02-15 14:00", end_date:"2025-02-15 16:00"},
 ];
     // 将数据加载到调度器
     scheduler.parse(myEvents, "json");
