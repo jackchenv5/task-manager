@@ -1,7 +1,7 @@
 <template>
     <el-header class="head">
-      <el-link target="_blank" type="info" href="/person" class="active">我的任务</el-link>
-      <el-link target="_blank" type="success" href="/group">小组视图</el-link>
+      <el-link target="_blank" type="info" href="/person">我的任务</el-link>
+      <el-link target="_blank" type="success" href="/group" class="active">小组视图</el-link>
       <el-link target="_blank" type="primary" href="/icon">项目视图</el-link>
       <el-link target="_blank" type="warning" href="/feedback">任务编排</el-link>
       <el-link target="_blank" type="danger" href="/echart-pie">系统配置</el-link>
@@ -9,18 +9,36 @@
     <div style="display: flex;height: 90vh;width: 100%;">
     <div class="left">
       <div style="display: flex;margin-top: 5px;">
+        <el-text style="margin-right: 10px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(53, 90, 139, 0.904);color: white;">测试部 | 效能小组</el-text>
+        <el-select
+      v-model="groupName"
+      placeholder="请选择组员"
+      style="width: 150px;margin-top:5px;margin-right: 5px;"
+    >
+      <el-option
+        v-for="item in options"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
         <el-radio-group v-model="typeRadio" size="large">
             <el-radio-button label="拆分任务" value="split"></el-radio-button>
             <el-radio-button label="合并任务" value="merge"></el-radio-button>
         </el-radio-group>
+        <el-radio-group v-model="taskRadio" size="large" style="margin-left: 10px;">
+            <el-radio-button  label="所有任务" value="all"></el-radio-button>
+            <el-radio-button label="已下发" value="running"></el-radio-button>
+            <el-radio-button label="待下发" value="pend"></el-radio-button>
+        </el-radio-group>
       </div>
-        <div ref="schedulerContainer" style="width: 100%;height:85vh ;"></div>
+      <div ref="schedulerContainer" style="width: 100%;height:80vh ;"></div>
     </div>
     <div class="right">
       <div style="background: white;border:3px solid rgb(252, 252, 253);width:100%;padding: 8px;">
           <el-row>
     <el-col :span="6">
-      <el-statistic title="任务饱和度" value="(30工时/40工时)70%" />
+      <el-statistic title="任务饱和度" value="80%" />
     </el-col>
     <el-col :span="6">
       <el-statistic :value="13">
@@ -39,7 +57,7 @@
       <el-statistic title="总工时" value="100" />
     </el-col>
     <el-col :span="6">
-      <el-statistic title="剩余工时" :value="56">
+      <el-statistic title="剩余工时" :value="80">
         <template #suffix>
           <el-icon style="vertical-align: -0.125em">
             <ChatLineRound />
@@ -95,8 +113,8 @@ onMounted(() => {
   if (scheduler) {
     // 设置皮肤和配置
     // scheduler.skin = 'material';
-    // scheduler.config.first_hour = 8;
-    // scheduler.config.last_hour = 17;
+    scheduler.config.first_hour = 9;
+    scheduler.config.last_hour = 22;
     // scheduler.config.readonly = true; // 设置为只读模式
     scheduler.config.dblclick_create = false; // 禁用双击添加事件
 scheduler.i18n.setLocale({
@@ -168,19 +186,44 @@ scheduler.i18n.setLocale({
         minute:"分"
     }
 });
-scheduler.form_blocks["custom_block"] = {
-    render: function (sns) {
-        return "<div class='custom_block'><label>Custom Field:</label><input type='text' name='custom_field'></div>";
-    },
-    set_value: function (node, value, ev, section) {
-        node.querySelector("input[name='custom_field']").value = value || "";
-    },
-    get_value: function (node, ev, section) {
-        return node.querySelector("input[name='custom_field']").value;
-    },
-    focus: function (node) {
-        node.querySelector("input[name='custom_field']").focus();
+scheduler.plugins({
+    tooltip: true
+});
+
+scheduler.templates.event_class = function(start, end, event) {
+    // 获取进度值，默认为 0
+    var progress = event.progress || 80;
+
+    // 根据进度值返回对应的 CSS 类名
+    if (progress <= 25) {
+        return "custom-event progress-0";
+    } else if (progress <= 50) {
+        return "custom-event progress-25";
+    } else if (progress <= 75) {
+        return "custom-event progress-50";
+    } else if (progress < 100) {
+        return "custom-event progress-75";
+    } else {
+        return "custom-event progress-100";
     }
+};
+
+
+scheduler.templates.event_bar_text = function(start, end, event) {
+    // 获取进度值，默认为 0
+    var progress = event.progress || 50;
+
+    // 创建进度条
+    var progressBar = `
+        <div style="width: 100%; background: #6bb900; border-radius: 2px;border:1px solid ; position: relative;">
+            <div style="width: ${progress}%; background: #76c7c0; height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0;"></div>
+            <div style="position: relative; z-index: 1; padding: 2px; color: #333; font-size: 12px;">
+                ${event.text} (${progress}%)
+            </div>
+        </div>
+    `;
+
+    return progressBar;
 };
 
 scheduler.templates.lightbox_header = function (start, end, ev) {
@@ -198,6 +241,21 @@ scheduler.attachEvent("onAfterLightbox", function () {
     console.log("Lightbox closed");
 });
 
+scheduler.form_blocks["custom_block"] = {
+    render: function (sns) {
+        return "<div class='custom_block'><label>Custom Field:</label><input type='text' name='custom_field'></div>";
+    },
+    set_value: function (node, value, ev, section) {
+        node.querySelector("input[name='custom_field']").value = value || "";
+    },
+    get_value: function (node, ev, section) {
+        return node.querySelector("input[name='custom_field']").value;
+    },
+    focus: function (node) {
+        node.querySelector("input[name='custom_field']").focus();
+    }
+};
+
 scheduler.config.lightbox.sections = [
     { name: "description", height: 50, map_to: "text", type: "textarea", focus: true },
     { name: "custom", height: 50, type: "custom_block", map_to: "custom_field" },
@@ -213,19 +271,20 @@ scheduler.config.lightbox.sections = [
       'next',
     ];
 
-    scheduler.templates.event_text = function(start,end,ev){
-        return '我的任务: ' + ev.text + '';
-     };
 
      scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
     // 初始化 Scheduler
     scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
     var myEvents = [
-    {id:1, text:"任务 1", start_date:"2025-02-12 10:00", end_date:"2025-02-13 12:00"},
-    {id:2, text:"任务 2", start_date:"2025-02-13 14:00", end_date:"2025-02-13 16:00"},
-    {id:3, text:"任务 3", start_date:"2025-02-17 14:00", end_date:"2025-02-21 16:00"},
-    {id:4, text:"任务 4", start_date:"2025-02-24 14:00", end_date:"2025-02-28 16:00"},
-    {id:5, text:"任务 5", start_date:"2025-02-15 14:00", end_date:"2025-02-15 16:00"},
+    {id:1, text:"任务 1:执行者：陈成", start_date:"2025-02-03 09:00", end_date:"2025-02-03 12:00"},
+    {id:11, text:"任务 2:执行者：乔志", start_date:"2025-02-04 09:00", end_date:"2025-02-09 12:00"},
+    {id:12, text:"任务 3:执行者：王俊坤", start_date:"2025-02-05 09:00", end_date:"2025-02-09 12:00"},
+    {id:13, text:"任务 4:执行者：熊德江", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:14, text:"任务 5:执行者：张世伟", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:15, text:"任务 6:执行者：张涛", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:2, text:"任务 7:执行者：陈成", start_date:"2025-02-10 09:00", end_date:"2025-02-16 16:00"},
+    {id:3, text:"任务 8:执行者：张涛", start_date:"2025-02-17 09:00", end_date:"2025-02-23 16:00"},
+    {id:4, text:"任务 9：执行者：王俊坤", start_date:"2025-02-24 09:00", end_date:"2025-03-02 16:00"},
 ];
     // 将数据加载到调度器
     scheduler.parse(myEvents, "json");
@@ -306,6 +365,37 @@ const onSubmit = () => {
 }
 const value = ref(0)
 const typeRadio = ref('merge')
+const taskRadio = ref('all')
+
+const groupName = ref('所有成员')
+
+const options = [
+  {
+    value: '所有成员',
+    label: '所有成员',
+  },
+  {
+    value: '陈成',
+    label: '陈成',
+  },
+  {
+    value: '王俊坤',
+    label: '王俊坤',
+  },
+  {
+    value: '张涛',
+    label: '张涛',
+  },
+  {
+    value: '张世伟',
+    label: '张世伟',
+  },
+  {
+    value: '乔志',
+    label: '乔志',
+  },
+]
+
 </script>
 
 <style>
@@ -323,7 +413,6 @@ const typeRadio = ref('merge')
     border-top: 1px solid #f5f9f9;
     background: #ffffff;
   }
-
   .active{
     color: white;
     background: #5d6d96;
@@ -348,4 +437,31 @@ const typeRadio = ref('merge')
 .right {
   background-color: white;
 }
+/* 默认事件样式 */
+.custom-event {
+    border-radius: 3px;
+    color: #333;
+    font-size: 12px;
+    padding: 2px;
+    background: #a5dc86;
+    width: 50%;
+}
+
+/* 根据进度设置背景色 */
+.progress-0 { background-color: #f0f0f0; }
+.progress-25 { background-color: #ffcc99; }
+.progress-50 { background-color: #76c7c0; }
+.progress-75 { background-color: #6bb9f0;}
+.progress-100 { background-color: #a5dc86; }
+
+/* 默认日期单元格样式 */
+.custom-date-cell {
+    border-radius: 3px;
+}
+
+/* 根据日期设置背景色 */
+.highlight-date-1 { background-color: #ffcc99; } /* 浅橙色 */
+.highlight-date-2 { background-color: #76c7c0; } /* 浅蓝色 */
+.highlight-date-3 { background-color: #a5dc86; } /* 浅绿色 */
+
 </style>

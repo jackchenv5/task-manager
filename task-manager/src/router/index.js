@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PersonView from '../views/Personal.vue'
+import GroupView from '../views/Group.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/person',
       name: 'person',
       component: PersonView,
+    },
+    {
+      path: '/group',
+      name: 'group',
+      component: GroupView,
     },
     {
       path: '/about',
