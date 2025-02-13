@@ -1,41 +1,23 @@
 <template>
     <el-header class="head">
-      <el-link target="_blank" type="info" href="/person">我的任务</el-link>
-      <el-link target="_blank" type="success" href="/group" class="active">小组视图</el-link>
-      <el-link target="_blank" type="primary" href="/icon">项目视图</el-link>
-      <el-link target="_blank" type="warning" href="/feedback">任务编排</el-link>
-      <el-link target="_blank" type="danger" href="/echart-pie">系统配置</el-link>
+      <el-link target="_blank"  href="/person">我的任务</el-link>
+      <el-link target="_blank"  href="/group" class="active">小组视图</el-link>
+      <el-link target="_blank"  href="/icon">项目视图</el-link>
+      <el-link target="_blank"  href="/feedback">任务编排</el-link>
+      <el-link target="_blank" href="/echart-pie">系统配置</el-link>
     </el-header>  
-    <div style="display: flex;height: 90vh;width: 100%;">
-    <div class="left">
+    <div style="display: flex;height: 10vh;width: 100%;">
       <div style="display: flex;margin-top: 5px;">
-        <el-text style="margin-right: 10px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(53, 90, 139, 0.904);color: white;">测试部 | 效能小组</el-text>
-        <el-select
-      v-model="groupName"
-      placeholder="请选择组员"
-      style="width: 150px;margin-top:5px;margin-right: 5px;"
-    >
-      <el-option
-        v-for="item in options"
-        :key="item.value"
-        :label="item.label"
-        :value="item.value"
-      />
-    </el-select>
-        <el-radio-group v-model="typeRadio" size="large">
-            <el-radio-button label="拆分任务" value="split"></el-radio-button>
-            <el-radio-button label="合并任务" value="merge"></el-radio-button>
+        <el-text style="margin-right: 10px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(27, 27, 27, 0.904);color: white;">测试部 | 效能小组</el-text>
+        <el-radio-group v-model="typeRadio" size="large" >
+            <el-radio-button label="拆分任务" value="split" ></el-radio-button>
+            <el-radio-button label="合并任务" value="merge" ></el-radio-button>
         </el-radio-group>
         <el-radio-group v-model="taskRadio" size="large" style="margin-left: 10px;">
             <el-radio-button  label="所有任务" value="all"></el-radio-button>
             <el-radio-button label="已下发" value="running"></el-radio-button>
             <el-radio-button label="待下发" value="pend"></el-radio-button>
         </el-radio-group>
-      </div>
-      <div ref="schedulerContainer" style="width: 100%;height:80vh ;"></div>
-    </div>
-    <div class="right">
-     <div>
       <el-checkbox
     v-model="checkAll"
     :indeterminate="isIndeterminate"
@@ -51,6 +33,14 @@
       {{ city }}
     </el-checkbox>
   </el-checkbox-group>
+      </div>
+    </div>
+    <div style="display: flex;height: 80vh;width: 100%;">
+    <div class="left">
+      <div ref="schedulerContainer" style="width: 100%;height:80vh ;"></div>
+    </div>
+    <div class="right">
+     <div>
 
      </div>
       <div style="background: white;border:3px solid rgb(252, 252, 253);width:100%;padding: 8px;margin-top:20px;">
@@ -265,8 +255,8 @@ scheduler.templates.event_bar_text = function(start, end, event) {
 
     // 创建进度条
     var progressBar = `
-        <div style="width: 100%; background: #6bb900; border-radius: 2px;border:1px solid ; position: relative;">
-            <div style="width: ${progress}%; background: #76c7c0; height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0;"></div>
+        <div style="width: 100%; background: #afa9a9; border-radius: 1px; position: relative;border:1px solid;">
+            <div style="width: ${progress}%; background: #dfe5e4; height: 100%; border-radius: 3px; position: absolute; top: 0; left: 0;"></div>
             <div style="position: relative; z-index: 1; padding: 2px; color: #333; font-size: 12px;">
                 ${event.text} (${progress}%)
             </div>
@@ -474,6 +464,8 @@ const handleCheckedCitiesChange = (value) => {
   .el-link {
     font-size: 18px;
     margin-right: 20px;
+    font-weight: bold;
+    color:black;
     padding:10px;
   }
 
@@ -486,7 +478,7 @@ const handleCheckedCitiesChange = (value) => {
   }
   .active{
     color: white;
-    background: #5d6d96;
+    background: black;
   }
 
 /* 左侧和右侧 div 的样式 */
@@ -522,7 +514,7 @@ const handleCheckedCitiesChange = (value) => {
 .progress-0 { background-color: #f0f0f0; }
 .progress-25 { background-color: #ffcc99; }
 .progress-50 { background-color: #76c7c0; }
-.progress-75 { background-color: #6bb9f0;}
+.progress-75 { background-color: #d9e5eb;}
 .progress-100 { background-color: #a5dc86; }
 
 /* 默认日期单元格样式 */
