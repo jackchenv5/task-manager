@@ -18,7 +18,7 @@
             <el-radio-button label="已下发" value="running"></el-radio-button>
             <el-radio-button label="待下发" value="pend"></el-radio-button>
         </el-radio-group>
-      <el-checkbox
+      <el-checkbox style="margin-top: 18px;margin-left: 10px;" size="large"
     v-model="checkAll"
     :indeterminate="isIndeterminate"
     @change="handleCheckAllChange"
@@ -27,11 +27,11 @@
   </el-checkbox>
   <el-checkbox-group
     v-model="checkedCities"
-    @change="handleCheckedCitiesChange"
+    @change="handleCheckedCitiesChange" style="margin-top: 18px;margin-left: 10px;" size="large" 
   >
-    <el-checkbox v-for="city in cities" :key="city" :label="city" :value="city">
+    <el-checkbox-button v-for="city in cities" :key="city" :label="city" :value="city">
       {{ city }}
-    </el-checkbox>
+    </el-checkbox-button>
   </el-checkbox-group>
       </div>
     </div>
