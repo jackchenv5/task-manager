@@ -35,7 +35,25 @@
       <div ref="schedulerContainer" style="width: 100%;height:80vh ;"></div>
     </div>
     <div class="right">
-      <div style="background: white;border:3px solid rgb(252, 252, 253);width:100%;padding: 8px;">
+     <div>
+      <el-checkbox
+    v-model="checkAll"
+    :indeterminate="isIndeterminate"
+    @change="handleCheckAllChange"
+  >
+    全选
+  </el-checkbox>
+  <el-checkbox-group
+    v-model="checkedCities"
+    @change="handleCheckedCitiesChange"
+  >
+    <el-checkbox v-for="city in cities" :key="city" :label="city" :value="city">
+      {{ city }}
+    </el-checkbox>
+  </el-checkbox-group>
+
+     </div>
+      <div style="background: white;border:3px solid rgb(252, 252, 253);width:100%;padding: 8px;margin-top:20px;">
           <el-row>
     <el-col :span="6">
       <el-statistic title="任务饱和度" value="80%" />
@@ -67,28 +85,32 @@
     </el-col>
   </el-row>
       </div>
-        <el-table :data="tableData" stripe style="width: 100%;height: 40vh;">
+      <div style="margin-top: 20px;">
+    <el-button type="primary" :icon="Plus" >新增任务</el-button>
+    <el-button type="primary" :icon="Edit" >修改任务</el-button>
+    <el-button type="primary" :icon="Download" >下发任务</el-button>
+    <el-button type="primary" :icon="Delete" >删除任务</el-button>
+    <el-button type="primary">
+      导出Excel<el-icon class="el-icon--right"><Upload /></el-icon>
+    </el-button>
+    <el-button type="primary">
+      从Excel导入<el-icon class="el-icon--right"><Download/></el-icon>
+    </el-button>
+  </div>
+        <el-table :data="tableData"  stripe style="width: 100%;height: 60vh;margin-top:10px;">
+          <el-table-column type="selection" width="55" />
     <el-table-column prop="date" label="日期" width="180" />
     <el-table-column prop="name" label="任务名" width="180" />
     <el-table-column prop="address" label="项目" />
+        <el-table-column fixed="right" label="Operations" min-width="120">
+      <template #default>
+        <el-button link type="primary" size="small" @click="handleClick">
+          修改
+        </el-button>
+        <el-button link type="warning" size="small">删除</el-button>
+      </template>
+    </el-table-column>
   </el-table>
-  <div style="width:100%;margin-top:10px;">
-   <el-form :model="form" label-width="auto" style="width: 100%;" >
-    <el-form-item label="当前选中任务:">
-      <el-text>测试任务1</el-text>
-    </el-form-item>
-    <el-form-item label="进度:">
-      <el-slider v-model="value" show-input />
-    </el-form-item>
-    <el-form-item label="反馈信息：">
-      <el-input v-model="form.desc" type="textarea" rows="10" />
-    </el-form-item>
-    <el-form-item>
-      <el-button type="warning" @click="onSubmit">同步到日志平台</el-button>
-      <el-button type="primary" @click="onSubmit">提交</el-button>
-    </el-form-item>
-  </el-form>
-  </div>
     </div>
     </div>
 </template>
@@ -96,6 +118,7 @@
 <script setup>
 import "dhtmlx-scheduler";
 import { onMounted, ref,watch,reactive } from 'vue';
+import { Delete, Edit, Search, Share, Upload,Plus,Download } from '@element-plus/icons-vue'
 // 定义 props
 // 定义 props
 const props = defineProps({
@@ -108,6 +131,33 @@ const props = defineProps({
 // 获取容器引用
 const schedulerContainer = ref(null);
 
+    var myEvents0 = [
+    {id:1, text:"任务 1:执行者：陈成", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:11, text:"任务 2:执行者：乔志", start_date:"2025-02-04 09:00", end_date:"2025-02-09 12:00"},
+    {id:12, text:"任务 3:执行者：王俊坤", start_date:"2025-02-05 09:00", end_date:"2025-02-09 12:00"},
+    {id:13, text:"任务 4:执行者：熊德江", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:14, text:"任务 5:执行者：张世伟", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:15, text:"任务 6:执行者：张涛", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
+    {id:2, text:"任务 7:执行者：陈成", start_date:"2025-02-10 09:00", end_date:"2025-02-16 16:00"},
+    {id:3, text:"任务 8:执行者：张涛", start_date:"2025-02-17 09:00", end_date:"2025-02-23 16:00"},
+    {id:4, text:"任务 9：执行者：王俊坤", start_date:"2025-02-24 09:00", end_date:"2025-03-02 16:00"},
+];
+    var myEvents = [
+    {id:1, text:"任务 1:执行者：陈成", start_date:"2025-02-03 09:00", end_date:"2025-02-03 12:00"},
+    {id:2, text:"任务 1:执行者：陈成", start_date:"2025-02-04 09:00", end_date:"2025-02-04 12:00"},
+    {id:3, text:"任务 1:执行者：陈成", start_date:"2025-02-05 09:00", end_date:"2025-02-05 12:00"},
+    {id:4, text:"任务 1:执行者：陈成", start_date:"2025-02-06 09:00", end_date:"2025-02-06 12:00"},
+    {id:5, text:"任务 1:执行者：陈成", start_date:"2025-02-07 09:00", end_date:"2025-02-07 12:00"},
+    {id:6, text:"任务 2:执行者：乔志", start_date:"2025-02-03 09:00", end_date:"2025-02-03 12:00"},
+    {id:7, text:"任务 2:执行者：乔志", start_date:"2025-02-04 09:00", end_date:"2025-02-04 12:00"},
+    {id:8, text:"任务 2:执行者：乔志", start_date:"2025-02-05 09:00", end_date:"2025-02-05 12:00"},
+    {id:9, text:"任务 2:执行者：乔志", start_date:"2025-02-06 09:00", end_date:"2025-02-06 12:00"},
+    {id:16, text:"任务 3:执行者：王俊坤", start_date:"2025-02-03 09:00", end_date:"2025-02-03 12:00"},
+    {id:17, text:"任务 3:执行者：王俊坤", start_date:"2025-02-04 09:00", end_date:"2025-02-04 12:00"},
+    {id:18, text:"任务 3:执行者：王俊坤", start_date:"2025-02-05 09:00", end_date:"2025-02-05 12:00"},
+    {id:19, text:"任务 3:执行者：王俊坤", start_date:"2025-02-06 09:00", end_date:"2025-02-06 12:00"},
+    {id:20, text:"任务 3:执行者：王俊坤", start_date:"2025-02-07 09:00", end_date:"2025-02-07 12:00"},
+];
 onMounted(() => {
   // 确保 scheduler 对象存在
   if (scheduler) {
@@ -275,19 +325,8 @@ scheduler.config.lightbox.sections = [
      scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
     // 初始化 Scheduler
     scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    var myEvents = [
-    {id:1, text:"任务 1:执行者：陈成", start_date:"2025-02-03 09:00", end_date:"2025-02-03 12:00"},
-    {id:11, text:"任务 2:执行者：乔志", start_date:"2025-02-04 09:00", end_date:"2025-02-09 12:00"},
-    {id:12, text:"任务 3:执行者：王俊坤", start_date:"2025-02-05 09:00", end_date:"2025-02-09 12:00"},
-    {id:13, text:"任务 4:执行者：熊德江", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
-    {id:14, text:"任务 5:执行者：张世伟", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
-    {id:15, text:"任务 6:执行者：张涛", start_date:"2025-02-03 09:00", end_date:"2025-02-09 12:00"},
-    {id:2, text:"任务 7:执行者：陈成", start_date:"2025-02-10 09:00", end_date:"2025-02-16 16:00"},
-    {id:3, text:"任务 8:执行者：张涛", start_date:"2025-02-17 09:00", end_date:"2025-02-23 16:00"},
-    {id:4, text:"任务 9：执行者：王俊坤", start_date:"2025-02-24 09:00", end_date:"2025-03-02 16:00"},
-];
     // 将数据加载到调度器
-    scheduler.parse(myEvents, "json");
+    scheduler.parse(myEvents0, "json");
     // 获取特定日期范围内的所有事件
     var fromDate = new Date(2025, 1, 12); // 注意：月份是从0开始计数的，即1表示二月
     var toDate = new Date(2025, 1, 15);
@@ -369,6 +408,24 @@ const taskRadio = ref('all')
 
 const groupName = ref('所有成员')
 
+// 监听 events 的变化
+watch(typeRadio,(type) => {
+    console.log(type)
+    scheduler.clearAll();
+    if (type === 'merge') {
+      console.log(1)
+    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+    // 将数据加载到调度器
+    scheduler.parse(myEvents0, "json");
+    }else{
+      console.log(2)
+    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+    // 将数据加载到调度器
+    scheduler.parse(myEvents, "json");
+    }
+    scheduler.updateView();
+  }
+);
 const options = [
   {
     value: '所有成员',
@@ -395,6 +452,20 @@ const options = [
     label: '乔志',
   },
 ]
+const checkAll = ref(false)
+const isIndeterminate = ref(true)
+const checkedCities = ref(['张世伟', '乔志'])
+const cities = ['张世伟', '乔志', '张涛', '王俊坤','陈成']
+
+const handleCheckAllChange = (val) => {
+  checkedCities.value = val ? cities : []
+  isIndeterminate.value = false
+}
+const handleCheckedCitiesChange = (value) => {
+  const checkedCount = value.length
+  checkAll.value = checkedCount === cities.length
+  isIndeterminate.value = checkedCount > 0 && checkedCount < cities.length
+}
 
 </script>
 
