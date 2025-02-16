@@ -1,10 +1,10 @@
 <template>
     <el-header class="head">
-      <el-link target="_blank" type="info" href="/person" class="active">我的任务</el-link>
-      <el-link target="_blank" type="success" href="/group">小组视图</el-link>
-      <el-link target="_blank" type="primary" href="/icon">项目视图</el-link>
-      <el-link target="_blank" type="warning" href="/feedback">任务编排</el-link>
-      <el-link target="_blank" type="danger" href="/echart-pie">系统配置</el-link>
+      <el-link target="_blank"  href="/person" class="active">我的任务</el-link>
+      <el-link target="_blank"  href="/group" >小组视图</el-link>
+      <el-link target="_blank"  href="/project" >项目视图</el-link>
+      <el-link target="_blank"  href="/schedule" >任务编排</el-link>
+      <el-link target="_blank" href="/system">系统配置</el-link>
     </el-header>  
     <div style="display: flex;height: 90vh;width: 100%;">
     <div class="left">
@@ -13,14 +13,15 @@
             <el-radio-button label="拆分任务" value="split"></el-radio-button>
             <el-radio-button label="合并任务" value="merge"></el-radio-button>
         </el-radio-group>
+      <el-button type="warning" @click="onSubmit" style="margin-left:20px">同步到日志平台</el-button>
       </div>
         <div ref="schedulerContainer" style="width: 100%;height:85vh ;"></div>
     </div>
     <div class="right">
-      <div style="background: white;border:3px solid rgb(252, 252, 253);width:100%;padding: 8px;">
+      <el-card style="width:100%;padding: 8px;background-color: rgb(243, 245, 247);" shadow="always">
           <el-row>
     <el-col :span="6">
-      <el-statistic title="任务饱和度" value="(30工时/40工时)70%" />
+      <el-statistic title="任务饱和度" value="70%" />
     </el-col>
     <el-col :span="6">
       <el-statistic :value="13">
@@ -48,16 +49,28 @@
       </el-statistic>
     </el-col>
   </el-row>
-      </div>
-        <el-table :data="tableData" stripe style="width: 100%;height: 40vh;">
+</el-card>
+  <!-- <el-table :data="tableData" stripe style="width: 100%;height: 40vh;">
     <el-table-column prop="date" label="日期" width="180" />
     <el-table-column prop="name" label="任务名" width="180" />
     <el-table-column prop="address" label="项目" />
-  </el-table>
-  <div style="width:100%;margin-top:10px;">
-   <el-form :model="form" label-width="auto" style="width: 100%;" >
-    <el-form-item label="当前选中任务:">
-      <el-text>测试任务1</el-text>
+  </el-table> -->
+  <el-card shadow="hover" style="width:100%;height: 30vh;">
+  <el-descriptions title="任务信息" column="2">
+    <el-descriptions-item label="任务名">测试任务1</el-descriptions-item>
+    <el-descriptions-item label="项目">XXX项目市场发布版本测试项目</el-descriptions-item>
+    <el-descriptions-item label="任务内容" span="2">
+      <el-tag size="small">完成测试任务，并及时反馈</el-tag>
+    </el-descriptions-item>
+    <el-descriptions-item label="挑战目标" span="2">
+      <el-tag size="small">完成挑战目标，并超过预期效果</el-tag>
+    </el-descriptions-item>
+  </el-descriptions>
+  </el-card>
+  <div style="width:100%">
+   <el-form :model="form" label-width="auto" style="width: 100%;margin-top:10px" >
+    <el-form-item label="任务反馈:">
+      <el-text style="margin-left:20px">实际工作量</el-text><el-input-number style="margin-left:10px" v-model="num" :min="1" :max="30" />
     </el-form-item>
     <el-form-item label="进度:">
       <el-slider v-model="value" show-input />
@@ -66,7 +79,6 @@
       <el-input v-model="form.desc" type="textarea" rows="10" />
     </el-form-item>
     <el-form-item>
-      <el-button type="warning" @click="onSubmit">同步到日志平台</el-button>
       <el-button type="primary" @click="onSubmit">提交</el-button>
     </el-form-item>
   </el-form>

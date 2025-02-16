@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PersonView from '../views/Personal.vue'
 import GroupView from '../views/Group.vue'
+import ProjectView from '../views/Project.vue'
+import ScheduleView from '../views/Schedule.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +22,16 @@ const router = createRouter({
       path: '/group',
       name: 'group',
       component: GroupView,
+    },
+    {
+      path: '/project',
+      name: 'project',
+      component: ProjectView,
+    },
+    {
+      path: '/schedule',
+      name: 'schedule',
+      component: ScheduleView,
     },
     {
       path: '/about',

@@ -1,14 +1,14 @@
 <template>
     <el-header class="head">
-      <el-link target="_blank"  href="/person" >我的任务</el-link>
-      <el-link target="_blank"  href="/group" class="active">小组视图</el-link>
+      <el-link target="_blank"  href="/person">我的任务</el-link>
+      <el-link target="_blank"  href="/group" >小组视图</el-link>
       <el-link target="_blank"  href="/project" >项目视图</el-link>
-      <el-link target="_blank"  href="/schedule" >任务编排</el-link>
+      <el-link target="_blank"  href="/schedule" class="active">任务编排</el-link>
       <el-link target="_blank" href="/system">系统配置</el-link>
     </el-header>  
     <div style="display: flex;height: 10vh;width: 100%;">
       <div style="display: flex;margin-top: 5px;">
-        <el-text style="margin-right: 10px;font-size:12px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(27, 27, 27, 0.904);color: white;">测试部 | 效能小组</el-text>
+        <el-text style="margin-right: 10px;font-size:12px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(27, 27, 27, 0.904);color: white;">测试项目-发布版本</el-text>
         <el-radio-group v-model="typeRadio" size="small" >
             <el-radio-button label="拆分任务" value="split" ></el-radio-button>
             <el-radio-button label="合并任务" value="merge" ></el-radio-button>
