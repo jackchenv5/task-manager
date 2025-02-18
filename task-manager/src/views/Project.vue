@@ -39,8 +39,8 @@
         type="daterange"
         unlink-panels
         range-separator="到"
-        start-placeholder="Start date"
-        end-placeholder="End date"
+        start-placeholder="开始时间"
+        end-placeholder="结束时间"
         :shortcuts="shortcuts"
         :size="size"
       />

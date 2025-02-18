@@ -18,7 +18,9 @@
             <el-radio-button label="已下发" value="running"></el-radio-button>
             <el-radio-button label="待下发" value="pend"></el-radio-button>
         </el-radio-group>
-      <el-checkbox style="margin-top: 18px;margin-left: 10px;" size="small"
+     <div style="display: flex;flex-direction: column;width:20vw;">
+      <div style="display: flex;flex-direction: row;width: 100%;margin-top: 10px;">
+      <el-checkbox style="margin-left: 10px;" size="small"
     v-model="checkAll"
     :indeterminate="isIndeterminate"
     @change="handleCheckAllChange"
@@ -27,20 +29,39 @@
   </el-checkbox>
   <el-checkbox-group
     v-model="checkedCities"
-    @change="handleCheckedCitiesChange" style="margin-top: 18px;margin-left: 10px;" size="small" 
+    @change="handleCheckedCitiesChange" style="margin-left: 10px;" size="small" 
   >
     <el-checkbox-button v-for="city in cities" :key="city" :label="city" :value="city">
       {{ city }}
     </el-checkbox-button>
   </el-checkbox-group>
+      </div>
+      <div style="display: flex;flex-direction: row;margin-top: 5px;width: 100%;">
+      <el-checkbox style="margin-left: 10px;" size="small"
+    v-model="checkAll1"
+    :indeterminate="isIndeterminate1"
+    @change="handleCheckAllChange1"
+  >
+    全选
+  </el-checkbox>
+  <el-checkbox-group
+    v-model="checkedCities1"
+    @change="handleCheckedCitiesChange1" style="margin-left: 10px;" size="small" 
+  >
+    <el-checkbox-button v-for="city in cities1" :key="city" :label="city" :value="city">
+      {{ city }}
+    </el-checkbox-button>
+  </el-checkbox-group>
+      </div>
+        </div>
 
   <el-date-picker style="margin-top: 18px;margin-left: 10px;" size="small" 
         v-model="value2"
         type="daterange"
         unlink-panels
         range-separator="到"
-        start-placeholder="Start date"
-        end-placeholder="End date"
+        start-placeholder="开始时间"
+        end-placeholder="结束时间"
         :shortcuts="shortcuts"
         :size="size"
       />
@@ -444,13 +465,35 @@ const options = [
   },
 ]
 
+const checkAll1 = ref(false)
 const checkAll = ref(false)
 const isIndeterminate = ref(true)
+const isIndeterminate1 = ref(true)
 const checkedCities = ref(['张世伟', '乔志'])
 const cities = ['张世伟', '乔志', '张涛', '王俊坤','陈成']
 
+const handleCheckAllChange = (val) => {
+  checkedCities.value = val ? cities : []
+  isIndeterminate.value = false
+}
+const handleCheckedCitiesChange = (value) => {
+  const checkedCount = value.length
+  checkAll.value = checkedCount === cities.length
+  isIndeterminate.value = checkedCount > 0 && checkedCount < cities.length
+}
+const checkedCities1 = ref(['项目1', '项目2'])
+const cities1 = ['项目1', '项目2', '项目3', '项目4','项目5']
 const value2 = ref('')
 
+const handleCheckAllChange1 = (val) => {
+  checkedCities1.value = val ? cities1 : []
+  isIndeterminate1.value = false
+}
+const handleCheckedCitiesChange1 = (value) => {
+  const checkedCount = value.length
+  checkAll1.value = checkedCount === cities1.length
+  isIndeterminate1.value = checkedCount > 0 && checkedCount < cities1.length
+}
 const shortcuts = [
   {
     text: 'Last week',
@@ -481,15 +524,6 @@ const shortcuts = [
   },
 ]
 
-const handleCheckAllChange = (val) => {
-  checkedCities.value = val ? cities : []
-  isIndeterminate.value = false
-}
-const handleCheckedCitiesChange = (value) => {
-  const checkedCount = value.length
-  checkAll.value = checkedCount === cities.length
-  isIndeterminate.value = checkedCount > 0 && checkedCount < cities.length
-}
 
 </script>
 

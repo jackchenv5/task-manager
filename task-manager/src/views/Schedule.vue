@@ -6,34 +6,44 @@
       <el-link target="_blank"  href="/schedule" class="active">任务编排</el-link>
       <el-link target="_blank" href="/system">系统配置</el-link>
     </el-header>  
-    <div style="display: flex;height: 10vh;width: 100%;">
-      <div style="display: flex;margin-top: 5px;">
-        <el-text style="margin-right: 10px;font-size:12px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(27, 27, 27, 0.904);color: white;">测试项目-发布版本</el-text>
-        <el-radio-group v-model="typeRadio" size="small" >
+    <div style="height: 8vh;width: 100%;">
+      <div style="display: flex;">
+        <el-radio-group v-model="typeRadio" size="small" style="margin-top: 18px;" >
             <el-radio-button label="拆分任务" value="split" ></el-radio-button>
             <el-radio-button label="合并任务" value="merge" ></el-radio-button>
         </el-radio-group>
-        <el-radio-group v-model="taskRadio" size="small" style="margin-left: 10px;">
+        <el-radio-group v-model="taskRadio" size="small" style="margin-left: 10px;margin-top:18px;">
             <el-radio-button  label="所有任务" value="all"></el-radio-button>
             <el-radio-button label="已下发" value="running"></el-radio-button>
             <el-radio-button label="待下发" value="pend"></el-radio-button>
         </el-radio-group>
-      <el-checkbox style="margin-top: 18px;margin-left: 10px;" size="small"
-    v-model="checkAll"
-    :indeterminate="isIndeterminate"
-    @change="handleCheckAllChange"
-  >
-    全选
-  </el-checkbox>
-  <el-checkbox-group
-    v-model="checkedCities"
-    @change="handleCheckedCitiesChange" style="margin-top: 18px;margin-left: 10px;" size="small" 
-  >
-    <el-checkbox-button v-for="city in cities" :key="city" :label="city" :value="city">
-      {{ city }}
-    </el-checkbox-button>
-  </el-checkbox-group>
+     <el-select
+      v-model="value1"
+      multiple
+      placeholder="Select"
+      style="width: 240px;margin-top: 18px;margin-left:10px;" size="small"
+    >
+      <el-option
+        v-for="item in optionProject"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
 
+     <el-select
+      v-model="valueP"
+      multiple
+      placeholder="Select"
+      style="width: 240px;margin-top: 18px;margin-left:10px;" size="small"
+    >
+      <el-option
+        v-for="item in optionPersion"
+        :key="item.value"
+        :label="item.label"
+        :value="item.value"
+      />
+    </el-select>
   <el-date-picker style="margin-top: 18px;margin-left: 10px;" size="small" 
         v-model="value2"
         type="daterange"
@@ -129,6 +139,54 @@ const props = defineProps({
   },
 });
 
+
+const value1 = ref(['Option1'])
+const valueP = ref(['cc','jz'])
+const optionProject = [
+  {
+    value: 'Option1',
+    label: '测试项目1',
+  },
+  {
+    value: 'Option2',
+    label: '测试项目2',
+  },
+  {
+    value: 'Option3',
+    label: '测试项目3',
+  },
+  {
+    value: 'Option4',
+    label: '测试项目4',
+  },
+  {
+    value: 'Option5',
+    label: '测试项目5',
+  },
+]
+
+const optionPersion = [
+  {
+    value: 'cc',
+    label: '陈成',
+  },
+  {
+    value: 'jz',
+    label: '乔志',
+  },
+  {
+    value: 'wjk',
+    label: '王俊坤',
+  },
+  {
+    value: 'zt',
+    label: '张涛',
+  },
+  {
+    value: 'zsw',
+    label: '张世伟',
+  },
+]
 // 获取容器引用
 const schedulerContainer = ref(null);
 

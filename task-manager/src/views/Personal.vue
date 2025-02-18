@@ -73,7 +73,7 @@
       <el-text style="margin-left:20px">实际工作量</el-text><el-input-number style="margin-left:10px" v-model="num" :min="1" :max="30" />
     </el-form-item>
     <el-form-item label="进度:">
-      <el-slider v-model="value" show-input />
+      <el-slider v-model="value" show-input :step="10" show-stops />
     </el-form-item>
     <el-form-item label="反馈信息：">
       <el-input v-model="form.desc" type="textarea" rows="10" />
@@ -317,6 +317,7 @@ const onSubmit = () => {
   console.log('submit!')
 }
 const value = ref(0)
+const num = ref(0)
 const typeRadio = ref('merge')
 </script>
 
