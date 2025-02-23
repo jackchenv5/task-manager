@@ -18,7 +18,7 @@
             <el-radio-button label="已下发" value="running"></el-radio-button>
             <el-radio-button label="待下发" value="pend"></el-radio-button>
         </el-radio-group>
-     <div style="display: flex;flex-direction: column;width:20vw;">
+     <div style="display: flex;flex-direction: column;width:25vw;">
       <div style="display: flex;flex-direction: row;width: 100%;margin-top: 10px;">
       <el-checkbox style="margin-left: 10px;" size="small"
     v-model="checkAll"
@@ -297,7 +297,6 @@ scheduler.templates.event_bar_text = function(start, end, event) {
 
     return progressBar;
 };
-
 scheduler.templates.lightbox_header = function (start, end, ev) {
     return "Custom Event Header: " + (ev ? ev.text : "");
 };
@@ -433,6 +432,15 @@ watch(typeRadio,(type) => {
       console.log(2)
     // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
     // 将数据加载到调度器
+    scheduler.templates.month_date_class = function(date){
+      var dayOfMonth = date.getDate(); // 获取当月的第几天
+    console.log("Day of Month: " + dayOfMonth); // 打印日志
+
+    // 假设非工作日为周末（周六、周日）
+    if(dayOfMonth > 3 && dayOfMonth < 7){ // 如果是周六或周日
+        return "non_working_day";
+    }
+};
     scheduler.parse(myEvents, "json");
     }
     scheduler.updateView();
@@ -582,7 +590,7 @@ const shortcuts = [
 .progress-0 { background-color: #f0f0f0; }
 .progress-25 { background-color: #ffcc99; }
 .progress-50 { background-color: #76c7c0; }
-.progress-75 { background-color: #d9e5eb;}
+.progress-75 { background-color: #f5d4f9;}
 .progress-100 { background-color: #a5dc86; }
 
 /* 默认日期单元格样式 */
@@ -595,4 +603,7 @@ const shortcuts = [
 .highlight-date-2 { background-color: #76c7c0; } /* 浅蓝色 */
 .highlight-date-3 { background-color: #a5dc86; } /* 浅绿色 */
 
+.non_working_day {
+    background-color: rgb(204, 152, 169) !important;
+}
 </style>

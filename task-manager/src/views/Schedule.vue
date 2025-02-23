@@ -19,6 +19,7 @@
         </el-radio-group>
      <el-select
       v-model="value1"
+      clearable
       multiple
       placeholder="Select"
       style="width: 240px;margin-top: 18px;margin-left:10px;" size="small"
@@ -34,8 +35,9 @@
      <el-select
       v-model="valueP"
       multiple
+      clearable
       placeholder="Select"
-      style="width: 240px;margin-top: 18px;margin-left:10px;" size="small"
+      style="width: 340px;margin-top: 18px;margin-left:10px;" size="small"
     >
       <el-option
         v-for="item in optionPersion"
@@ -44,7 +46,7 @@
         :value="item.value"
       />
     </el-select>
-  <el-date-picker style="margin-top: 18px;margin-left: 10px;" size="small" 
+  <el-date-picker style="margin-top: 18px;margin-left: 10px;max-width: 20vw;" size="small" 
         v-model="value2"
         type="daterange"
         unlink-panels

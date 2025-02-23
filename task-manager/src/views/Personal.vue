@@ -9,9 +9,16 @@
     <div style="display: flex;height: 90vh;width: 100%;">
     <div class="left">
       <div style="display: flex;margin-top: 5px;">
-        <el-radio-group v-model="typeRadio" size="large">
+        <div style="display: flex;margin-top: 5px;margin-right: 10px;">陈成</div>
+        <el-radio-group v-model="splitRadio" size="small">
             <el-radio-button label="拆分任务" value="split"></el-radio-button>
             <el-radio-button label="合并任务" value="merge"></el-radio-button>
+        </el-radio-group>
+        <el-radio-group v-model="typeRadio" size="small" style="margin-left: 20px;">
+            <el-radio-button label="所有任务" value="all"></el-radio-button>
+            <el-radio-button label="待下发" value="pending"></el-radio-button>
+            <el-radio-button label="进行中" value="running"></el-radio-button>
+            <el-radio-button label="已完成" value="done"></el-radio-button>
         </el-radio-group>
       <el-button type="warning" @click="onSubmit" style="margin-left:20px">同步到日志平台</el-button>
       </div>
@@ -37,10 +44,10 @@
       </el-statistic>
     </el-col>
     <el-col :span="6">
-      <el-statistic title="总工时" value="100" />
+      <el-statistic title="总工作量" value="100小时" />
     </el-col>
     <el-col :span="6">
-      <el-statistic title="剩余工时" :value="56">
+      <el-statistic title="待完成工作量" value="56小时">
         <template #suffix>
           <el-icon style="vertical-align: -0.125em">
             <ChatLineRound />
@@ -102,6 +109,55 @@ const props = defineProps({
 // 获取容器引用
 const schedulerContainer = ref(null);
 
+    var myEvents = [
+    {id:1, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00"},
+    {id:2, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-10 9:00", end_date:"2025-02-16 18:00"},
+    {id:3, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-17 9:00", end_date:"2025-02-23 18:00"},
+    {id:4, text:"任务 4 | 任务内容：测试任务4 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00"},
+    {id:5, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-24 9:00", end_date:"2025-03-02 18:00"},
+];
+
+    var myEvents1 = [
+    {id:11, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-03 18:00"},
+    {id:12, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-04 9:00", end_date:"2025-02-04 18:00"},
+    {id:13, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-05 9:00", end_date:"2025-02-05 18:00"},
+    {id:14, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-06 9:00", end_date:"2025-02-06 18:00"},
+    {id:15, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-07 9:00", end_date:"2025-02-07 18:00"},
+    {id:16, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-08 9:00", end_date:"2025-02-08 18:00"},
+    {id:17, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-09 9:00", end_date:"2025-02-09 18:00"},
+
+    {id:111, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-03 18:00"},
+    {id:112, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-04 9:00", end_date:"2025-02-04 18:00"},
+    {id:113, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-05 9:00", end_date:"2025-02-05 18:00"},
+    {id:114, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-06 9:00", end_date:"2025-02-06 18:00"},
+    {id:115, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-07 9:00", end_date:"2025-02-07 18:00"},
+    {id:116, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-08 9:00", end_date:"2025-02-08 18:00"},
+    {id:117, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-09 9:00", end_date:"2025-02-09 18:00"},
+
+    {id:22, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-10 9:00", end_date:"2025-02-10 18:00"},
+    {id:23, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-11 9:00", end_date:"2025-02-11 18:00"},
+    {id:24, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-12 9:00", end_date:"2025-02-12 18:00"},
+    {id:25, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-13 9:00", end_date:"2025-02-13 18:00"},
+    {id:26, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-14 9:00", end_date:"2025-02-14 18:00"},
+    {id:27, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-15 9:00", end_date:"2025-02-15 18:00"},
+    {id:28, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-16 9:00", end_date:"2025-02-16 18:00"},
+
+    {id:33, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-17 9:00", end_date:"2025-02-17 18:00"},
+    {id:34, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-18 9:00", end_date:"2025-02-18 18:00"},
+    {id:35, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-19 9:00", end_date:"2025-02-19 18:00"},
+    {id:36, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-20 9:00", end_date:"2025-02-20 18:00"},
+    {id:37, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-21 9:00", end_date:"2025-02-21 18:00"},
+    {id:38, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-22 9:00", end_date:"2025-02-22 18:00"},
+    {id:39, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-23 9:00", end_date:"2025-02-23 18:00"},
+
+    {id:45, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-24 9:00", end_date:"2025-02-24 18:00"},
+    {id:46, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-25 9:00", end_date:"2025-02-25 18:00"},
+    {id:47, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-26 9:00", end_date:"2025-02-26 18:00"},
+    {id:48, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-27 9:00", end_date:"2025-02-27 18:00"},
+    {id:49, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-28 9:00", end_date:"2025-02-28 18:00"},
+    {id:50, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-03-01 9:00", end_date:"2025-03-01 18:00"},
+    {id:51, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-03-02 9:00", end_date:"2025-03-02 18:00"},
+];
 onMounted(() => {
   // 确保 scheduler 对象存在
   if (scheduler) {
@@ -232,13 +288,6 @@ scheduler.config.lightbox.sections = [
      scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
     // 初始化 Scheduler
     scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    var myEvents = [
-    {id:1, text:"任务 1", start_date:"2025-02-12 10:00", end_date:"2025-02-13 12:00"},
-    {id:2, text:"任务 2", start_date:"2025-02-13 14:00", end_date:"2025-02-13 16:00"},
-    {id:3, text:"任务 3", start_date:"2025-02-17 14:00", end_date:"2025-02-21 16:00"},
-    {id:4, text:"任务 4", start_date:"2025-02-24 14:00", end_date:"2025-02-28 16:00"},
-    {id:5, text:"任务 5", start_date:"2025-02-15 14:00", end_date:"2025-02-15 16:00"},
-];
     // 将数据加载到调度器
     scheduler.parse(myEvents, "json");
     // 获取特定日期范围内的所有事件
@@ -318,7 +367,26 @@ const onSubmit = () => {
 }
 const value = ref(0)
 const num = ref(0)
-const typeRadio = ref('merge')
+const typeRadio = ref('all')
+const splitRadio = ref('merge')
+
+watch(splitRadio,(type) => {
+    console.log(type)
+    scheduler.clearAll();
+    if (type === 'merge') {
+      console.log(1)
+    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+    // 将数据加载到调度器
+    scheduler.parse(myEvents, "json");
+    }else{
+      console.log(2)
+    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+    // 将数据加载到调度器
+    scheduler.parse(myEvents1, "json");
+    }
+    scheduler.updateView();
+  }
+);
 </script>
 
 <style>
