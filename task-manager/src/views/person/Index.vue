@@ -1,11 +1,4 @@
 <template>
-    <el-header class="head">
-      <el-link target="_blank"  href="/person" class="active">我的任务</el-link>
-      <el-link target="_blank"  href="/group" >小组视图</el-link>
-      <el-link target="_blank"  href="/project" >项目视图</el-link>
-      <el-link target="_blank"  href="/schedule" >任务编排</el-link>
-      <el-link target="_blank" href="/system">系统配置</el-link>
-    </el-header>  
     <div style="display: flex;height: 90vh;width: 100%;">
     <div class="left">
       <div style="display: flex;margin-top: 5px;">
@@ -391,24 +384,6 @@ watch(splitRadio,(type) => {
 
 <style>
   @import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
-  .el-link {
-    font-size: 18px;
-    margin-right: 20px;
-    padding:10px;
-  }
-
-  .head {
-    display: flex;
-    justify-content: start;
-    border-bottom: 2px solid #d6dfdf;
-    border-top: 1px solid #f5f9f9;
-    background: #ffffff;
-  }
-
-  .active{
-    color: white;
-    background: #5d6d96;
-  }
 
 /* 左侧和右侧 div 的样式 */
 .left, .right {

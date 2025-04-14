@@ -1,11 +1,4 @@
 <template>
-    <el-header class="head">
-      <el-link target="_blank"  href="/person" >我的任务</el-link>
-      <el-link target="_blank"  href="/group" class="active">小组视图</el-link>
-      <el-link target="_blank"  href="/project" >项目视图</el-link>
-      <el-link target="_blank"  href="/schedule" >任务编排</el-link>
-      <el-link target="_blank" href="/system">系统配置</el-link>
-    </el-header>  
     <div style="display: flex;height: 10vh;width: 100%;">
       <div style="display: flex;margin-top: 5px;">
         <el-text style="margin-right: 10px;font-size:12px;border: 1px solid rgb(34, 34, 14);padding:10px;background: rgba(27, 27, 27, 0.904);color: white;">测试部 | 效能小组</el-text>
@@ -537,13 +530,6 @@ const shortcuts = [
 
 <style>
   @import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
-  .el-link {
-    font-size: 18px;
-    margin-right: 20px;
-    font-weight: bold;
-    color:black;
-    padding:10px;
-  }
 
   .head {
     display: flex;
@@ -551,10 +537,6 @@ const shortcuts = [
     border-bottom: 2px solid #d6dfdf;
     border-top: 1px solid #f5f9f9;
     background: #ffffff;
-  }
-  .active{
-    color: white;
-    background: black;
   }
 
 /* 左侧和右侧 div 的样式 */
