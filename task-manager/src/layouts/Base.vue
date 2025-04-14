@@ -3,7 +3,7 @@
     <!-- 固定头部 -->
     <el-header class="head">
       <el-link 
-        v-for="item in navItems" 
+        v-for="item in navStore.navItems" 
         :key="item.path"
         :href="item.path"
         :class="{ active: $route.path.startsWith(item.path) }"
@@ -20,13 +20,8 @@
 </template>
 
 <script setup>
-const navItems = [
-  { path: '/person', title: '我的任务' },
-  { path: '/group', title: '小组视图' },
-  { path: '/project', title: '项目视图' },
-  { path: '/schedule', title: '任务编排' },
-  { path: '/system', title: '系统配置' }
-]
+import { useNavStore } from '@/stores/nav'
+const navStore = useNavStore()
 </script>
 <style>
 
