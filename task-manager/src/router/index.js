@@ -38,7 +38,7 @@ router.beforeEach(async (to, from, next) => {
   console.log('checkLogin1',checkLogin)
   console.log('getDataApi1',getDataApi)
   // checkLogin()
-  // getDataApi()
+  getDataApi()
 
   console.log('进入路由守卫,来自|访问',from.path,to.path)
   // 1. 检查登录状态（推荐从 Vuex 获取）
