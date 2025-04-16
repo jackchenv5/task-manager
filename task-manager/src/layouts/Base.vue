@@ -31,6 +31,7 @@ const navStore = useNavStore()
     border-bottom: 2px solid #d6dfdf;
     border-top: 1px solid #f5f9f9;
     background: #ffffff;
+    height: 6vh;
   }
   
   .el-link {
