@@ -3,7 +3,7 @@
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
         <div style="height:14vh;width: 30%;border: 1px solid rgb(93, 168, 230);border-radius: 5px;padding: 5px;">
-          <p>当前项目：
+          <p>选中人员：
             <el-select v-model="value" placeholder="Select" size="small" style="width: 120px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
