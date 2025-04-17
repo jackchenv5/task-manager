@@ -59,8 +59,8 @@
         <el-button style="margin-left: 20px;">清空</el-button>
       </div>
       <div
-        style="height:18vh;width: 98%;border: 1px solid rgb(93, 168, 230);border-radius: 5px;padding: 5px;display: flex;flex-direction: row;justify-content: space-between;">
-        <div style="width: 25%;height:15vh;border:1px solid #eee;border-radius: 5px;background-color: white;">
+        style="height:18vh;width: 98%;border: 1px solid #eee;background-color: white;border-radius: 5px;padding: 5px;display: flex;flex-direction: row;justify-content: space-between;">
+        <div style="width: 25%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
           <div style="font-weight:600;font-size:18px">当前用户</div>
           <div style="display:flex;justify-content: space-around;padding: 10px;">
            <div style="display:flex;flex-direction:column;justify-content: space-around;align-items: center;">
@@ -73,14 +73,14 @@
           </div>
           
         </div>
-        <div style="width: 30%;height:15vh;border:1px solid black">
+        <div style="width: 30%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
           <div>详情：</div>
           <div>时间：2025-04-16~2025-04-24</div>
           <div>任务数：10 个</div>
           <div>任务工时：10 H</div>
           <div>饱和度：80% </div>
         </div>
-        <div style="width: 45%;height:15vh;border:1px solid black">
+        <div style="width: 45%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
           <div>参与项目：</div>
           <el-scrollbar style="border:1px solid blue;height: 12vh;">
             <el-tag v-for="item in 20" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{ item
