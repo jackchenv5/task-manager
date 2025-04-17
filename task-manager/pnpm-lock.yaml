@@ -32,6 +32,9 @@ importers:
       vue-router:
         specifier: ^4.5.0
         version: 4.5.0(vue@3.5.13)
+      vxe-table:
+        specifier: ^4.13.5
+        version: 4.13.5(vue@3.5.13)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^5.2.1
@@ -584,6 +587,11 @@ packages:
   '@vueuse/shared@9.13.0':
     resolution: {integrity: sha512-UrnhU+Cnufu4S6JLCPZnkWh0WwZGUp72ktOF2DFptMlOs3TOdVv8xJN53zhHGARmVOsz5KqOls09+J1NR6sBKw==}
 
+  '@vxe-ui/core@4.0.39':
+    resolution: {integrity: sha512-7lRfmnh6fAjbuKxQ1NcJVQ4Z8bXDYHtnTrzvUGREf3CsXu/PzUoyArHhOJH6yRmiNBfk29CCqVhiRsv4ngSViQ==}
+    peerDependencies:
+      vue: ^3.2.0
+
   async-validator@4.2.5:
     resolution: {integrity: sha512-7HhHjtERjqlNbZtqNqy2rckN/SpOOlmDliet+lP7k+eKZEjPk3DgyeU9lIXLdeLz0uBbbVp+9Qdow9wJWgwwfg==}
 
@@ -669,6 +677,9 @@ packages:
 
   dhtmlx-scheduler@7.2.1:
     resolution: {integrity: sha512-0+haiebZxCX3pCzKRmT97PWuN2uwbRD5FZX6Gko0BuCzK+SiHD64+UkdOws23iHi6HbVATPNDWAZaxZCkRQR6g==}
+
+  dom-zindex@1.0.6:
+    resolution: {integrity: sha512-FKWIhiU96bi3xpP9ewRMgANsoVmMUBnMnmpCT6dPMZOunVYJQmJhSRruoI0XSPoHeIif3kyEuiHbFrOJwEJaEA==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -1280,10 +1291,19 @@ packages:
       typescript:
         optional: true
 
+  vxe-pc-ui@4.5.25:
+    resolution: {integrity: sha512-VvMLuOOGrzbjyDkcit0OY74fHqTV39XgS+00S27OES3w8TvbslxFlImDB8tLx0NJ0PJPOvq6chMt72Uf5U2QYw==}
+
+  vxe-table@4.13.5:
+    resolution: {integrity: sha512-9ccIyk64yfPQZTsuDmwwTtpBwyrlg4beTdbbfel3PjxKTv3egxegSpluSFaToAREcmvKYlPBjQgCE99e0F/0nQ==}
+
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
     hasBin: true
+
+  xe-utils@3.7.4:
+    resolution: {integrity: sha512-9yuCHLOU+og4OEkPWWtzrYk1Zt1hgN66U/NCJ0+vYJSx1MplBtoQRz8aEA+2RmCr3leLru98vQxNpw/vJsu/sg==}
 
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
@@ -1824,6 +1844,12 @@ snapshots:
       - '@vue/composition-api'
       - vue
 
+  '@vxe-ui/core@4.0.39(vue@3.5.13)':
+    dependencies:
+      dom-zindex: 1.0.6
+      vue: 3.5.13
+      xe-utils: 3.7.4
+
   async-validator@4.2.5: {}
 
   asynckit@0.4.0: {}
@@ -1900,6 +1926,8 @@ snapshots:
   dhtmlx-gantt@9.0.3: {}
 
   dhtmlx-scheduler@7.2.1: {}
+
+  dom-zindex@1.0.6: {}
 
   dunder-proto@1.0.1:
     dependencies:
@@ -2460,9 +2488,23 @@ snapshots:
       '@vue/server-renderer': 3.5.13(vue@3.5.13)
       '@vue/shared': 3.5.13
 
+  vxe-pc-ui@4.5.25(vue@3.5.13):
+    dependencies:
+      '@vxe-ui/core': 4.0.39(vue@3.5.13)
+    transitivePeerDependencies:
+      - vue
+
+  vxe-table@4.13.5(vue@3.5.13):
+    dependencies:
+      vxe-pc-ui: 4.5.25(vue@3.5.13)
+    transitivePeerDependencies:
+      - vue
+
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
+
+  xe-utils@3.7.4: {}
 
   yallist@3.1.1: {}
 
