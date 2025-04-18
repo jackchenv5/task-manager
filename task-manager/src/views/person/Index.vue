@@ -1,407 +1,919 @@
 <template>
-    <div style="display: flex;height: 90vh;width: 100%;">
-    <div class="left">
-      <div style="display: flex;margin-top: 5px;">
-        <div style="display: flex;margin-top: 5px;margin-right: 10px;">陈成</div>
-        <el-radio-group v-model="splitRadio" size="small">
-            <el-radio-button label="拆分任务" value="split"></el-radio-button>
-            <el-radio-button label="合并任务" value="merge"></el-radio-button>
-        </el-radio-group>
-        <el-radio-group v-model="typeRadio" size="small" style="margin-left: 20px;">
-            <el-radio-button label="所有任务" value="all"></el-radio-button>
-            <el-radio-button label="待下发" value="pending"></el-radio-button>
-            <el-radio-button label="进行中" value="running"></el-radio-button>
-            <el-radio-button label="已完成" value="done"></el-radio-button>
-        </el-radio-group>
-      <el-button type="warning" @click="onSubmit" style="margin-left:20px">同步到日志平台</el-button>
+    <!-- <el-header class="head">
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div>
+          <el-link target="_blank" href="/person" class="active">我的任务</el-link>
+          <el-link target="_blank" href="/group">小组视图</el-link>
+          <el-link target="_blank" href="/project">项目视图</el-link>
+          <el-link target="_blank" href="/schedule">任务编排</el-link>
+          <el-link target="_blank" href="/system">系统配置</el-link>
+        </div>
+        <div style="margin-left: auto;">您好，张涛D</div>
       </div>
-        <div ref="schedulerContainer" style="width: 100%;height:85vh ;"></div>
+    </el-header>   -->
+    <div style="display: flex; height: 90vh; width: 100%;">
+      <div class="left">
+        <div style="display: flex; justify-content: center; width: 100%; margin-top: 5px;">
+          <div style="display: flex; align-items: center; width: 100%; max-width: 800px; position: relative;">
+            <el-radio-group v-model="typeRadio" size="small" style="flex-grow: 1; justify-content: center;">
+              <el-radio-button label="所有任务" value="all"></el-radio-button>
+              <el-radio-button label="待下发" value="pending"></el-radio-button>
+              <el-radio-button label="进行中" value="running"></el-radio-button>
+              <el-radio-button label="已完成" value="done"></el-radio-button>
+            </el-radio-group>
+          </div>
+        </div>
+        <div ref="schedulerContainer" 
+             style="width: 100%;height:86vh ;"
+             @mousedown="handleMouseDown"
+             @mousemove="handleMouseMove"
+             @mouseup="handleMouseUp"
+             @mouseleave="handleMouseUp"></div>
+        <!-- 半屏详情面板 -->
+        <transition name="slide-left">
+          <div 
+            v-if="showDetailPanel" 
+            class="halfscreen-detail-panel"
+            @click.self="showDetailPanel = false"
+          >
+            <div class="detail-content-wrapper">
+              <!-- 关闭按钮 -->
+              <el-button 
+                class="close-btn"
+                type="danger" 
+                @click="showDetailPanel = false"
+                circle
+                size="small"
+              >
+                <el-icon><Close /></el-icon>
+              </el-button>
+
+              <h2 class="detail-title">任务详情</h2>
+
+              <div class="detail-grid">
+                <!-- 任务名称和工作量 -->
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">任务名称</span>
+                    <el-input 
+                      v-model="currentTask.row.text" 
+                      readonly 
+                      class="detail-input"
+                      :title="currentTask.row.id"
+                    />
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">工作量</span>
+                    <el-input 
+                      :value="currentTask.row.hours + ' 天'" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 邮件抄送 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">邮件抄送</span>
+                    <el-input
+                      type="textarea"
+                      :rows="3"
+                      :value="currentTask.row.cc || '无'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea cc-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 开始时间和截止时间 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">开始时间 - 截止时间</span>
+                    <el-input 
+                      :value="`${formatDateTime(currentTask.row.start_date)} 至 ${formatDateTime(currentTask.row.end_date)}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 项目和关联任务 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">项目信息</span>
+                    <el-input 
+                      :value="`${currentTask.row.project || '无'} ${currentTask.row.relatedTasks ? '(关联任务: ' + currentTask.row.relatedTasks.map(t => t.text).join(', ') + ')' : ''}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 任务内容和挑战目标 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">内容与目标</span>
+                    <el-input
+                      type="textarea"
+                      :rows="3"
+                      :value="`任务内容: ${currentTask.row.detail || '无'}\n挑战目标: ${currentTask.row.challenge || '无'}`"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 描述信息 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">详细描述</span>
+                    <el-input
+                      type="textarea"
+                      :rows="4"
+                      :value="currentTask.row.description || '无'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 完成度和实际工作量 -->
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">完成度</span>
+                    <el-progress 
+                      :percentage="parseInt(currentTask.row.process || 0)" 
+                      :status="getProgressStatus(currentTask.row.process)"
+                      style="width: 200px;"
+                    />
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">实际工作量</span>
+                    <el-input 
+                      :value="(currentTask.row.actualHours || '0') + ' 天'" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 反馈信息 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">反馈记录</span>
+                    <el-input
+                      type="textarea"
+                      :rows="4"
+                      :value="currentTask.row.feedback || '无反馈记录'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
     </div>
+    
     <div class="right">
-      <el-card style="width:100%;padding: 8px;background-color: rgb(243, 245, 247);" shadow="always">
-          <el-row>
-    <el-col :span="6">
-      <el-statistic title="任务饱和度" value="70%" />
-    </el-col>
-    <el-col :span="6">
-      <el-statistic :value="13">
+      <el-card style="width:100%;box-sizing: border-box;padding: 8px;background-color: rgb(243, 245, 247);" shadow="always">
+  <div style="display: flex; width: 100%;">
+    <div style="flex: 1; padding: 0 8px; min-width: 0;">
+      <el-statistic :title="'任务饱和度'" :value="stats.saturation">
+        <template #title>
+          <div style="display: inline-flex; align-items: center">
+            任务饱和度
+            <el-tooltip content="任务饱和度 = (当前选中日期的所有工时 / 8 x 工作日天数) x 100%" placement="top">
+              <el-icon style="margin-left: 4px" :size="12">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+        </template>
+      </el-statistic>
+    </div>
+    
+    <div style="flex: 1; padding: 0 8px; min-width: 0;">
+      <el-statistic :value="stats.completed">
         <template #title>
           <div style="display: inline-flex; align-items: center">
             已完成任务数
-            <el-icon style="margin-left: 4px" :size="12">
-              <Male />
-            </el-icon>
+            <el-tooltip content="已完成的任务数量 / 总任务数量" placement="top">
+              <el-icon style="margin-left: 4px" :size="12">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
           </div>
         </template>
-        <template #suffix>/20</template>
+        <template #suffix>/{{ stats.totalTasks }}</template>
       </el-statistic>
-    </el-col>
-    <el-col :span="6">
-      <el-statistic title="总工作量" value="100小时" />
-    </el-col>
-    <el-col :span="6">
-      <el-statistic title="待完成工作量" value="56小时">
-        <template #suffix>
-          <el-icon style="vertical-align: -0.125em">
-            <ChatLineRound />
-          </el-icon>
+    </div>
+    
+    <div style="flex: 1; padding: 0 8px; min-width: 0;">
+      <el-statistic :title="'总工作量'" :value="stats.total">
+        <template #title>
+          <div style="display: inline-flex; align-items: center">
+            总工作量
+            <el-tooltip content="当前选中日期的总工时" placement="top">
+              <el-icon style="margin-left: 4px" :size="12">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
         </template>
       </el-statistic>
-    </el-col>
-  </el-row>
-</el-card>
-  <!-- <el-table :data="tableData" stripe style="width: 100%;height: 40vh;">
-    <el-table-column prop="date" label="日期" width="180" />
-    <el-table-column prop="name" label="任务名" width="180" />
-    <el-table-column prop="address" label="项目" />
-  </el-table> -->
-  <el-card shadow="hover" style="width:100%;height: 30vh;">
-  <el-descriptions title="任务信息" column="2">
-    <el-descriptions-item label="任务名">测试任务1</el-descriptions-item>
-    <el-descriptions-item label="项目">XXX项目市场发布版本测试项目</el-descriptions-item>
-    <el-descriptions-item label="任务内容" span="2">
-      <el-tag size="small">完成测试任务，并及时反馈</el-tag>
-    </el-descriptions-item>
-    <el-descriptions-item label="挑战目标" span="2">
-      <el-tag size="small">完成挑战目标，并超过预期效果</el-tag>
-    </el-descriptions-item>
-  </el-descriptions>
-  </el-card>
-  <div style="width:100%">
-   <el-form :model="form" label-width="auto" style="width: 100%;margin-top:10px" >
-    <el-form-item label="任务反馈:">
-      <el-text style="margin-left:20px">实际工作量</el-text><el-input-number style="margin-left:10px" v-model="num" :min="1" :max="30" />
-    </el-form-item>
-    <el-form-item label="进度:">
-      <el-slider v-model="value" show-input :step="10" show-stops />
-    </el-form-item>
-    <el-form-item label="反馈信息：">
-      <el-input v-model="form.desc" type="textarea" rows="10" />
-    </el-form-item>
-    <el-form-item>
-      <el-button type="primary" @click="onSubmit">提交</el-button>
-    </el-form-item>
-  </el-form>
+    </div>
+    
+    <div style="flex: 1; padding: 0 8px; min-width: 0;">
+      <el-statistic :title="'待完成工作量'" :value="stats.remaining">
+        <template #title>
+          <div style="display: inline-flex; align-items: center">
+            待完成工作量
+            <el-tooltip content="当前选中日期待完成工作量" placement="top">
+              <el-icon style="margin-left: 4px" :size="12">
+                <QuestionFilled />
+              </el-icon>
+            </el-tooltip>
+          </div>
+        </template>
+      </el-statistic>
+    </div>
   </div>
+</el-card>
+    <div style="
+      width: 50vw;
+      overflow: auto;
+      position: relative;
+      border: 1px solid #ebeef5;
+      border-radius: 4px;
+      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+    ">
+      <div style="min-width: 100%; display: inline-block">
+        <vxe-table
+          border
+          highlight-hover-row
+          :data="filteredEvents"
+          @cell-click="handleRowClick"  
+          @cell-dblclick="handleRowDblClick"  
+          :row-config="{ isHover: true }"
+          :row-class-name="tableRowClassName">
+          <vxe-column field="text" title="名称" width="120" show-overflow></vxe-column>
+          <vxe-column field="status" title="状态" width="80"></vxe-column>
+          <vxe-column title="起止时间" width="200">
+            <template #default="params">
+              {{ formatDate(params.row.start_date) }} - {{ formatDate(params.row.end_date) }}
+            </template>
+          </vxe-column>
+          <vxe-column field="hours" title="工作量(h)" width="90"></vxe-column>
+          <vxe-column field="project" title="项目" width="120" show-overflow></vxe-column>
+          <vxe-column field="tl" title="TL" width="80"></vxe-column>
+        </vxe-table>
+      </div>
+    </div>
+    
+    <div v-if="selectedRow" style="width:100%;">
+      <el-form :model="form" label-width="auto" style="width: 100%;margin-top:10px">
+        <el-form-item label="任务反馈:" style="margin-bottom: 10px;">
+          <el-text type="primary" style="margin-left: 10px;">{{ selectedRow ? selectedRow.row.text : '未选择任务' }}</el-text>
+        </el-form-item>
+        
+        <el-form-item style="margin-bottom: 22px;">
+          <div style="display: flex; align-items: center;">
+            <div style="display: flex; align-items: center; margin-right: 40px;margin-left: 20px;">
+              <el-text style="margin-right: 10px;">实际工作量:</el-text>
+              <el-input-number v-model="num" :min="1" :max="30" />
+            </div>
+            <div style="display: flex; align-items: center;">
+              <el-text style="margin-right: 20px;">进度:</el-text>
+              <el-slider v-model="value" show-input :step="10" show-stops style="width: 350px;" />
+            </div>
+          </div>
+        </el-form-item>
+        
+        <el-form-item>
+          <el-input 
+            v-model="form.desc" 
+            type="textarea" 
+            rows="10"
+            placeholder="请输入反馈信息..."
+          />
+        </el-form-item>
+        
+        <el-form-item style="margin-left: 40%">
+          <el-button type="primary" @click="onSubmit" style="width: 120px;">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
     </div>
     </div>
 </template>
- 
+
 <script setup>
 import "dhtmlx-scheduler";
-import { onMounted, ref,watch,reactive } from 'vue';
-// 定义 props
-// 定义 props
-const props = defineProps({
-  events: {
-    type: Array,
-    default: () => [],
-  },
-});
+import { initSchedulerConfig } from '@/utils/scheduler';
+import { Close } from '@element-plus/icons-vue';
+import { onMounted, ref, watch, reactive, computed, onUnmounted } from 'vue';
+import { VXETable } from 'vxe-table';
+import { VxeTable, VxeColumn } from 'vxe-table'
+import 'vxe-table/lib/style.css';
+// import { usePersonStore } from '@/stores/person'
+
 
 // 获取容器引用
 const schedulerContainer = ref(null);
 
-    var myEvents = [
-    {id:1, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00"},
-    {id:2, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-10 9:00", end_date:"2025-02-16 18:00"},
-    {id:3, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-17 9:00", end_date:"2025-02-23 18:00"},
-    {id:4, text:"任务 4 | 任务内容：测试任务4 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00"},
-    {id:5, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-24 9:00", end_date:"2025-03-02 18:00"},
+var myEvents = [
+    {id:1, text:"任务111111111111111111111111111", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00", hours: 8, status: "进行中", process: "50%", workdays: 5, project: "项目xxxxxxxxxxxxxxxxxxxxxxxxxx", tl: "张三"},
+    {id:2, text:"任务2", start_date:"2025-02-10 9:00", end_date:"2025-02-16 18:00", hours: 6, status: "进行中", process: "50%", workdays: 6, project: "项目2", tl: "李四"},
+    {id:3, text:"任务3", start_date:"2025-02-03 9:00", end_date:"2025-02-16 18:00", hours: 24, status: "进行中", process: "50%", workdays: 11, project: "项目3", tl: "王五"},
+    {id:4, text:"任务4", start_date:"2025-02-03 9:00", end_date:"2025-02-06 18:00", hours: 18, status: "进行中", process: "50%", workdays: 4, project: "项目4", tl: "李逵"},
+    {id:5, text:"任务5", start_date:"2025-02-03 9:00", end_date:"2025-02-05 18:00", hours: 6, status: "进行中", process: "50%", workdays: 3, project: "项目5", tl: "诸葛亮"},
 ];
 
-    var myEvents1 = [
-    {id:11, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-03 18:00"},
-    {id:12, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-04 9:00", end_date:"2025-02-04 18:00"},
-    {id:13, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-05 9:00", end_date:"2025-02-05 18:00"},
-    {id:14, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-06 9:00", end_date:"2025-02-06 18:00"},
-    {id:15, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-07 9:00", end_date:"2025-02-07 18:00"},
-    {id:16, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-08 9:00", end_date:"2025-02-08 18:00"},
-    {id:17, text:"任务 1 | 任务内容：测试任务1 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-09 9:00", end_date:"2025-02-09 18:00"},
+// const myPersonStore = usePersonStore()
+// myPersonStore.getPersonTasks('2025-01-01', '2025-01-31')
+// console.log(myPersonStore.curTasks.value);
 
-    {id:111, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-03 9:00", end_date:"2025-02-03 18:00"},
-    {id:112, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-04 9:00", end_date:"2025-02-04 18:00"},
-    {id:113, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-05 9:00", end_date:"2025-02-05 18:00"},
-    {id:114, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-06 9:00", end_date:"2025-02-06 18:00"},
-    {id:115, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-07 9:00", end_date:"2025-02-07 18:00"},
-    {id:116, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-08 9:00", end_date:"2025-02-08 18:00"},
-    {id:117, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-09 9:00", end_date:"2025-02-09 18:00"},
-
-    {id:22, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-10 9:00", end_date:"2025-02-10 18:00"},
-    {id:23, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-11 9:00", end_date:"2025-02-11 18:00"},
-    {id:24, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-12 9:00", end_date:"2025-02-12 18:00"},
-    {id:25, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-13 9:00", end_date:"2025-02-13 18:00"},
-    {id:26, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-14 9:00", end_date:"2025-02-14 18:00"},
-    {id:27, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-15 9:00", end_date:"2025-02-15 18:00"},
-    {id:28, text:"任务 2 | 任务内容：测试任务2 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-16 9:00", end_date:"2025-02-16 18:00"},
-
-    {id:33, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-17 9:00", end_date:"2025-02-17 18:00"},
-    {id:34, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-18 9:00", end_date:"2025-02-18 18:00"},
-    {id:35, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-19 9:00", end_date:"2025-02-19 18:00"},
-    {id:36, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-20 9:00", end_date:"2025-02-20 18:00"},
-    {id:37, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-21 9:00", end_date:"2025-02-21 18:00"},
-    {id:38, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-22 9:00", end_date:"2025-02-22 18:00"},
-    {id:39, text:"任务 3 | 任务内容：测试任务3 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-23 9:00", end_date:"2025-02-23 18:00"},
-
-    {id:45, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-24 9:00", end_date:"2025-02-24 18:00"},
-    {id:46, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-25 9:00", end_date:"2025-02-25 18:00"},
-    {id:47, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-26 9:00", end_date:"2025-02-26 18:00"},
-    {id:48, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-27 9:00", end_date:"2025-02-27 18:00"},
-    {id:49, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-02-28 9:00", end_date:"2025-02-28 18:00"},
-    {id:50, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-03-01 9:00", end_date:"2025-03-01 18:00"},
-    {id:51, text:"任务 5 | 任务内容：测试任务5 | 任务目标：提前完成并及时反馈！", start_date:"2025-03-02 9:00", end_date:"2025-03-02 18:00"},
-];
-onMounted(() => {
-  // 确保 scheduler 对象存在
-  if (scheduler) {
-    // 设置皮肤和配置
-    // scheduler.skin = 'material';
-    // scheduler.config.first_hour = 8;
-    // scheduler.config.last_hour = 17;
-    // scheduler.config.readonly = true; // 设置为只读模式
-    scheduler.config.dblclick_create = false; // 禁用双击添加事件
-scheduler.i18n.setLocale({
-    date:{
-        format_date: "%Y-%m-%d", // 例如：2025-02-12
-        format_time: "%H:%i", // 例如：10:24
-        month_full:["一月", "二月", "三月", "四月", "五月", "六月", 
-            "七月", "八月", "九月", "十月", "十一月", "十二月"],
-        month_short:["1月", "2月", "3月", "4月", "5月", "6月", 
-            "7月", "8月", "9月", "10月", "11月", "12月"],
-        day_full:["星期日", "星期一", "星期二", "星期三", "星期四", 
-            "星期五", "星期六"],
-        day_short:["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
-    },
-    labels:{
-        dhx_cal_today_button:"今天",
-        day_tab:"日视图",
-        week_tab:"周视图",
-        month_tab:"月视图",
-        new_event:"新建任务",
-        icon_save:"保存",
-        icon_cancel:"取消",
-        icon_details:"详情",
-        icon_edit:"编辑",
-        icon_delete:"删除",
-        confirm_closing:"",// 您的更改将会丢失，确定吗？
-        confirm_deleting:"该任务将被永久删除，确定吗？",
-        section_description:"描述",
-        section_time:"时间段",
-        full_day:"整天",
-
-        /*重复发生的事件*/
-        confirm_recurring:"您是否要编辑整个系列的重复事件？",
-        section_recurring:"重复事件",
-        button_recurring:"禁用",
-        button_recurring_open:"启用",
-        button_edit_series:"编辑系列",
-        button_edit_occurrence:"编辑发生实例",
-
-        /*议程视图扩展*/
-        agenda_tab:"议程",
-        date:"日期",
-        description:"描述",
-
-        /*年视图扩展*/
-        year_tab:"年",
-
-        /* 周议程扩展 */
-        week_agenda_tab:"议程",
-
-        /*网格视图扩展*/
-        grid_tab:"网格",
-
-        /*触摸提示*/
-        drag_to_create:"拖动以创建",
-        drag_to_move:"拖动以移动",
-
-        /* dhtmlx 消息默认按钮 */
-        message_ok:"确定",
-        message_cancel:"取消",
-
-        /* 非文本控件的 WAI-ARIA 标签 */
-        next:"下一个",
-        prev:"上一个",
-        year:"年",
-        month:"月",
-        day:"日",
-        hour:"时",
-        minute:"分"
-    }
-});
-scheduler.form_blocks["custom_block"] = {
-    render: function (sns) {
-        return "<div class='custom_block'><label>Custom Field:</label><input type='text' name='custom_field'></div>";
-    },
-    set_value: function (node, value, ev, section) {
-        node.querySelector("input[name='custom_field']").value = value || "";
-    },
-    get_value: function (node, ev, section) {
-        return node.querySelector("input[name='custom_field']").value;
-    },
-    focus: function (node) {
-        node.querySelector("input[name='custom_field']").focus();
-    }
-};
-
-scheduler.templates.lightbox_header = function (start, end, ev) {
-    return "Custom Event Header: " + (ev ? ev.text : "");
-};
-scheduler.templates.lightbox_footer = function (start, end, ev) {
-    return "<div class='custom_footer'>Custom Footer Content</div>";
-};
-scheduler.attachEvent("onLightbox", function (id) {
-    console.log("Lightbox opened for event: " + id);
-    return true; // return false to prevent the lightbox from opening
-});
-
-scheduler.attachEvent("onAfterLightbox", function () {
-    console.log("Lightbox closed");
-});
-
-scheduler.config.lightbox.sections = [
-    { name: "description", height: 50, map_to: "text", type: "textarea", focus: true },
-    { name: "custom", height: 50, type: "custom_block", map_to: "custom_field" },
-    { name: "time", height: 72, type: "time", map_to: "auto" }
-];
-
-    scheduler.config.header = [
-      'week',
-      'month',
-      'date',
-      'prev',
-      'today',
-      'next',
-    ];
-
-    scheduler.templates.event_text = function(start,end,ev){
-        return '我的任务: ' + ev.text + '';
-     };
-
-     scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
-    // 初始化 Scheduler
-    scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    // 将数据加载到调度器
-    scheduler.parse(myEvents, "json");
-    // 获取特定日期范围内的所有事件
-    var fromDate = new Date(2025, 1, 12); // 注意：月份是从0开始计数的，即1表示二月
-    var toDate = new Date(2025, 1, 15);
-    var events = scheduler.getEvents(fromDate, toDate);
-    console.log(events); // 输出事件列表
-    
-  } else {
-    console.error('Scheduler is not properly imported.');
-  }
-});
-
-const tableData = [
-  {
-    date: '2016-05-03',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-02',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-04',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-  {
-    date: '2016-05-01',
-    name: 'Tom',
-    address: 'No. 189, Grove St, Los Angeles',
-  },
-]
-
-// 监听 events 的变化
-watch(
-  () => props.events,
-  (newEvents) => {
-    if (scheduler) {
-      scheduler.parse(newEvents);
-    }
-  },
-  { deep: true }
-);
-
-// do not use same name with ref
-const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+// var myTotalTasks = myPersonStore.curTasks;
+const stats = reactive({
+  saturation: 72,
+  completed: 0,
+  totalTasks: 5,
+  total: 56,
+  remaining: 56
 })
+
+var myTotalTasks = ref(myEvents);
+
+// 拖拽选择相关状态
+const dragSelectState = reactive({
+  isSelecting: false,
+  justEndedSelection: false,
+  startDate: null
+});
+
+const selectedDates = ref(new Set());
+const selectedRow = ref(null);
+const selectedRowIndex = ref(-1);
+const value = ref(0);
+const num = ref(0);
+const typeRadio = ref('all');
+
+// 计算属性 - 根据当前选择的任务类型过滤事件
+const filteredEvents = computed(() => {
+  if (typeRadio.value === 'all') return myTotalTasks.value;
+  return myTotalTasks.value.filter(event => {
+    if (typeRadio.value === 'pending') return event.status === '带下发';
+    if (typeRadio.value === 'running') return event.status === '进行中';
+    if (typeRadio.value === 'done') return event.status === '已完成';
+    return true;
+  });
+});
+
+// 示例：2025年中国法定节假日
+const holidays = {
+    "2025-01-01": "元旦",
+    "2025-02-08": "春节",
+    "2025-02-09": "春节",
+    "2025-04-05": "清明节",
+    "2025-05-01": "劳动节",
+    "2025-06-14": "端午节",
+    "2025-09-21": "中秋节",
+    "2025-10-01": "国庆节",
+};
+
+// 调休工作日
+const extraWorkdays = {
+    "2025-02-15": true,
+    "2025-10-11": true,
+};
+
+const isWorkday = (date) => {
+    const dateStr = formatDate(date);
+    const dayOfWeek = date.getDay();
+
+    if (extraWorkdays[dateStr]) return true;
+    if (holidays[dateStr]) return false;
+    return dayOfWeek !== 0 && dayOfWeek !== 6;
+};
+
+// 辅助函数：格式化日期为 YYYY-MM-DD
+const formatDate = (date) => {
+    if (!(date instanceof Date)) date = new Date(date);
+    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+};
+
+const getDayTotalWorkHours = (date, events) => {
+    let totalHours = 0;
+    events.forEach(e => {
+        const eventStart = new Date(e.start_date);
+        const eventEnd = new Date(e.end_date);
+
+        // 跨天任务：计算该任务在当天应分配的工时
+        if (eventStart.getDate() !== eventEnd.getDate() || 
+            eventStart.getMonth() !== eventEnd.getMonth() ||
+            eventStart.getFullYear() !== eventEnd.getFullYear()) {
+            
+            // 统计任务期间的有效工作日
+            let workdays = 0;
+            const cur = new Date(eventStart);
+            while (cur <= eventEnd) {
+                if (isWorkday(cur)) workdays++;
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            // 均分总工时到每个有效工作日
+            if (workdays > 0) {
+                totalHours += (e.hours || 0) / workdays;
+            }
+        } else {
+            // 单天任务直接累加工时
+            totalHours += (e.hours || 0);
+        }
+    });
+    return totalHours;
+}
+
+// 设置merge视图的渲染方式
+const getMergeViewTemplate = (date) => {
+    const currentMonth = scheduler.getState().date.getMonth();
+    if (date.getMonth() !== currentMonth) {
+        return `<div style="height:100%; background:#f9f9f9"></div>`;
+    }
+
+    // 如果不是有效工作日，仅显示日期
+    if (!isWorkday(date)) {
+        return `
+            <div style="height: 100%; width: 100%; position: relative;">
+                <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
+                    ${date.getDate()}
+                </div>
+            </div>
+        `;
+    }
+
+    // 计算有效工作日的任务数量
+    const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+
+    return `
+        <div data-date="${formatDate(date)}" 
+          style="height: 100%; width: 100%; position: relative; cursor: pointer;">
+        <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
+          ${date.getDate()}
+        </div>
+        <div style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); 
+            font-size: 1.4em; font-weight: bold;">
+          ${events.length || '0'}
+        </div>
+      </div>
+    `;
+};
+
+// 处理行点击
+const handleRowClick = (row) => {
+  //  if (event.detail > 1) return; // 双击时直接返回
+   selectedRow.value = row;
+   selectedRowIndex.value = filteredEvents.value.findIndex(item => item.id === row.id);
+};
+
+// 动态行类名
+const tableRowClassName = ({ row }) => {
+  if (selectedRow.value && row.id === selectedRow.value.id) {
+    return 'highlight-row'
+  }
+  return ''
+}
+
+// 清除所有高亮日期
+const clearHighlightedDates = () => {
+  document.querySelectorAll('.highlighted').forEach(el => {
+    el.classList.remove('highlighted');
+  });
+};
+
+// 处理鼠标按下事件
+const handleMouseDown = (event) => {
+  if (event.button !== 0) return;
+  
+  const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
+  if (!cell) return;
+  
+  const dateStr = cell.dataset.date;
+  if (!isWorkday(new Date(dateStr))) return;
+  
+  dragSelectState.isSelecting = true;
+  dragSelectState.startDate = new Date(dateStr);
+  selectedDates.value.clear();
+  selectedDates.value.add(dateStr);
+  
+  clearHighlightedDates();
+  cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
+  
+  event.preventDefault();
+};
+
+// 处理鼠标移动事件
+const handleMouseMove = (event) => {
+  if (!dragSelectState.isSelecting) return;
+  const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
+  if (!cell) return;
+  
+  const endDateStr = cell.dataset.date;
+  updateDragSelection(endDateStr);
+};
+
+// 更新拖拽选区
+const updateDragSelection = (endDateStr) => {
+  const startDate = dragSelectState.startDate;
+  if (!startDate) return;
+  
+  const endDate = new Date(endDateStr);
+  const dateRange = getDateRange(startDate, endDate);
+  
+  clearHighlightedDates();
+  
+  dateRange.forEach(dateStr => {
+    if (isWorkday(new Date(dateStr))) {
+      const cell = document.querySelector(`[data-date="${dateStr}"]`);
+      if (cell) {
+        cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
+        selectedDates.value.add(dateStr);
+      }
+    }
+  });
+};
+
+// 获取日期范围内的所有日期
+const getDateRange = (startDate, endDate) => {
+  const range = [];
+  const current = new Date(startDate);
+  const end = new Date(endDate);
+  
+  if (current > end) {
+    [current, end] = [end, current];
+  }
+  
+  while (current <= end) {
+    range.push(formatDate(new Date(current)));
+    current.setDate(current.getDate() + 1);
+  }
+  
+  return range;
+};
+
+// 处理鼠标松开事件
+const handleMouseUp = () => {
+  if (dragSelectState.isSelecting) {
+    // 标记刚刚结束拖拽选择
+    dragSelectState.justEndedSelection = true;
+    
+    // 小延迟清除标记，避免快速连续操作的问题
+    setTimeout(() => {
+      dragSelectState.justEndedSelection = false;
+    }, 100);
+    
+    dragSelectState.isSelecting = false;
+    updateStatsForSelectedDates();
+  }
+};
+
+// 为选中的多个日期更新统计
+const updateStatsForSelectedDates = () => {
+  selectedRow.value = null;
+  selectedRowIndex.value = -1;
+  if (selectedDates.value.size === 0) return;
+  
+  let totalHours = 0;
+  let completed = 0;
+  let totalTasks = 0;
+  let totalRemain = 0;
+  let tmpSelectedTask = [];
+  let totalWorkdays = 0;
+  selectedDates.value.forEach(dateStr => {
+    const date = new Date(dateStr);
+    const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+    
+    events.forEach(e => {
+      const taskId = e.id;
+      if (tmpSelectedTask.includes(taskId)) return;
+      tmpSelectedTask.push(taskId);
+      const taskStatus = e.status;
+      const taskHours = e.hours;
+      const taskRemain = taskHours * (1 - parseFloat(e.process) / 100);
+      const taskWorkdays = e.workdays
+      
+      if (taskStatus === "已完成") completed += 1;
+      totalHours += taskHours;
+      totalRemain += taskRemain;
+      totalTasks += 1;
+      totalWorkdays += e.workdays
+    });
+  });
+  console.log(totalHours, totalWorkdays);
+  stats.saturation = `${Math.min(100, Math.round((totalHours / (8 * totalWorkdays)) * 100))}%`;
+  stats.completed = completed;
+  stats.totalTasks = totalTasks;
+  stats.total = `${totalHours.toFixed(1)}小时`;
+  stats.remaining = `${totalRemain.toFixed(1)}小时`;
+  
+  updatemyTotalTasks();
+};
+
+// 更新选中的任务列表
+const updatemyTotalTasks = () => {
+  const allEvents = [];
+  selectedDates.value.forEach(dateStr => {
+    const date = new Date(dateStr);
+    const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+    allEvents.push(...events);
+  });
+  
+  myTotalTasks.value = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
+};
+
+// 处理日期点击事件
+const handleDateClick = (date) => {
+  const dateStr = formatDate(date);
+  selectedDates.value.clear();
+  selectedDates.value.add(dateStr);
+  console.log(11111);
+  clearHighlightedDates();
+
+  updateStatsForSelectedDates();
+};
+
+// 新增的响应式数据
+const showDetailPanel = ref(false);
+const currentTask = ref({});
+
+// 表格双击事件处理
+const handleRowDblClick = (row) => {
+  currentTask.value = row;
+  showDetailPanel.value = true;
+};
+
+// 时间格式化方法
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '未设置';
+  try {
+    const date = new Date(dateStr);
+    return isNaN(date.getTime()) 
+      ? '日期格式错误' 
+      : `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
+  } catch {
+    return '日期格式错误';
+  }
+};
+
+// 进度条状态计算
+const getProgressStatus = (process) => {
+  const percent = parseInt(process);
+  if (percent >= 100) return 'success';
+  if (percent >= 70) return 'primary';
+  if (percent >= 30) return 'warning';
+  return 'exception';
+};
+
 
 const onSubmit = () => {
   console.log('submit!')
 }
-const value = ref(0)
-const num = ref(0)
-const typeRadio = ref('all')
-const splitRadio = ref('merge')
 
-watch(splitRadio,(type) => {
-    console.log(type)
-    scheduler.clearAll();
-    if (type === 'merge') {
-      console.log(1)
-    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    // 将数据加载到调度器
-    scheduler.parse(myEvents, "json");
-    }else{
-      console.log(2)
-    // scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    // 将数据加载到调度器
-    scheduler.parse(myEvents1, "json");
+onMounted(() => {
+  scheduler = initSchedulerConfig(schedulerContainer, scheduler)
+  scheduler.config.dblclick_create = false;
+  scheduler.config.header = [
+    'month',
+    'date',
+    'prev',
+    'today',
+    'next',
+  ];
+  scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+  scheduler.templates.event_bar_text = function() { return ""; };
+  scheduler.templates.event_text = function() { return ""; };
+  scheduler.templates.month_day = getMergeViewTemplate;
+  scheduler.parse(myEvents);
+  scheduler.updateView();
+
+  // 替换单元格颜色
+  // 遍历所有日期单元格
+  const cells = document.querySelectorAll(".dhx_cal_month_cell ");
+  cells.forEach(cell => {
+      const dateStr = cell.getAttribute("data-cell-date");
+      if (dateStr) {
+          const date = scheduler.date.str_to_date("%Y-%m-%d")(dateStr);
+          const currentMonth = scheduler.getState().date.getMonth();
+          if (date.getMonth() !== currentMonth) return;
+          if (!isWorkday(date)) return;
+          const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+          const totalHours = getDayTotalWorkHours(date, events);
+          const bgColor = totalHours > 8 ? "#ffdddd" : 
+                      totalHours === 8 ? "#ddffdd" : "#fff3dd";
+          cell.style.background = bgColor;
+      }
+  });
+
+  scheduler.attachEvent("onEmptyClick", function(date, event){  
+    // 如果是拖拽结束时的点击，忽略这次事件
+    if (dragSelectState.justEndedSelection) {
+      dragSelectState.justEndedSelection = false;
+      return;
     }
-    scheduler.updateView();
-  }
-);
+    
+    // 如果正在拖拽选择中，忽略点击
+    if (dragSelectState.isSelecting) return;
+    const currentMonth = scheduler.getState().date.getMonth();
+    if (date.getMonth() !== currentMonth) return;
+    if (!isWorkday(date)) return;
+    handleDateClick(date);
+    clearHighlightedDates();
+    
+    const cell = event.target.closest('.dhx_cal_month_cell');
+    if (cell) {
+      cell.classList.add('highlighted');
+    }
+  });
+});
+
+onUnmounted(() => {
+  document.removeEventListener('mouseup', handleMouseUp);
+});
 </script>
 
 <style>
   @import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
+  .el-link {
+    font-size: 18px;
+    margin-right: 20px;
+    padding:10px;
+  }
 
-/* 左侧和右侧 div 的样式 */
+  .head {
+    display: flex;
+    justify-content: start;
+    border-bottom: 2px solid #d6dfdf;
+    border-top: 1px solid #f5f9f9;
+    background: #ffffff;
+  }
+
+  .active{
+    color: white;
+    background: #5d6d96;
+  }
+
 .left, .right {
-  flex: 1; /* 平均分配剩余空间 */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: start; /* 内容水平居中 */
-  align-items: start; /* 内容垂直居中 */
-  border: 1px solid #ccc; /* 边框（可选） */
+  justify-content: start;
+  align-items: start;
+  border: 1px solid #ccc;
 }
 
-/* 左侧 div 的背景色 */
 .left {
   background-color: white;
 }
 
-/* 右侧 div 的背景色 */
 .right {
   background-color: white;
+}
+
+.dhx_cal_data .dhx_month_body, 
+.dhx_cal_data .dhx_month_head {
+    height: 100px !important;
+}
+
+.dhx_cal_event div {
+    white-space: normal !important;
+    overflow: visible !important;
+}
+
+.dhx_cal_event_line {
+  display: none !important;
+}
+
+.highlighted {
+    border: 2px solid #409EFF !important;
+}
+
+.highlight-row {
+  background-color: #f0f7ff !important;
+}
+
+.highlight-row:hover > td {
+  background-color: #e1f0ff !important;
+}
+
+.dhx_cal_month_cell {
+  user-select: none;
+}
+/* 半屏详情面板样式 */
+.halfscreen-detail-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  display: flex;
+}
+
+.detail-content-wrapper {
+  width: 50%;
+  height: 100%;
+  background: white;
+  padding: 30px;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 1;
+}
+
+.detail-title {
+  margin: 0 0 20px 0;
+  color: #303133;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 20px;
+}
+
+.detail-item {
+  flex: 1;
+}
+
+.detail-item.full-width {
+  min-width: 100%;
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #606266;
+}
+
+.detail-input {
+  width: 100%;
+}
+
+.detail-input .el-input__inner {
+  background-color: #f5f7fa;
+  color: #606266;
+  cursor: default;
+}
+
+.detail-textarea {
+  width: 100%;
+}
+
+.detail-textarea .el-textarea__inner {
+  background-color: #f5f7fa;
+  color: #606266;
+  cursor: default;
+  font-family: inherit;
+}
+
+.cc-textarea .el-textarea__inner {
+  height: 80px;
+  overflow-y: auto;
+}
+
+/* 动画效果 */
+.slide-left-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-left-leave-active {
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-left-enter-from,
+.slide-left-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
 }
 </style>

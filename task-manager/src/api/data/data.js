@@ -6,3 +6,6 @@ export const getDataApi = (params) => get('/task_status', params)
 
 
 export const postDataApi = (data) => post('/post_data', data)
+
+// 获取用户任务数据
+export const getUserDataApi = (params) => get('/tasks', params)

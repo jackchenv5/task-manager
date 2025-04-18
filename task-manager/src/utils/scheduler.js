@@ -153,7 +153,7 @@ scheduler.config.lightbox.sections = [
     'next',
   ];
    scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
-
    scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+
   return scheduler
 }
