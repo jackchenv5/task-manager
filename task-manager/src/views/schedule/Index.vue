@@ -21,7 +21,7 @@
               </el-col>
             </el-row>
             <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
+              <el-tag v-for="tag in loginUser.config.user_pool" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
                 {{ tag.name }}
               </el-tag>
             </div>
@@ -40,7 +40,7 @@
               </el-col>
             </el-row>
             <el-scrollbar style="height: 14vh;">
-              <el-tag v-for="item in 20" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
+              <el-tag v-for="item in loginUser.config.project_pool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
                 item }}</el-tag>
             </el-scrollbar>
           </div>
@@ -54,7 +54,7 @@
         <el-scrollbar style="width: 35vw;">
           <div
             style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px;margin-left: 8px;">
-            <el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" style="margin: 0px 5px;">
+            <el-tag v-for="tag in curReceivers" :key="tag.name" closable :type="tag.type" style="margin: 0px 5px;">
               {{ tag.name }}
             </el-tag>
           </div>
@@ -177,6 +177,17 @@ import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
 import { onMounted, ref, watch, reactive } from 'vue';
 import { Delete, Edit, Search, Share, Upload, Plus, Download } from '@element-plus/icons-vue'
+
+import {useUserStore} from '@/stores/user'
+import {useScheduleStore} from '@/stores/schedule'
+import { storeToRefs } from 'pinia'
+
+
+const userStore = useUserStore()
+const scheduleStore = useScheduleStore()
+const { loginUser } = storeToRefs(userStore)
+const { curReceivers, curSelectUser } = storeToRefs(scheduleStore)
+
 // 定义 props
 // 定义 props
 const props = defineProps({
@@ -234,17 +245,7 @@ onMounted(() => {
   }
 });
 const value = ref(true)
-const tags = ref([
-  { name: '张世伟', type: 'info' },
-  { name: '陈成F', type: 'info' },
-  { name: '乔志', type: 'info' },
-  { name: '王俊坤', type: 'info' },
-  { name: '乔志', type: 'info' },
-  { name: '张世伟', type: 'warning' },
 
-
-
-])
 </script>
 
 <style>

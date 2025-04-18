@@ -1,8 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import {getDataApi} from '@/api/data'
-const  myPersionStore = usePersonStore()
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
       id:1,
@@ -10,24 +8,17 @@ export const useUserStore = defineStore('user', () => {
       emp_num:"007101",
       role:"发布者",
       config:{
-        user_pool:["陈成F"],
-        project_pool:[],
+        cur_group_status:"",
+        user_pool: [
+          { name: '张世伟', type: 'info' },
+          { name: '陈成F', type: 'info' },
+          { name: '乔志', type: 'info' },
+          { name: '王俊坤', type: 'info' },
+          { name: '乔志', type: 'info' },
+        ],
+        project_pool:["项目11111111111111111111111","项目22222222222222222222","项目33333333333333333333333333"],
 
       }
   })
-
-  const curSelectUser=ref({
-    username:"陈成F",
-    workload:80,
-    workload_per:"80%",
-    start_date:"2025-04-14",
-    deadline_date:"2025-04-18",
-    tasks:[
-      {
-        creator:"陈成F",
-        
-      }
-    ]
-  })
-  return { loginUser, curSelectUser }
+  return { loginUser}
 })
