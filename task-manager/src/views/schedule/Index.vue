@@ -175,8 +175,7 @@
 <script setup>
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { onMounted, ref, watch, reactive } from 'vue';
-import { Delete, Edit, Search, Share, Upload, Plus, Download } from '@element-plus/icons-vue'
+import { onMounted, ref, reactive } from 'vue';
 
 import {useUserStore} from '@/stores/user'
 import {useScheduleStore} from '@/stores/schedule'
@@ -188,14 +187,6 @@ const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
 const { curReceivers, curSelectUser } = storeToRefs(scheduleStore)
 
-// 定义 props
-// 定义 props
-const props = defineProps({
-  events: {
-    type: Array,
-    default: () => [],
-  },
-});
 import { VxeUI } from 'vxe-pc-ui'
 const btnGroupCellRender = reactive({
   name: 'VxeButtonGroup',
