@@ -298,7 +298,6 @@
         
         <el-form-item>
           <el-input 
-            v-model="form.desc" 
             type="textarea" 
             rows="10"
             placeholder="请输入反馈信息..."
@@ -348,6 +347,7 @@ const stats = reactive({
   total: 56,
   remaining: 56
 })
+
 
 var myTotalTasks = ref(myEvents);
 
