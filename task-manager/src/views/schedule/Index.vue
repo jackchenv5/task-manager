@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex;height: 90vh;width: 100%;overflow: hidden;">
+  <div style="display: flex;height: 94vh;width: 100%;overflow: hidden;">
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
         <div
@@ -20,9 +20,8 @@
                   inactive-text="抄送人" />
               </el-col>
             </el-row>
-            <div
-              style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type">
+            <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
+              <el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
                 {{ tag.name }}
               </el-tag>
             </div>
@@ -47,10 +46,14 @@
           </div>
         </div>
       </div>
-      <div style="height:5vh;width:100%;background-color: white;border: 1px solid #eee;margin: 4px 0;border-radius: 5px;padding: 5px;display: flex;justify-content: start;">
-        <div style="background-color: rgb(31, 28, 28);border: 1px solid #eee;border-radius: 5px;padding: 5px;color: white;width: 5vw;">执行人员：</div>
+      <div
+        style="height:5vh;width:100%;background-color: white;border: 1px solid #eee;margin: 4px 0;border-radius: 5px;padding: 5px;display: flex;justify-content: start;">
+        <div
+          style="background-color: rgb(31, 28, 28);border: 1px solid #eee;border-radius: 5px;padding: 5px;color: white;width: 5vw;">
+          执行人员：</div>
         <el-scrollbar style="width: 35vw;">
-          <div style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px;margin-left: 8px;">
+          <div
+            style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px;margin-left: 8px;">
             <el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" style="margin: 0px 5px;">
               {{ tag.name }}
             </el-tag>
@@ -60,40 +63,39 @@
       </div>
       <div
         style="height:18vh;width: 98%;border: 1px solid #eee;background-color: white;border-radius: 5px;padding: 5px;display: flex;flex-direction: row;justify-content: space-between;">
-        <div style="width: 25%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
-          <div style="font-weight:600;font-size:18px">当前用户</div>
+        <div style="width: 25%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
+          <div style="font-weight:600;font-size:18px;margin-top: 5px;margin-left: 15px;">当前用户</div>
           <div style="display:flex;justify-content: space-around;padding: 10px;">
-           <div style="display:flex;flex-direction:column;justify-content: space-around;align-items: center;">
-            <div>陈成F</div>
-            <div>工作强度</div>
+            <div style="display:flex;flex-direction:column;justify-content: space-around;align-items: center;">
+              <div>陈成F</div>
+              <div style="font-size: 12px;">工作强度</div>
+            </div>
+            <div style="display:flex;flex-direction:column;justify-content: start;align-items: center;">
+              <el-progress type="dashboard" :percentage="80" :stroke-width="15" :width="70" striped-flow />
+            </div>
           </div>
-           <div style="display:flex;flex-direction:column;justify-content: start;align-items: center;">
-            <el-progress type="dashboard" :percentage="80" :stroke-width="15" :width="70" striped-flow />
-           </div>
+
+        </div>
+        <div style="width: 30%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
+          <div style="font-weight:600;font-size:18px;margin-top: 5px;margin-left: 15px;">统计数据</div>
+          <div style="display: flex;flex-direction: column;justify-content: space-around;height: 70%;margin-left: 15px;">
+            <div>时间：2025-04-16~2025-04-24</div>
+            <div>任务数：10 个</div>
+            <div>任务工时：10 H</div>
           </div>
-          
+
         </div>
-        <div style="width: 30%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
-          <div>详情：</div>
-          <div>时间：2025-04-16~2025-04-24</div>
-          <div>任务数：10 个</div>
-          <div>任务工时：10 H</div>
-          <div>饱和度：80% </div>
-        </div>
-        <div style="width: 45%;height:15vh;border:1px solid #f1f3f6;background-color: white;">
-          <div>参与项目：</div>
-          <el-scrollbar style="border:1px solid blue;height: 12vh;">
-            <el-tag v-for="item in 20" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{ item
-            }}</el-tag>
-          </el-scrollbar>
-        </div>
+        <el-scrollbar style="width: 45%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
+          <el-tag v-for="item in 20" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
+            item }}</el-tag>
+        </el-scrollbar>
       </div>
       <div ref="schedulerContainer" style="width: 100%;height:70vh;"></div>
     </div>
     <div class="right">
-      <div style="width: 100%;height:60vh;border:1px solid black">
-        <el-form>
-          <el-row style="margin-top: 5px;">
+      <div style="width: 100%;height:64vh;background-color: white;border:1px solid #aaa;">
+        <el-form style="padding: 10px;" label-position="top">
+          <el-row>
             <el-col :span="12">
               <el-form-item label="名称:">
                 <el-input></el-input>
@@ -129,21 +131,22 @@
               </el-form-item>
             </el-col>
           </el-row>
-          <el-scrollbar style="height: 30vh;">
+          <el-scrollbar style="height: 26vh;">
+
             <el-row>
               <el-col :span="12">
                 <el-form-item label="任务内容:">
-                  <el-input type="textarea" :rows="6"></el-input>
+                  <el-input type="textarea" :rows="4"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="11">
                 <el-form-item label="挑战目标:">
-                  <el-input type="textarea" :rows="6"></el-input>
+                  <el-input type="textarea" :rows="4"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-form-item label="任务描述:">
-              <el-input type="textarea"></el-input>
+              <el-input type="textarea" :rows="1"></el-input>
             </el-form-item>
           </el-scrollbar>
           <el-form-item>
@@ -153,7 +156,18 @@
 
         </el-form>
       </div>
-      <div style="width: 100%;height:38vh;border:1px solid black"></div>
+      <div style="width: 49.8vw;height:25vh;">
+        <vxe-table :data="tableData">
+          <vxe-column type="checkbox" width="60"></vxe-column>
+          <vxe-column field="name" title="任务名"></vxe-column>
+          <vxe-column field="receiver" title="执行人"></vxe-column>
+          <vxe-column field="sex" title="开始时间"></vxe-column>
+          <vxe-column field="age" title="截止时间"></vxe-column>
+          <vxe-column field="age" title="工作量"></vxe-column>
+          
+          <vxe-column title="按钮组" width="200" :cell-render="btnGroupCellRender"></vxe-column>
+        </vxe-table>
+      </div>
     </div>
   </div>
 </template>
@@ -171,6 +185,31 @@ const props = defineProps({
     default: () => [],
   },
 });
+import { VxeUI } from 'vxe-pc-ui'
+const btnGroupCellRender = reactive({
+  name: 'VxeButtonGroup',
+  props: {
+    mode: 'text'
+  },
+  options: [
+    { content: '查看', name: 'view' },
+    { content: '删除', status: 'error', name: 'del' }
+  ],
+  events: {
+    click (cellParams, params) {
+      VxeUI.modal.message({
+        content: `点击了 ${params.name}`,
+        status: 'success'
+      })
+    }
+  }
+})
+const tableData = ref([
+  { id: 10001, name: 'Test1',receiver:'陈成F', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
+  { id: 10002, name: 'Test2',receiver:'陈成F', role: 'Test', sex: 'Women', age: 22, address: 'Guangzhou' },
+  { id: 10003, name: 'Test3',receiver:'陈成F', role: 'PM', sex: 'Man', age: 32, address: 'Shanghai' },
+  { id: 10004, name: 'Test4',receiver:'陈成F', role: 'Designer', sex: 'Women', age: 24, address: 'Shanghai' }
+])
 
 // 获取容器引用
 const schedulerContainer = ref(null);
@@ -196,14 +235,13 @@ onMounted(() => {
 });
 const value = ref(true)
 const tags = ref([
-  { name: '张世伟', type: 'primary' },
-  { name: '陈成F', type: 'success' },
+  { name: '张世伟', type: 'info' },
+  { name: '陈成F', type: 'info' },
   { name: '乔志', type: 'info' },
-  { name: '王俊坤', type: 'warning' },
-  { name: '乔志', type: 'danger' },
-  { name: '张世伟', type: 'primary' },
-  { name: '乔志', type: 'success' },
-  { name: '陈成F', type: 'success' },
+  { name: '王俊坤', type: 'info' },
+  { name: '乔志', type: 'info' },
+  { name: '张世伟', type: 'warning' },
+
 
 
 ])
@@ -226,6 +264,7 @@ const tags = ref([
   /* 内容垂直居中 */
   background-color: #f1f3f6;
 }
+
 /* 默认事件样式 */
 .custom-event {
   border-radius: 3px;
@@ -281,5 +320,4 @@ const tags = ref([
 
 .non_working_day {
   background-color: rgb(204, 152, 169) !important;
-}
-</style>
+}</style>
