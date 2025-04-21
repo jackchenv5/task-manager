@@ -3,24 +3,15 @@ import { defineStore } from 'pinia'
 
 import { checkLogin } from '@/api/login/login'
 
+import { saveConfig } from '@/api/data/data'
+
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    id: 1,
+    id: 608,
     username: "陈成F",
     emp_num: "007101",
     role: "发布者",
-    config: {
-      cur_group_status: "",
-      user_pool: [
-        { name: '张世伟', type: 'info' },
-        { name: '陈成F', type: 'info' },
-        { name: '乔志', type: 'info' },
-        { name: '王俊坤', type: 'info' },
-        { name: '乔志', type: 'info' },
-      ],
-      project_pool: ["项目11111111111111111111111", "项目22222222222222222222", "项目33333333333333333333333333"],
-
-    }
+    config: {a:1,b:2}
   })
 
   const login = () => {
@@ -30,14 +21,31 @@ export const useUserStore = defineStore('user', () => {
 
   const checkAndLogin = async () => {
     const userInfo = await checkLogin()
-    if(userInfo.status){
-      loginUser.value = {...userInfo}
-   }else {
-       login();
-   }
-   return true
-
+    if (userInfo.status) {
+      loginUser.value = { ...userInfo }
+    } else {
+      login();
+    }
+    return true
   }
 
-  return { loginUser, checkAndLogin }
+  const setUserConfig = (key, value) => {
+    loginUser.value.config[key] = value
+    return true
+  }
+
+  const getUserConfig = (key) => {
+    if(key){
+      return loginUser.value.config[key]
+    }else{
+      return loginUser.value.config
+    }
+    
+  }
+
+  const saveUserConfig = async () => {
+    saveConfig(loginUser.value.id, loginUser.value.config)
+  }
+
+  return { loginUser, checkAndLogin, getUserConfig, setUserConfig, saveUserConfig }
 })

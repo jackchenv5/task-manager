@@ -1,0 +1,100 @@
+<!-- tasks/templates/tasks/weekly_task_report.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>任务周报</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .status-draft {
+            background-color: #ffe6e6; /* 草稿 - 浅红色 */
+        }
+
+        .status-pending {
+            background-color: #fff2cc; /* 待下发 - 浅橙色 */
+        }
+
+        .status-in-progress {
+            background-color: #ffffcc; /* 进行中 - 浅黄色 */
+        }
+
+        .status-completed {
+            background-color: #e6ffe6; /* 已完成 - 浅绿色 */
+        }
+
+        .back-to-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-to-home:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<h2>{{ title }}</h2>
+<table>
+    <thead>
+    <tr>
+        <th style="width: 5%;">ID</th>
+        <th style="width: 15%;">任务名</th>
+        <th style="width: 20%;">所属项目</th>
+        <th style="width: 10%;">开始时间</th>
+        <th style="width: 10%;">截止时间</th>
+        <th style="width: 5%;">工作量（天）</th>
+        <th style="width: 5%;">进程(%)</th>
+        <th style="width: 5%;">当前状态</th>
+        <th style="width: 10%;">任务内容</th>
+        <th style="width: 10%;">挑战目标</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for task in tasks %}
+        <tr class="{% if task.status.name == "进行中" %}status-in-progress{% else %}status-completed{% endif %}">
+            <td>{{ task.id }}</td>
+            <td>{{ task.name|default:"-" }}</td>
+            <td>{{ task.project |default:"-" }}</td>
+            <td>{{ task.start_time | date:"Y年/m月/d日" }} </td>
+            <td>{{ task.deadline_time | date:"Y年/m月/d日" }}</td>
+            <td>{{ task.workload }}</td>
+            <td>{{ task.progress |default:"-" }}%</td>
+            <td>{{ task.status.name|default:"-" }}</td>
+            <td>{{ task.content |default:"-" }}</td>
+            <td>{{ task.challenge  |default:"-" }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div style="margin-top: 20px;">
+    <a href=http://128.255.125.12:8888/#/task/index" class="back-to-home">点击反馈任务执行情况</a>
+    <p class="disclaimer">由于ui库较新，目前任务系统仅支持edage打开，为此带来的不便，深表歉意。</p>
+</div>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { checkLogin } from '@/api/login/login'
-import { getDataApi } from '@/api/data/data'
+// import { getDataApi } from '@/api/data/data'
 
 import BaseLayout from '@/layouts/Base.vue'
 // 使用Vite的glob特性动态加载模块
@@ -34,11 +34,6 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const  isAuthenticated = true
   const perm = {}
-
-  console.log('checkLogin1',checkLogin)
-  console.log('getDataApi1',getDataApi)
-  // checkLogin()
-  getDataApi()
 
   console.log('进入路由守卫,来自|访问',from.path,to.path)
   // 1. 检查登录状态（推荐从 Vuex 获取）

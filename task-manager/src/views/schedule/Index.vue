@@ -220,7 +220,6 @@ var myEvents0 = [
 onMounted(() => {
   // 确保 scheduler 对象存在
   if (scheduler) {
-
     // 初始化 Scheduler
     scheduler = initSchedulerConfig(schedulerContainer, scheduler)
     // 将数据加载到调度器

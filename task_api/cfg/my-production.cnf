@@ -1,0 +1,8 @@
+[client]
+#database=TASK
+database=task
+host=127.0.0.1
+user=root
+password=123.com
+default-character-set=utf8
+

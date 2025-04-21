@@ -2,11 +2,16 @@
 <button @click="testGetUserDataApi">getUserDataApi</button>
 </template>
 <script setup>
-import {getUserDataApi} from '@/api/data/data'
+import {useUserStore}  from '@/stores/user'
 
-const testGetUserDataApi = async ()=>{
-    const data = await getUserDataApi({recever:1009,start_time:'2025-04-11',deadline_time: "2025-05-11",})
-    console.log(data)
+const userStore = useUserStore()
+// import { loginUser, checkAndLogin, getUserConfig, setUserConfig, saveUserConfig } from '@/stores/user'
+
+const testGetUserDataApi = () =>{
+    userStore.setUserConfig('c',{d:1})
+    console.log(userStore.getUserConfig())
+    console.log(userStore.getUserConfig('c'))
+    userStore.saveUserConfig()
 }
 
 </script>

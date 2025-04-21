@@ -33,3 +33,4 @@ service.interceptors.response.use(
 export const request = (options) => service(options)
 export const get = (url, params) => service.get(url, { params })
 export const post = (url, data) => service.post(url, data)
+export const patch = (url, data) => service.patch(url, data)

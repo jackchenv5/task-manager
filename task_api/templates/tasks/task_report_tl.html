@@ -1,0 +1,99 @@
+<!-- tasks/templates/tasks/weekly_task_report.html -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>任务周报</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .status-draft {
+            background-color: #ffe6e6; /* 草稿 - 浅红色 */
+        }
+
+        .status-pending {
+            background-color: #fff2cc; /* 待下发 - 浅橙色 */
+        }
+
+        .status-in-progress {
+            background-color: #ffffcc; /* 进行中 - 浅黄色 */
+        }
+
+        .status-completed {
+            background-color: #e6ffe6; /* 已完成 - 浅绿色 */
+        }
+
+        .back-to-home {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-to-home:hover {
+            text-decoration: underline;
+        }
+
+        .disclaimer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<h2>{{ title }}</h2>
+<table>
+    <thead>
+    <tr>
+        <th style="width: 3%;">ID</th>
+        <th style="width: 13%;">任务名</th>
+        <th style="width: 5%;">执行者</th>
+        <th style="width: 7%;">开始时间</th>
+        <th style="width: 7%;">截止时间</th>
+        <th style="width: 5%;">工作量/天</th>
+        <th style="width: 5%;">进程(%)</th>
+        <th style="width: 5%;">当前状态</th>
+        <th style="width: 6%;">任务进度(%)</th>
+        <th style="width: 7%;">实际工作量/天</th>
+        <th style="width: 19%;">反馈描述信息</th>
+        <th style="width: 6%;">任务反馈时间</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for task in tasks %}
+        <tr class="{% if task.status.name == "进行中" %}status-in-progress{% else %}status-completed{% endif %}">
+            <td>{{ task.id }}</td>
+            <td>{{ task.name|default:"-" }}</td>
+            <td>{{ task.receiver.username|default:"-" }}</td>
+            <td>{{ task.start_time | date:"Y年/m月/d日" }} </td>
+            <td>{{ task.deadline_time | date:"Y年/m月/d日" }}</td>
+            <td>{{ task.workload }}</td>
+            <td>{{ task.progress |default:"-" }}</td>
+            <td>{{ task.status.name|default:"-" }}</td>
+            <td>{{ task.progress |default:"-" }}%</td>
+            <td>{{ task.act_workload | default:"-" }}</td>
+            <td><pre style="font-size: 12px;!important;">{{ task.feedback  |default:"-" }}</pre></td>
+            <td>{{ task.feedback_time | date:"Y年/m月/d日" }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>
