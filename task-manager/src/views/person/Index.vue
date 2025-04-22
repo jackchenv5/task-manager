@@ -183,68 +183,68 @@
     
     <div class="right">
       <el-card style="width:100%;box-sizing: border-box;padding: 8px;background-color: rgb(243, 245, 247);" shadow="always">
-  <div style="display: flex; width: 100%;">
-    <div style="flex: 1; padding: 0 8px; min-width: 0;">
-      <el-statistic :title="'任务饱和度'" :value="stats.saturation">
-        <template #title>
-          <div style="display: inline-flex; align-items: center">
-            任务饱和度
-            <el-tooltip content="任务饱和度 = (当前选中日期的所有工时 / 8 x 工作日天数) x 100%" placement="top">
-              <el-icon style="margin-left: 4px" :size="12">
-                <QuestionFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-        </template>
-      </el-statistic>
-    </div>
-    
-    <div style="flex: 1; padding: 0 8px; min-width: 0;">
-      <el-statistic :value="stats.completed">
-        <template #title>
-          <div style="display: inline-flex; align-items: center">
-            已完成任务数
-            <el-tooltip content="已完成的任务数量 / 总任务数量" placement="top">
-              <el-icon style="margin-left: 4px" :size="12">
-                <QuestionFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-        </template>
-        <template #suffix>/{{ stats.totalTasks }}</template>
-      </el-statistic>
-    </div>
-    
-    <div style="flex: 1; padding: 0 8px; min-width: 0;">
-      <el-statistic :title="'总工作量'" :value="stats.total">
-        <template #title>
-          <div style="display: inline-flex; align-items: center">
-            总工作量
-            <el-tooltip content="当前选中日期的总工时" placement="top">
-              <el-icon style="margin-left: 4px" :size="12">
-                <QuestionFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-        </template>
-      </el-statistic>
-    </div>
-    
-    <div style="flex: 1; padding: 0 8px; min-width: 0;">
-      <el-statistic :title="'待完成工作量'" :value="stats.remaining">
-        <template #title>
-          <div style="display: inline-flex; align-items: center">
-            待完成工作量
-            <el-tooltip content="当前选中日期待完成工作量" placement="top">
-              <el-icon style="margin-left: 4px" :size="12">
-                <QuestionFilled />
-              </el-icon>
-            </el-tooltip>
-          </div>
-        </template>
-      </el-statistic>
-    </div>
-  </div>
+      <div style="display: flex; width: 100%;">
+        <div style="flex: 1; padding: 0 8px; min-width: 0;">
+          <el-statistic :title="'任务饱和度'" :value="stats.saturation">
+            <template #title>
+              <div style="display: inline-flex; align-items: center">
+                任务饱和度
+                <el-tooltip content="任务饱和度 = (当前选中日期的所有工时 / 8 x 工作日天数) x 100%" placement="top">
+                  <el-icon style="margin-left: 4px" :size="12">
+                    <QuestionFilled />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-statistic>
+        </div>
+        
+        <div style="flex: 1; padding: 0 8px; min-width: 0;">
+          <el-statistic :value="stats.completed">
+            <template #title>
+              <div style="display: inline-flex; align-items: center">
+                已完成任务数
+                <el-tooltip content="已完成的任务数量 / 总任务数量" placement="top">
+                  <el-icon style="margin-left: 4px" :size="12">
+                    <QuestionFilled />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </template>
+            <template #suffix>/{{ stats.totalTasks }}</template>
+          </el-statistic>
+        </div>
+        
+        <div style="flex: 1; padding: 0 8px; min-width: 0;">
+          <el-statistic :title="'总工作量'" :value="stats.total">
+            <template #title>
+              <div style="display: inline-flex; align-items: center">
+                总工作量
+                <el-tooltip content="当前选中日期的总工时" placement="top">
+                  <el-icon style="margin-left: 4px" :size="12">
+                    <QuestionFilled />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-statistic>
+        </div>
+        
+        <div style="flex: 1; padding: 0 8px; min-width: 0;">
+          <el-statistic :title="'待完成工作量'" :value="stats.remaining">
+            <template #title>
+              <div style="display: inline-flex; align-items: center">
+                待完成工作量
+                <el-tooltip content="当前选中日期待完成工作量" placement="top">
+                  <el-icon style="margin-left: 4px" :size="12">
+                    <QuestionFilled />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-statistic>
+        </div>
+      </div>
 </el-card>
     <div style="
       width: 50vw;
@@ -258,21 +258,18 @@
         <vxe-table
           border
           highlight-hover-row
-          :data="filteredEvents"
+          :data="filteredTasks"
           @cell-click="handleRowClick"  
           @cell-dblclick="handleRowDblClick"  
           :row-config="{ isHover: true }"
           :row-class-name="tableRowClassName">
-          <vxe-column field="text" title="名称" width="120" show-overflow></vxe-column>
-          <vxe-column field="status" title="状态" width="80"></vxe-column>
-          <vxe-column title="起止时间" width="200">
-            <template #default="params">
-              {{ formatDate(params.row.start_date) }} - {{ formatDate(params.row.end_date) }}
-            </template>
-          </vxe-column>
-          <vxe-column field="hours" title="工作量(h)" width="90"></vxe-column>
-          <vxe-column field="project" title="项目" width="120" show-overflow></vxe-column>
-          <vxe-column field="tl" title="TL" width="80"></vxe-column>
+          <vxe-column field="text" title="任务名" width="20%" show-overflow></vxe-column>
+          <vxe-column field="status" title="状态" width="10%"></vxe-column>
+          <vxe-column field="start_date" title="开始时间" width="15%" show-overflow></vxe-column>
+          <vxe-column field="end_date" title="截止时间" width="15%" show-overflow></vxe-column>
+          <vxe-column field="hours" title="工作量(h)" width="10%"></vxe-column>
+          <vxe-column field="project" title="项目" width="20%" show-overflow></vxe-column>
+          <vxe-column field="tl" title="TL" width="10%"></vxe-column>
         </vxe-table>
       </div>
     </div>
@@ -321,6 +318,7 @@ import { onMounted, ref, watch, reactive, computed, onUnmounted } from 'vue';
 import { VXETable } from 'vxe-table';
 import { VxeTable, VxeColumn } from 'vxe-table'
 import 'vxe-table/lib/style.css';
+import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours } from '@/utils/public'
 // import { usePersonStore } from '@/stores/person'
 
 
@@ -366,82 +364,29 @@ const num = ref(0);
 const typeRadio = ref('all');
 
 // 计算属性 - 根据当前选择的任务类型过滤事件
-const filteredEvents = computed(() => {
-  if (typeRadio.value === 'all') return myTotalTasks.value;
-  return myTotalTasks.value.filter(event => {
-    if (typeRadio.value === 'pending') return event.status === '带下发';
-    if (typeRadio.value === 'running') return event.status === '进行中';
-    if (typeRadio.value === 'done') return event.status === '已完成';
-    return true;
-  });
+const filteredTasks = computed(() => {
+  let filtered = myTotalTasks.value;
+  if (typeRadio.value !== 'all') {
+    filtered = filtered.filter(event => {
+      if (typeRadio.value === 'pending') return event.status === '待下发';
+      if (typeRadio.value === 'running') return event.status === '进行中';
+      if (typeRadio.value === 'done') return event.status === '已完成';
+      return true;
+    });
+  }
+  return filtered.map(task => ({
+    ...task,
+    start_date: task.start_date instanceof Date 
+      ? formatVxeDate(task.start_date) 
+      : task.start_date,
+    end_date: task.end_date instanceof Date 
+      ? formatVxeDate(task.end_date) 
+      : task.end_date,
+  }));
 });
 
-// 示例：2025年中国法定节假日
-const holidays = {
-    "2025-01-01": "元旦",
-    "2025-02-08": "春节",
-    "2025-02-09": "春节",
-    "2025-04-05": "清明节",
-    "2025-05-01": "劳动节",
-    "2025-06-14": "端午节",
-    "2025-09-21": "中秋节",
-    "2025-10-01": "国庆节",
-};
-
-// 调休工作日
-const extraWorkdays = {
-    "2025-02-15": true,
-    "2025-10-11": true,
-};
-
-const isWorkday = (date) => {
-    const dateStr = formatDate(date);
-    const dayOfWeek = date.getDay();
-
-    if (extraWorkdays[dateStr]) return true;
-    if (holidays[dateStr]) return false;
-    return dayOfWeek !== 0 && dayOfWeek !== 6;
-};
-
-// 辅助函数：格式化日期为 YYYY-MM-DD
-const formatDate = (date) => {
-    if (!(date instanceof Date)) date = new Date(date);
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-};
-
-const getDayTotalWorkHours = (date, events) => {
-    let totalHours = 0;
-    events.forEach(e => {
-        const eventStart = new Date(e.start_date);
-        const eventEnd = new Date(e.end_date);
-
-        // 跨天任务：计算该任务在当天应分配的工时
-        if (eventStart.getDate() !== eventEnd.getDate() || 
-            eventStart.getMonth() !== eventEnd.getMonth() ||
-            eventStart.getFullYear() !== eventEnd.getFullYear()) {
-            
-            // 统计任务期间的有效工作日
-            let workdays = 0;
-            const cur = new Date(eventStart);
-            while (cur <= eventEnd) {
-                if (isWorkday(cur)) workdays++;
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            // 均分总工时到每个有效工作日
-            if (workdays > 0) {
-                totalHours += (e.hours || 0) / workdays;
-            }
-        } else {
-            // 单天任务直接累加工时
-            totalHours += (e.hours || 0);
-        }
-    });
-    return totalHours;
-}
-
-// 设置merge视图的渲染方式
-const getMergeViewTemplate = (date) => {
+// 设置日历初始渲染方式
+const getInitViewTemplate = (date) => {
     const currentMonth = scheduler.getState().date.getMonth();
     if (date.getMonth() !== currentMonth) {
         return `<div style="height:100%; background:#f9f9f9"></div>`;
@@ -458,20 +403,24 @@ const getMergeViewTemplate = (date) => {
         `;
     }
 
-    // 计算有效工作日的任务数量
+    // 计算有效工作日的任务数量以及任务饱和度
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+    const totalHours = getDayTotalWorkHours(events);
+    console.log(totalHours);
+
+    // 单元框背景色
+    const bgColor = totalHours > 8 ? "#ffdddd" : 
+                        totalHours === 8 ? "#ddffdd" : "#fff3dd";
 
     return `
-        <div data-date="${formatDate(date)}" 
-          style="height: 100%; width: 100%; position: relative; cursor: pointer;">
-        <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
-          ${date.getDate()}
+        <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
+          <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
+            ${date.getDate()}
+          </div>
+          <div class="month_day_events" title="任务数量-总工作量">
+            ${events.length || '0'}-${totalHours}
+          </div>
         </div>
-        <div style="position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 1.4em; font-weight: bold;">
-          ${events.length || '0'}
-        </div>
-      </div>
     `;
 };
 
@@ -479,7 +428,7 @@ const getMergeViewTemplate = (date) => {
 const handleRowClick = (row) => {
   //  if (event.detail > 1) return; // 双击时直接返回
    selectedRow.value = row;
-   selectedRowIndex.value = filteredEvents.value.findIndex(item => item.id === row.id);
+   selectedRowIndex.value = filteredTasks.value.findIndex(item => item.id === row.id);
 };
 
 // 动态行类名
@@ -698,27 +647,9 @@ onMounted(() => {
   scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
   scheduler.templates.event_bar_text = function() { return ""; };
   scheduler.templates.event_text = function() { return ""; };
-  scheduler.templates.month_day = getMergeViewTemplate;
+  scheduler.templates.month_day = getInitViewTemplate;
   scheduler.parse(myEvents);
   scheduler.updateView();
-
-  // 替换单元格颜色
-  // 遍历所有日期单元格
-  const cells = document.querySelectorAll(".dhx_cal_month_cell ");
-  cells.forEach(cell => {
-      const dateStr = cell.getAttribute("data-cell-date");
-      if (dateStr) {
-          const date = scheduler.date.str_to_date("%Y-%m-%d")(dateStr);
-          const currentMonth = scheduler.getState().date.getMonth();
-          if (date.getMonth() !== currentMonth) return;
-          if (!isWorkday(date)) return;
-          const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
-          const totalHours = getDayTotalWorkHours(date, events);
-          const bgColor = totalHours > 8 ? "#ffdddd" : 
-                      totalHours === 8 ? "#ddffdd" : "#fff3dd";
-          cell.style.background = bgColor;
-      }
-  });
 
   scheduler.attachEvent("onEmptyClick", function(date, event){  
     // 如果是拖拽结束时的点击，忽略这次事件
@@ -787,12 +718,17 @@ onUnmounted(() => {
 
 .dhx_cal_data .dhx_month_body, 
 .dhx_cal_data .dhx_month_head {
-    height: 100px !important;
+    height: 100% !important;
 }
 
-.dhx_cal_event div {
-    white-space: normal !important;
-    overflow: visible !important;
+.month_day_events {
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  font-size: 1.4em; 
+  font-weight: bold;
+  width: max-content;
 }
 
 .dhx_cal_event_line {

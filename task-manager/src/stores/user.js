@@ -11,7 +11,7 @@ export const useUserStore = defineStore('user', () => {
     username: "陈成F",
     emp_num: "007101",
     role: "发布者",
-    config: {a:1,b:2}
+    config: {}
   })
 
   const login = () => {
