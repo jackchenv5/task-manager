@@ -21,7 +21,7 @@
               </el-col>
             </el-row>
             <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in loginUser.config.user_pool" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
+              <el-tag v-for="tag in userPool" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
                 {{ tag.name }}
               </el-tag>
             </div>
@@ -40,7 +40,7 @@
               </el-col>
             </el-row>
             <el-scrollbar style="height: 14vh;">
-              <el-tag v-for="item in loginUser.config.project_pool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
+              <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
                 item }}</el-tag>
             </el-scrollbar>
           </div>
@@ -185,7 +185,7 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
-const { curReceivers, curSelectUser } = storeToRefs(scheduleStore)
+const { curReceivers, curSelectUser,userPool,projectPool } = storeToRefs(scheduleStore)
 
 import { VxeUI } from 'vxe-pc-ui'
 const btnGroupCellRender = reactive({

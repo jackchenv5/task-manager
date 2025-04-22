@@ -2,7 +2,19 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useScheduleStore = defineStore('schedule', () => {
+
+  const userPool = ref([
+    { name: '张世伟', type: 'info' },
+    { name: '陈成F', type: 'info' },
+    { name: '乔志', type: 'info' },
+    { name: '王俊坤', type: 'info' },
+    { name: '乔志', type: 'info' },
+  ])
+
+  const projectPool = ref(["项目11111111111111111111111", "项目22222222222222222222", "项目33333333333333333333333333"])
+
   const curReceivers = ref([{ name: '张世伟', type: 'info' },{ name: '陈成F', type: 'info' },])
+  
   const curSelectUser=ref({
     username:"陈成F",
     workload:80,
@@ -70,5 +82,5 @@ export const useScheduleStore = defineStore('schedule', () => {
 
     ]
   })
-  return { curReceivers, curSelectUser}
+  return { curReceivers, curSelectUser,userPool,projectPool}
 })
