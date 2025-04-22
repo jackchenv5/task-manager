@@ -555,9 +555,9 @@ const getDateRange = (startDate, endDate) => {
   const current = new Date(startDate);
   const end = new Date(endDate);
   
-  if (current > end) {
-    [current, end] = [end, current];
-  }
+  // if (current > end) {
+  //   [current, end] = [end, current];
+  // }
   
   while (current <= end) {
     range.push(formatDate(new Date(current)));
