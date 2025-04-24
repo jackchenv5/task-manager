@@ -11,7 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id','username','emp_num','role','config','role_name','group','group_leader']
+        fields = ['id','username','emp_num','role','email','config','role_name','group','group_leader']
 
         extra_kwargs = {
             'config': {'required': False}  # 允许不传此字段

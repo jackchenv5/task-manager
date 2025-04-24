@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 
 export const useScheduleStore = defineStore('schedule', () => {
 
+  // 首次加载，同步loginUser配置
+  // 变化，
   const userPool = ref([
     { name: '张世伟', type: 'info' },
     { name: '陈成F', type: 'info' },

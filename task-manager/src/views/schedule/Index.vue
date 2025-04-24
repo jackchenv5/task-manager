@@ -1,4 +1,5 @@
 <template>
+  <SelectUserDialog :is-visible="isShowSelectUserDialog" v-model="selectUsers" @change="handleSelectChange"></SelectUserDialog>
   <div style="display: flex;height: 94vh;width: 100%;overflow: hidden;">
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
@@ -10,7 +11,7 @@
                 <div style="margin-top:5px;color:white;background-color: black;border-radius: 5px;">人员池</div>
               </el-col>
               <el-col :span="10">
-                <el-button>添加</el-button>
+                <el-button @click="addUserPool">添加</el-button>
                 <el-button>清空</el-button>
               </el-col>
               <el-col :span="10">
@@ -175,7 +176,7 @@
 <script setup>
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive,watch } from 'vue';
 
 import {useUserStore} from '@/stores/user'
 import {useScheduleStore} from '@/stores/schedule'
@@ -186,6 +187,26 @@ const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
 const { curReceivers, curSelectUser,userPool,projectPool } = storeToRefs(scheduleStore)
+
+//用户选择框逻辑
+
+import SelectUserDialog from '@/components/dialog/SelectUser.vue'
+
+const isShowSelectUserDialog = ref(false)
+const selectUsers = ref() // 默认选中 Option1
+
+watch(isShowSelectUserDialog,(newValue)=>{
+    console.log('isShowSelectUserDialog.value',newValue)
+})
+const handleSelectChange = (value) => {
+    console.log('在父组件 Selected value:', value)
+    console.log(selectUsers.value)
+}
+
+const addUserPool = ()=>{
+  isShowSelectUserDialog.value = !isShowSelectUserDialog.value
+}
+//用户选择框逻辑 END
 
 import { VxeUI } from 'vxe-pc-ui'
 const btnGroupCellRender = reactive({
