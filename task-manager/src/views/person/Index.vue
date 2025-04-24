@@ -92,7 +92,7 @@
                   <div class="detail-item full-width">
                     <span class="detail-label">开始时间 - 截止时间</span>
                     <el-input 
-                      :value="`${formatDateTime(currentTask.row.start_date)} 至 ${formatDateTime(currentTask.row.end_date)}`" 
+                      :value="`${formatDate(currentTask.row.start_date)} 至 ${formatDate(currentTask.row.end_date)}`" 
                       readonly 
                       class="detail-input"
                     />
@@ -314,56 +314,21 @@
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler';
 import { Close } from '@element-plus/icons-vue';
-import { onMounted, ref, watch, reactive, computed, onUnmounted } from 'vue';
+import { onMounted, ref, watch, reactive, computed, onUnmounted, toRaw } from 'vue';
 import { VXETable } from 'vxe-table';
 import { VxeTable, VxeColumn } from 'vxe-table'
 import 'vxe-table/lib/style.css';
-import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours } from '@/utils/public'
-// import { usePersonStore } from '@/stores/person'
-
+import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus } from '@/utils/public'
+import { usePersonStore } from '@/stores/person'
 
 // 获取容器引用
 const schedulerContainer = ref(null);
 
-var myEvents = [
-    {id:1, text:"任务111111111111111111111111111", start_date:"2025-02-03 9:00", end_date:"2025-02-09 18:00", hours: 8, status: "进行中", process: "50%", workdays: 5, project: "项目xxxxxxxxxxxxxxxxxxxxxxxxxx", tl: "张三"},
-    {id:2, text:"任务2", start_date:"2025-02-10 9:00", end_date:"2025-02-16 18:00", hours: 6, status: "进行中", process: "50%", workdays: 6, project: "项目2", tl: "李四"},
-    {id:3, text:"任务3", start_date:"2025-02-03 9:00", end_date:"2025-02-16 18:00", hours: 24, status: "进行中", process: "50%", workdays: 11, project: "项目3", tl: "王五"},
-    {id:4, text:"任务4", start_date:"2025-02-03 9:00", end_date:"2025-02-06 18:00", hours: 18, status: "进行中", process: "50%", workdays: 4, project: "项目4", tl: "李逵"},
-    {id:5, text:"任务5", start_date:"2025-02-03 9:00", end_date:"2025-02-05 18:00", hours: 6, status: "进行中", process: "50%", workdays: 3, project: "项目5", tl: "诸葛亮"},
-];
+// 从 usePersonStore 缓存中获取当前用户的数据
+const myPersonStore = usePersonStore()
+const myTotalTasks = computed(() => myPersonStore.allTask)
 
-// const myPersonStore = usePersonStore()
-// myPersonStore.getPersonTasks('2025-01-01', '2025-01-31')
-// console.log(myPersonStore.curTasks.value);
-
-// var myTotalTasks = myPersonStore.curTasks;
-const stats = reactive({
-  saturation: 72,
-  completed: 0,
-  totalTasks: 5,
-  total: 56,
-  remaining: 56
-})
-
-
-var myTotalTasks = ref(myEvents);
-
-// 拖拽选择相关状态
-const dragSelectState = reactive({
-  isSelecting: false,
-  justEndedSelection: false,
-  startDate: null
-});
-
-const selectedDates = ref(new Set());
-const selectedRow = ref(null);
-const selectedRowIndex = ref(-1);
-const value = ref(0);
-const num = ref(0);
-const typeRadio = ref('all');
-
-// 计算属性 - 根据当前选择的任务类型过滤事件
+// 根据用户选择过滤当前需要显示的任务
 const filteredTasks = computed(() => {
   let filtered = myTotalTasks.value;
   if (typeRadio.value !== 'all') {
@@ -384,6 +349,53 @@ const filteredTasks = computed(() => {
       : task.end_date,
   }));
 });
+
+// ---*--- 计算任务统计信息 ---*---
+const stats = computed(() => {
+  const filtered = filteredTasks.value; // 获取筛选后的任务
+  
+  // 1. 计算基础数据
+  const totalTasks = filtered.length;
+  const completedTasks = filtered.filter(t => t.status === '已完成').length;
+  
+  // 2. 计算总工作量（所有任务的hours之和）
+  const totalHours = filtered.reduce((sum, task) => sum + task.hours, 0);
+  
+  // 3. 计算任务饱和度
+  const totalWorkdays = filtered.reduce((sum, task) => sum + task.workdays, 0);
+  const saturation = (totalHours / (totalWorkdays * 8)) * 100; // 转为百分比
+  
+  // 4. 计算待完成工作量
+  const remainingHours = filtered.reduce((sum, task) => {
+    if (task.status === '进行中') {
+      const completed = task.hours * (parseFloat(task.process) / 100);
+      return sum + (task.hours - completed);
+    }
+    return sum;
+  }, 0);
+  
+  return {
+    totalTasks,
+    completed: completedTasks,
+    total: totalHours,
+    remaining: Math.max(0, remainingHours), // 确保不小于0
+    saturation: saturation
+  };
+});
+
+// 拖拽选择相关状态
+const dragSelectState = reactive({
+  isSelecting: false,
+  justEndedSelection: false,
+  startDate: null
+});
+
+const selectedDates = ref(new Set());
+const selectedRow = ref(null);
+const selectedRowIndex = ref(-1);
+const value = ref(0);
+const num = ref(0);
+const typeRadio = ref('all');
 
 // 设置日历初始渲染方式
 const getInitViewTemplate = (date) => {
@@ -406,7 +418,6 @@ const getInitViewTemplate = (date) => {
     // 计算有效工作日的任务数量以及任务饱和度
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const totalHours = getDayTotalWorkHours(events);
-    console.log(totalHours);
 
     // 单元框背景色
     const bgColor = totalHours > 8 ? "#ffdddd" : 
@@ -424,7 +435,26 @@ const getInitViewTemplate = (date) => {
     `;
 };
 
-// 处理行点击
+// 监听视图变化
+scheduler.attachEvent('onViewChange', (view, date) => {
+  if (view === 'month') {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    
+    const startDate = formatDate(firstDay);
+    const endDate = formatDate(lastDay);
+    
+    myPersonStore.getPersonTasks(startDate, endDate);
+    scheduler.parse(toRaw(myTotalTasks.value));
+    scheduler.updateView();
+    selectedDates.value.clear();
+  }
+});
+
+// 处理表格行点击
 const handleRowClick = (row) => {
   //  if (event.detail > 1) return; // 双击时直接返回
    selectedRow.value = row;
@@ -446,7 +476,7 @@ const clearHighlightedDates = () => {
   });
 };
 
-// 处理鼠标按下事件
+// 日历div中处理鼠标按下事件
 const handleMouseDown = (event) => {
   if (event.button !== 0) return;
   
@@ -467,7 +497,7 @@ const handleMouseDown = (event) => {
   event.preventDefault();
 };
 
-// 处理鼠标移动事件
+// 日历div中处理鼠标移动事件
 const handleMouseMove = (event) => {
   if (!dragSelectState.isSelecting) return;
   const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
@@ -504,10 +534,6 @@ const getDateRange = (startDate, endDate) => {
   const current = new Date(startDate);
   const end = new Date(endDate);
   
-  // if (current > end) {
-  //   [current, end] = [end, current];
-  // }
-  
   while (current <= end) {
     range.push(formatDate(new Date(current)));
     current.setDate(current.getDate() + 1);
@@ -516,7 +542,7 @@ const getDateRange = (startDate, endDate) => {
   return range;
 };
 
-// 处理鼠标松开事件
+// 日历div中处理鼠标松开事件
 const handleMouseUp = () => {
   if (dragSelectState.isSelecting) {
     // 标记刚刚结束拖拽选择
@@ -591,13 +617,12 @@ const handleDateClick = (date) => {
   const dateStr = formatDate(date);
   selectedDates.value.clear();
   selectedDates.value.add(dateStr);
-  console.log(11111);
   clearHighlightedDates();
 
   updateStatsForSelectedDates();
 };
 
-// 新增的响应式数据
+// 侧面弹出框
 const showDetailPanel = ref(false);
 const currentTask = ref({});
 
@@ -607,34 +632,15 @@ const handleRowDblClick = (row) => {
   showDetailPanel.value = true;
 };
 
-// 时间格式化方法
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return '未设置';
-  try {
-    const date = new Date(dateStr);
-    return isNaN(date.getTime()) 
-      ? '日期格式错误' 
-      : `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`;
-  } catch {
-    return '日期格式错误';
-  }
-};
-
-// 进度条状态计算
-const getProgressStatus = (process) => {
-  const percent = parseInt(process);
-  if (percent >= 100) return 'success';
-  if (percent >= 70) return 'primary';
-  if (percent >= 30) return 'warning';
-  return 'exception';
-};
-
-
 const onSubmit = () => {
   console.log('submit!')
 }
 
 onMounted(() => {
+  // 初始化加载数据
+  myPersonStore.getPersonTasks()
+
+  // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler)
   scheduler.config.dblclick_create = false;
   scheduler.config.header = [
@@ -644,11 +650,9 @@ onMounted(() => {
     'today',
     'next',
   ];
-  scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-  scheduler.templates.event_bar_text = function() { return ""; };
-  scheduler.templates.event_text = function() { return ""; };
+  scheduler.init(schedulerContainer.value, new Date(), 'month');
   scheduler.templates.month_day = getInitViewTemplate;
-  scheduler.parse(myEvents);
+  scheduler.parse(toRaw(myTotalTasks.value));
   scheduler.updateView();
 
   scheduler.attachEvent("onEmptyClick", function(date, event){  

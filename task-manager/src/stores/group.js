@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-export const usePersonStore = defineStore('person', () => {
+export const useGroupStore = defineStore('group', () => {
   const allTask = ref([])
 
-  const  getPersonTasks = (startDate,endDate) => {
+  const  getAllTask = (startDate,endDate) => {
     if (startDate === '2025-02-01') {
       allTask.value = [
         { id: 10001, text: 'Test1xxxxx', status: '进行中', start_date: '2025-02-01', end_date: '2025-02-03 23:59:59', hours: 28, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '30%', workdays: 1},
@@ -29,16 +29,11 @@ export const usePersonStore = defineStore('person', () => {
         { id: 10015, text: 'Test15', status: '已完成', start_date: '2025-04-20', end_date: '2025-04-30 23:59:59', hours: 110, project: '项目5', tl: '朱由检', worker: '孙权', process: '100%', workdays: 8 }
       ]
     } else {
-      allTask.value = [
-        { id: 10011, text: 'Test11', status: '待下发', start_date: '2025-04-01', end_date: '2025-04-15 23:59:59', hours: 120, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '0%', workdays: 11},
-        { id: 10012, text: 'Test12', status: '进行中', start_date: '2025-04-01', end_date: '2025-04-12 23:59:59', hours: 80, project: '项目2', tl: '朱标', worker: '李四', process: '0%', workdays: 9 },
-        { id: 10013, text: 'Test13', status: '待下发', start_date: '2025-04-16', end_date: '2025-04-22 23:59:59', hours: 90, project: '项目3', tl: '朱允炆', worker: '王五', process: '0%', workdays: 5 },
-        { id: 10014, text: 'Test14', status: '进行中', start_date: '2025-04-20', end_date: '2025-04-28 23:59:59', hours: 100, project: '项目4', tl: '朱厚熜', worker: '诸葛亮', process: '20%', workdays: 6 },
-        { id: 10015, text: 'Test15', status: '已完成', start_date: '2025-04-20', end_date: '2025-04-30 23:59:59', hours: 110, project: '项目5', tl: '朱由检', worker: '孙权', process: '100%', workdays: 8 }
-      ]
+      allTask.value = []
     }
 
-  }
+  };
   const feedbackTask = (id,feedInfo) =>{}
-  return { allTask, getPersonTasks, feedbackTask }
+  const dispatchTask = (id) => {}
+  return { allTask, getAllTask, feedbackTask, dispatchTask }
 })

@@ -46,30 +46,7 @@ const FormatVxeDate = (date) => {
 const GetDayTotalWorkHours = (events) => {
     let totalHours = 0;
     events.forEach(e => {
-        const eventStart = new Date(e.start_date);
-        const eventEnd = new Date(e.end_date);
-
-        // 跨天任务：计算该任务在当天应分配的工时
-        if (eventStart.getDate() !== eventEnd.getDate() || 
-            eventStart.getMonth() !== eventEnd.getMonth() ||
-            eventStart.getFullYear() !== eventEnd.getFullYear()) {
-            
-            // 统计任务期间的有效工作日
-            let workdays = 0;
-            const cur = new Date(eventStart);
-            while (cur <= eventEnd) {
-                if (isWorkday(cur)) workdays++;
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            // 均分总工时到每个有效工作日
-            if (workdays > 0) {
-                totalHours += (e.hours || 0) / workdays;
-            }
-        } else {
-            // 单天任务直接累加工时
-            totalHours += (e.hours || 0);
-        }
+        totalHours += (e.hours / e.workdays);
     });
     return totalHours.toFixed(2);
 }

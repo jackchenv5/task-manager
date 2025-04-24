@@ -84,7 +84,7 @@
             value="SELECT_ALL"
             @click="toggleSelectAll"
           >
-            <span style="font-weight: bold">全选</span>
+            <span style="font-weight: bold">{{ selectedProjects.length > 0 ? '全不选' : '全选' }}</span>
           </el-option>
 
           <!-- 搜索框（通过 filterable 自动启用，此处为样式优化） -->
@@ -327,10 +327,11 @@
         </div>
       </el-card>
       <div style="margin: 10px; text-align: center;width:100%">
-        <el-button size="small" type="primary" :icon="Promotion">下发任务</el-button>
+        <el-button size="small" type="primary" :icon="Promotion" @click="dispatchTasks">下发任务</el-button>
       </div>
       <div style="overflow:auto;height: 70vh;width: 100%">
         <vxe-table
+            ref="taskTable"
             border
             highlight-hover-row
             :data="filteredTasks"
@@ -360,23 +361,27 @@ import { Delete, Edit, Search, Share, Upload, Plus, Promotion } from '@element-p
 import { ElMessage } from 'element-plus';
 import { VxeUI } from 'vxe-table'
 import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus } from '@/utils/public'
+import { useGroupStore } from '@/stores/group'
 
-const tableRef = ref()
-const myTotalTasks = ref([
-  { id: 10001, text: 'Test1xxxxx', status: '进行中', start_date: '2025-02-01', end_date: '2025-02-03', hours: 28, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '30%', workdays: 1},
-  { id: 10002, text: 'Test2', status: '进行中', start_date: '2025-02-03', end_date: '2025-02-05', hours: 21, project: '项目2', tl: '朱标', worker: '李四', process: '0%', workdays: 3 },
-  { id: 10003, text: 'Test3', status: '待下发', start_date: '2025-02-05', end_date: '2025-02-08', hours: 30, project: '项目3', tl: '朱允炆', worker: '王五', process: '0%', workdays: 3 },
-  { id: 10004, text: 'Test4', status: '已完成', start_date: '2025-02-08', end_date: '2025-02-15', hours: 42, project: '项目4', tl: '朱厚熜', worker: '诸葛亮', process: '100%', workdays: 6 },
-  { id: 10005, text: 'Test5', status: '已完成', start_date: '2025-02-15', end_date: '2025-02-28', hours: 80, project: '项目5', tl: '朱由检', worker: '孙权', process: '100%', workdays: 10 }
-])
+const myGroupStore = useGroupStore()
+const myTotalTasks = computed(() => myGroupStore.allTask)
+
+const taskTable = ref()
+// const myTotalTasks = ref([
+//   { id: 10001, text: 'Test1xxxxx', status: '进行中', start_date: '2025-02-01', end_date: '2025-02-03', hours: 28, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '30%', workdays: 1},
+//   { id: 10002, text: 'Test2', status: '进行中', start_date: '2025-02-03', end_date: '2025-02-05', hours: 21, project: '项目2', tl: '朱标', worker: '李四', process: '0%', workdays: 3 },
+//   { id: 10003, text: 'Test3', status: '待下发', start_date: '2025-02-05', end_date: '2025-02-08', hours: 30, project: '项目3', tl: '朱允炆', worker: '王五', process: '0%', workdays: 3 },
+//   { id: 10004, text: 'Test4', status: '已完成', start_date: '2025-02-08', end_date: '2025-02-15', hours: 42, project: '项目4', tl: '朱厚熜', worker: '诸葛亮', process: '100%', workdays: 6 },
+//   { id: 10005, text: 'Test5', status: '已完成', start_date: '2025-02-15', end_date: '2025-02-28', hours: 80, project: '项目5', tl: '朱由检', worker: '孙权', process: '100%', workdays: 10 }
+// ])
 const selectAllChangeEvent = ({ checked }) => {
-  const $table = tableRef.value
+  const $table = taskTable.value
   if ($table) {
     const records = $table.getCheckboxRecords()
   }
 }
 const selectChangeEvent = ({ checked }) => {
-  const $table = tableRef.value
+  const $table = taskTable.value
   if ($table) {
     const records = $table.getCheckboxRecords()
   }
@@ -453,6 +458,8 @@ const getInitViewTemplate = (date) => {
     }
 
     // 计算有效工作日的任务数量以及任务饱和度
+
+    // const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const totalHours = getDayTotalWorkHours(events)
     const currSaturation = Math.round( totalHours / 8 * 100) + "%";
@@ -476,29 +483,25 @@ const getInitViewTemplate = (date) => {
 // 获取容器引用
 const schedulerContainer = ref(null);
 onMounted(() => {
-  // 确保 scheduler 对象存在
-  if (scheduler) {
+  // 初始化加载数据
+  myGroupStore.getAllTask('2025-02-01', '2025-02-28')
 
-    // 初始化 Scheduler
-    scheduler = initSchedulerConfig(schedulerContainer, scheduler);
-    scheduler.config.dblclick_create = false;
-    scheduler.config.header = [
-      'month',
-      'date',
-      'prev',
-      'today',
-      'next',
-    ];
-    scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-    // scheduler.templates.event_bar_text = function() { return ""; };
-    // scheduler.templates.event_text = function() { return ""; };
-    scheduler.templates.month_day = getInitViewTemplate;
-    scheduler.parse(toRaw(myTotalTasks.value));
-    scheduler.updateView();
-
-  } else {
-    console.error('Scheduler is not properly imported.');
-  }
+  // 初始化 Scheduler
+  scheduler = initSchedulerConfig(schedulerContainer, scheduler);
+  scheduler.config.dblclick_create = false;
+  scheduler.config.header = [
+    'month',
+    'date',
+    'prev',
+    'today',
+    'next',
+  ];
+  scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
+  // scheduler.templates.event_bar_text = function() { return ""; };
+  // scheduler.templates.event_text = function() { return ""; };
+  scheduler.templates.month_day = getInitViewTemplate;
+  scheduler.parse(toRaw(myTotalTasks.value));
+  scheduler.updateView();
 
   // 这里需要根据后端返回的配置来确定当前是否是第一次操作
   switchButtonValue.value = true;
@@ -654,7 +657,8 @@ const filteredProjects = computed(() => {
 
 // 全选/取消全选逻辑
 const toggleSelectAll = () => {
-  if (selectedProjects.value.length === filteredProjects.value.length) {
+  console.log(selectedProjects.value, selectedProjects.value.length);
+  if (selectedProjects.value.length > 1) {
     selectedProjects.value = []
   } else {
     selectedProjects.value = [...filteredProjects.value]
@@ -884,6 +888,26 @@ const handleMouseUp = () => {
   }
 };
 
+// ---*--- 处理日历视图切换事件 ---*---
+// 监听视图变化
+  scheduler.attachEvent('onViewChange', (view, date) => {
+    if (view === 'month') {
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      
+      const startDate = formatDate(firstDay);
+      const endDate = formatDate(lastDay);
+      
+      myGroupStore.getAllTask(startDate, endDate);
+      scheduler.parse(toRaw(myTotalTasks.value));
+      scheduler.updateView();
+      selectedDates.value.clear();
+    }
+  });
+
 // ---*--- 处理表格双击事件 ---*---
 const showDetailPanel = ref(false);
 const currentTask = ref({});
@@ -892,6 +916,22 @@ const handleRowDblClick = (row) => {
   currentTask.value = row;
   showDetailPanel.value = true;
 };
+
+// ---*--- 处理下发任务事件 ---*---
+const dispatchTasks = () => {
+  if (taskTable.value) {
+    const selectedRows = taskTable.value.getCheckboxRecords()
+    
+    if (selectedRows.length === 0) {
+      ElMessage.warning('请至少选择一条任务')
+      return
+    }
+    
+    console.log('选中的任务:', selectedRows)
+    // 实际下发逻辑
+    // api.dispatchTasks(selectedRows.map(row => row.id))
+  }
+}
 
 </script>
 
