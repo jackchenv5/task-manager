@@ -107,9 +107,20 @@
 
         </div>
         <el-scrollbar style="width: 45%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
-          <el-progress v-for="item in curUserTasksRef"  :text-inside="true" :stroke-width="20" :percentage="100 * item.workload / curUserTasksWorkloadsRef" status="exception">
-            <span>{{100 * item.workload / curUserTasksWorkloadsRef }}</span>
-          </el-progress>
+          <template v-for="item in curUserTasksRef">
+            <div style="display: flex;flex-direction: row;">
+              <el-text truncated style="width: 20%;">{{item.name}}</el-text>
+              <div style="width: 80%;">
+                <el-progress  :stroke-width="20"
+                :percentage="100 * item.workload / curUserTasksWorkloadsRef" style="margin-top:5px;">
+                <span style="font-size:15px;">{{ `${item.workload}天(${100 * item.workload / curUserTasksWorkloadsRef | 0}%)` }}</span>
+              </el-progress>
+              </div>
+
+            </div>
+
+          </template>
+
         </el-scrollbar>
       </div>
       <div ref="schedulerContainer" style="width: 100%;height:70vh;"></div>
@@ -207,7 +218,7 @@ import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
-const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds, curUserTasksRef,curUserTasksWorkloadsRef } = storeToRefs(scheduleStore)
+const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds, curUserTasksRef, curUserTasksWorkloadsRef } = storeToRefs(scheduleStore)
 
 //人员池、執行者 选择框逻辑
 //===================================================================================================
