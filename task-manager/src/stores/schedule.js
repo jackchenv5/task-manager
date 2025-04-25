@@ -1,88 +1,69 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 
+import { getTaskDataApi } from '@/api/data/data'
 export const useScheduleStore = defineStore('schedule', () => {
 
   // 首次加载，同步loginUser配置
-  // 变化，
-  const userPool = ref([
-    { name: '张世伟', type: 'info' },
-    { name: '陈成F', type: 'info' },
-    { name: '乔志', type: 'info' },
-    { name: '王俊坤', type: 'info' },
-    { name: '乔志', type: 'info' },
-  ])
 
-  const projectPool = ref(["项目11111111111111111111111", "项目22222222222222222222", "项目33333333333333333333333333"])
+  //人员池
+  // 1. 数据都是原生的用户对象
+  // 2. 
+  const userPool = ref([])
+  const userPoolIds = computed(() => userPool.value.length === 0 ? [] : userPool.value.map(x => x.id))
 
-  const curReceivers = ref([{ name: '张世伟', type: 'info' },{ name: '陈成F', type: 'info' },])
-  
-  const curSelectUser=ref({
-    username:"陈成F",
-    workload:80,
-    workload_per:"80%",
-    select_start_date:"2025-04-14",
-    select_end_date:"2025-04-18",
-    tasks:[
-      {
-        creator:"陈成F",
-        status: "",
-        creator: "陈成F",
-        name: "测试任务",
-        start_time: "2024-04-14",
-        deadline_time: "2024-04-18",
-        workload: 8,
-        receiver: "陈成F",
-        sender: ["陈成F","乔志"] ,
-        content: "工作内容",
-        challenge: "挑战目标",
-        project: "项目",
-        related_task: "关联任务",
-        description: "描述信息",
-        act_workload: 0,
-        progress: 80,
-        feedback: "反馈信息" 
-      },
-      {
-        creator:"陈成F",
-        status: "",
-        creator: "陈成F",
-        name: "测试任务",
-        start_time: "2024-04-14",
-        deadline_time: "2024-04-18",
-        workload: 8,
-        receiver: "陈成F",
-        sender: ["陈成F","乔志"] ,
-        content: "工作内容",
-        challenge: "挑战目标",
-        project: "项目",
-        related_task: "关联任务",
-        description: "描述信息",
-        act_workload: 0,
-        progress: 80,
-        feedback: "反馈信息" 
-      },
-      {
-        creator:"陈成F",
-        status: "",
-        creator: "陈成F",
-        name: "测试任务",
-        start_time: "2024-04-14",
-        deadline_time: "2024-04-18",
-        workload: 8,
-        receiver: "陈成F",
-        sender: ["陈成F","乔志"] ,
-        content: "工作内容",
-        challenge: "挑战目标",
-        project: "项目",
-        related_task: "关联任务",
-        description: "描述信息",
-        act_workload: 0,
-        progress: 80,
-        feedback: "反馈信息" 
-      }
+  const addToUserPool = (user) => {
+    if (userPoolIds.value.includes(user.id)) return
+    userPool.value.push(user)
+  }
 
-    ]
+  const deleteUserofPool = (id) => {
+    const idIndex = userPoolIds.value.indexOf(id)
+    userPool.value.splice(idIndex, 1)
+  }
+
+  const clearUserPool = () => {
+    userPool.value = []
+  }
+
+
+  const curReceivers = ref([])
+
+  // ✅ 计算属性，自动依赖跟踪
+  const curReceiverIDs = computed(() => curReceivers.value.length === 0 ? [] : curReceivers.value.map(x => x.id));
+
+  const addToReceivers = (user) => {
+    if (curReceiverIDs.value.includes(user.id)) return
+    curReceivers.value.push(user)
+  }
+
+  const deleteReceiverUser = (id) => {
+    const idReceiverIndex = curReceiverIDs.value.indexOf(id)
+    curReceivers.value.splice(idReceiverIndex, 1)
+  }
+
+  const clearReceivers = () => {
+    curReceivers.value = []
+  }
+
+  const curSelectUser = ref()
+  const curUserTasksRef = ref([])
+
+  const curUserTasksWorkloadsRef = computed(()=>{
+    const allWorkloads = curUserTasksRef.value.reduce((sum, task) => sum + task.workload, 0);
+    console.log(allWorkloads); // 输出: 7
+    return allWorkloads
   })
-  return { curReceivers, curSelectUser,userPool,projectPool}
+  const getCurUserInfo = async (id, start_time, deadline_time) => {
+    const curUserTasks = await getTaskDataApi({ receiver: id, start_time: start_time, deadline_time: deadline_time })
+    curUserTasksRef.value = curUserTasks.result.items.sort((a,b)=>b.workload - a.workload)
+  }
+  //项目池
+  const projectPool = ref([])
+
+  return {
+    curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser
+    , userPool, userPoolIds, addToUserPool, deleteUserofPool, clearUserPool, getCurUserInfo,
+    curUserTasksRef,curUserTasksWorkloadsRef
+  }
 })

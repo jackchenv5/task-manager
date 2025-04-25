@@ -1,5 +1,10 @@
 <template>
-  <SelectUserDialog :is-visible="isShowSelectUserDialog" v-model="selectUsers" @change="handleSelectChange"></SelectUserDialog>
+  <!-- 对话框区 -->
+  <SelectUserDialog :visible="isShowSelectUserDialog" v-model="selectUsers" @change="handleSelectChange"
+    :title="userDialogTitle" @update:modelValue="updateSelectUsers" @update:visible="updateVisible"
+    @comfirm="SelectUserConfirm">
+  </SelectUserDialog>
+  <!-- 对话框区 END -->
   <div style="display: flex;height: 94vh;width: 100%;overflow: hidden;">
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
@@ -12,18 +17,25 @@
               </el-col>
               <el-col :span="10">
                 <el-button @click="addUserPool">添加</el-button>
-                <el-button>清空</el-button>
+                <el-popconfirm title="确认清空用户池？" @confirm="scheduleStore.clearUserPool" placement="right">
+                  <template #reference>
+                    <el-button>清空</el-button>
+                  </template>
+                </el-popconfirm>
+
               </el-col>
               <el-col :span="10">
-                添加到：
+                发送到：
                 <el-switch v-model="value" class="ml-2" inline-prompt
-                  style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="执行人"
-                  inactive-text="抄送人" />
+                  style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="执行人员"
+                  inactive-text="抄送人员" />
               </el-col>
             </el-row>
             <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in userPool" :key="tag.name" closable :type="tag.type" style="cursor: pointer;">
-                {{ tag.name }}
+              <el-tag v-for="tag in userPool" :key="tag.id" closable :type="tag.isSelect ? 'success' : 'info'"
+                style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
+                @click="handleSelectUser(tag.id)">
+                {{ tag.username }}
               </el-tag>
             </div>
           </div>
@@ -41,8 +53,8 @@
               </el-col>
             </el-row>
             <el-scrollbar style="height: 14vh;">
-              <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
-                item }}</el-tag>
+              <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;"
+                closable>{{ item }}</el-tag>
             </el-scrollbar>
           </div>
         </div>
@@ -54,13 +66,21 @@
           执行人员：</div>
         <el-scrollbar style="width: 35vw;">
           <div
-            style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px;margin-left: 8px;">
-            <el-tag v-for="tag in curReceivers" :key="tag.name" closable :type="tag.type" style="margin: 0px 5px;">
-              {{ tag.name }}
+            style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px 0px;margin-left: 8px;">
+
+            <el-tag v-for="tag in curReceivers" :key="tag.id" closable :type="tag.isSelect ? 'success' : 'info'"
+              style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteReceiverUser(tag.id)"
+              @click="handleSelectReceiverUser(tag.id)">
+              {{ tag.username }}
             </el-tag>
           </div>
         </el-scrollbar>
-        <el-button style="margin-left: 20px;">清空</el-button>
+        <el-button @click="addReceiver">添加</el-button>
+        <el-popconfirm title="确认清空执行者？" @confirm="scheduleStore.clearReceivers" placement="right">
+          <template #reference>
+            <el-button>清空</el-button>
+          </template>
+        </el-popconfirm>
       </div>
       <div
         style="height:18vh;width: 98%;border: 1px solid #eee;background-color: white;border-radius: 5px;padding: 5px;display: flex;flex-direction: row;justify-content: space-between;">
@@ -87,8 +107,9 @@
 
         </div>
         <el-scrollbar style="width: 45%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
-          <el-tag v-for="item in 20" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;" closable>{{
-            item }}</el-tag>
+          <el-progress v-for="item in curUserTasksRef"  :text-inside="true" :stroke-width="20" :percentage="100 * item.workload / curUserTasksWorkloadsRef" status="exception">
+            <span>{{100 * item.workload / curUserTasksWorkloadsRef }}</span>
+          </el-progress>
         </el-scrollbar>
       </div>
       <div ref="schedulerContainer" style="width: 100%;height:70vh;"></div>
@@ -165,7 +186,7 @@
           <vxe-column field="sex" title="开始时间"></vxe-column>
           <vxe-column field="age" title="截止时间"></vxe-column>
           <vxe-column field="age" title="工作量"></vxe-column>
-          
+
           <vxe-column title="按钮组" width="200" :cell-render="btnGroupCellRender"></vxe-column>
         </vxe-table>
       </div>
@@ -176,37 +197,95 @@
 <script setup>
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { onMounted, ref, reactive,watch } from 'vue';
+import { onMounted, ref, reactive, watch } from 'vue';
 
-import {useUserStore} from '@/stores/user'
-import {useScheduleStore} from '@/stores/schedule'
+import { useUserStore } from '@/stores/user'
+import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
 
 const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
-const { curReceivers, curSelectUser,userPool,projectPool } = storeToRefs(scheduleStore)
+const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds, curUserTasksRef,curUserTasksWorkloadsRef } = storeToRefs(scheduleStore)
 
-//用户选择框逻辑
+//人员池、執行者 选择框逻辑
+//===================================================================================================
 
 import SelectUserDialog from '@/components/dialog/SelectUser.vue'
 
+const userDialogTitle = ref()
+// 添加人员池
 const isShowSelectUserDialog = ref(false)
-const selectUsers = ref() // 默认选中 Option1
-
-watch(isShowSelectUserDialog,(newValue)=>{
-    console.log('isShowSelectUserDialog.value',newValue)
-})
-const handleSelectChange = (value) => {
-    console.log('在父组件 Selected value:', value)
-    console.log(selectUsers.value)
+const addUserPool = () => {
+  isShowSelectUserDialog.value = true
+  userDialogTitle.value = 'user pool'
 }
 
-const addUserPool = ()=>{
-  isShowSelectUserDialog.value = !isShowSelectUserDialog.value
+// 添加執行者
+const addReceiver = () => {
+  isShowSelectUserDialog.value = true
+  userDialogTitle.value = 'user receiver'
 }
+
+const updateVisible = (newValue) => {
+  isShowSelectUserDialog.value = newValue
+}
+const selectUsers = ref()
+
+const updateSelectUsers = (users) => {
+  selectUsers.value = users
+}
+const SelectUserConfirm = (isConfirm, users) => {
+
+  if (!isConfirm) return
+  if (!users) return
+  // 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
+  users.forEach(x => {
+    if (userDialogTitle.value === 'user receiver') {
+      scheduleStore.addToReceivers(x)
+    }
+    scheduleStore.addToUserPool(x)
+  })
+}
+
 //用户选择框逻辑 END
+//=======================================================================================================
+
+// 人员池 tag 逻辑
+//=======================================================================================================
+const handleDeleteUser = (id) => {
+  scheduleStore.deleteUserofPool(id)
+}
+
+// 选中人员
+const handleSelectUser = (id) => {
+  const idPoolIndex = userPoolIds.value.indexOf(id)
+  const idReceiverIndex = curReceiverIDs.value.indexOf(id)
+  if (idReceiverIndex === -1) {
+    scheduleStore.addToReceivers(userPool.value[idPoolIndex])
+  }
+}
+
+//=======================================================================================================
+// 人员池 tag 逻辑 END
+
+
+// 执行人员池 逻辑
+// =======================================================================================================
+const handleSelectReceiverUser = (id) => {
+  console.log(id, '选中')
+  scheduleStore.getCurUserInfo(id, '2025-01-01', '2025-01-30')
+}
+
+const handleDeleteReceiverUser = (id) => {
+  console.log(id, '删除')
+  scheduleStore.deleteReceiverUser(id)
+}
+
+
+// =======================================================================================================
+// 执行人员池 逻辑 END
 
 import { VxeUI } from 'vxe-pc-ui'
 const btnGroupCellRender = reactive({
@@ -219,7 +298,7 @@ const btnGroupCellRender = reactive({
     { content: '删除', status: 'error', name: 'del' }
   ],
   events: {
-    click (cellParams, params) {
+    click(cellParams, params) {
       VxeUI.modal.message({
         content: `点击了 ${params.name}`,
         status: 'success'
@@ -228,10 +307,10 @@ const btnGroupCellRender = reactive({
   }
 })
 const tableData = ref([
-  { id: 10001, name: 'Test1',receiver:'陈成F', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
-  { id: 10002, name: 'Test2',receiver:'陈成F', role: 'Test', sex: 'Women', age: 22, address: 'Guangzhou' },
-  { id: 10003, name: 'Test3',receiver:'陈成F', role: 'PM', sex: 'Man', age: 32, address: 'Shanghai' },
-  { id: 10004, name: 'Test4',receiver:'陈成F', role: 'Designer', sex: 'Women', age: 24, address: 'Shanghai' }
+  { id: 10001, name: 'Test1', receiver: '陈成F', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
+  { id: 10002, name: 'Test2', receiver: '陈成F', role: 'Test', sex: 'Women', age: 22, address: 'Guangzhou' },
+  { id: 10003, name: 'Test3', receiver: '陈成F', role: 'PM', sex: 'Man', age: 32, address: 'Shanghai' },
+  { id: 10004, name: 'Test4', receiver: '陈成F', role: 'Designer', sex: 'Women', age: 24, address: 'Shanghai' }
 ])
 
 // 获取容器引用
@@ -332,4 +411,5 @@ const value = ref(true)
 
 .non_working_day {
   background-color: rgb(204, 152, 169) !important;
-}</style>
+}
+</style>

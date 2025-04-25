@@ -1,10 +1,10 @@
 <!-- MyButton.vue -->
 
 <template>
-    <el-select ref="selectRef" v-model="selectedValue" :placeholder="placeholder" :multiple="multiple" @focus="focus"
+    <el-select ref="selectRef" v-model="selectedValue" :placeholder="placeholder" :multiple="multiple" @focus="focus" :value-key="valueField"
         :clearable="clearable" :loading="loading" :filterable="filterable" :remote="remote" :remote-method="remoteMethod"
         style="width: 240px">
-        <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
+        <el-option v-for="item in options" :key="item[valueField]" :label="item[labelField]" :value="item" />
     </el-select>
 </template>
   
@@ -107,10 +107,9 @@ const loadOptions = async () => {
         }
         const data = response[props.dataFiled][props.itemsFiled]
         originData.value = Array.isArray(data) ? data : []
-        orginOptions.value = data.map((item) => {
-            return { label: item[props.labelField], value: item[props.valueField] }
-        });
+        orginOptions.value = Array.isArray(data) ? data : []
         options.value = orginOptions.value
+        console.log(options.value)
     } catch (error) {
         console.error('加载选项失败:', error)
     } finally {
@@ -127,7 +126,7 @@ const remoteMethod = (query) => {
     originData.value.forEach(x => {
         for (let i = 0; i < props.filterField.length; i++) {
             if (x[props.filterField[i]].includes(query)) {
-                filterData.push({ label: x[props.labelField], value: x[props.valueField] })
+                filterData.push(x)
                 return
             }
         }

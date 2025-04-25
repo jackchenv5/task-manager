@@ -3,6 +3,9 @@ import { get,patch} from '@/utils/httpData'
 // 获取用户任务数据
 export const getUserApi = (params) => get('/users', params)
 
+
+export const getUserDetailApi = (id) => get(`/users/${id}`);
+
 // 保存用户配置
 
 export const saveConfig = (id,data) => patch(`/users/${id}/`,{config:data})

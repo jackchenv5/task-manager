@@ -1,7 +1,7 @@
 <template>
-    <el-dialog v-model="dialogFormVisible" :title="title" width="60%">
+    <el-dialog v-model="dialogFormVisible" title="项目选择器" width="60%">
         <el-form :model="form">
-            <el-form-item label="用户选择：" :label-width="formLabelWidth">
+            <el-form-item label="项目选择：" :label-width="formLabelWidth">
                 <Select style="width: 95%;" v-model="selectedOption" :api="getUserApi" label-field="username"
                     value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
             </el-form-item>
@@ -18,10 +18,6 @@
 <script setup>
 
 const props = defineProps({
-    title:{
-        type:String,
-        default:'User Select'
-    },
     visible: {
         type: Boolean,
         default: false
