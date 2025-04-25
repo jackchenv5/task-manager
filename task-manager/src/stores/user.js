@@ -7,11 +7,13 @@ import { saveConfig } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    id: 608,
-    username: "陈成F",
+    id: 1001,
+    username: "陈菁菁",
     emp_num: "007101",
     role: "发布者",
-    config: {}
+    config: {"group": {"selectedGroup": "武汉测试处-产品组", "radio": "pending", "checkedMembers": ["刘兵"], "selectedProjects": ["RT-TT-2024-004_2025年路由器滚动版本项目"]},
+             "person": {"typeRadio": "pending"},
+        }
   })
 
   const login = () => {
@@ -29,10 +31,8 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
-  // 更新值后,自动保存
   const setUserConfig = (key, value) => {
     loginUser.value.config[key] = value
-    saveUserConfig()
     return true
   }
 
@@ -45,10 +45,8 @@ export const useUserStore = defineStore('user', () => {
     
   }
 
-  //TODO 验证是否更新成功
   const saveUserConfig = async () => {
     saveConfig(loginUser.value.id, loginUser.value.config)
-    
   }
 
   return { loginUser, checkAndLogin, getUserConfig, setUserConfig, saveUserConfig }

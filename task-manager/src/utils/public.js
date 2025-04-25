@@ -35,7 +35,9 @@ const FormatDate = (date) => {
 
 // 辅助函数：格式化日期为 YYYY-MM-DD ( VXE表格使用)
 const FormatVxeDate = (date) => {
-    if (!(date instanceof Date)) return date;
+    if (!(date instanceof Date)){
+        return date.split(' ')[0];
+    };
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -46,9 +48,9 @@ const FormatVxeDate = (date) => {
 const GetDayTotalWorkHours = (events) => {
     let totalHours = 0;
     events.forEach(e => {
-        totalHours += (e.hours / e.workdays);
+        totalHours += ((e.workload * 8) / e.diff_days);
     });
-    return totalHours.toFixed(2);
+    return totalHours.toFixed(1);
 }
 
 const GetProgressStatus = (process) => {

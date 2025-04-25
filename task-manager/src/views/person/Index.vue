@@ -15,7 +15,7 @@
       <div class="left">
         <div style="display: flex; justify-content: center; width: 100%; margin-top: 5px;">
           <div style="display: flex; align-items: center; width: 100%; max-width: 800px; position: relative;">
-            <el-radio-group v-model="typeRadio" size="small" style="flex-grow: 1; justify-content: center;">
+            <el-radio-group v-model="typeRadio" size="small" style="flex-grow: 1; justify-content: center;" @change="handleRadioChange">
               <el-radio-button label="所有任务" value="all"></el-radio-button>
               <el-radio-button label="待下发" value="pending"></el-radio-button>
               <el-radio-button label="进行中" value="running"></el-radio-button>
@@ -56,7 +56,7 @@
                   <div class="detail-item">
                     <span class="detail-label">任务名称</span>
                     <el-input 
-                      v-model="currentTask.row.text" 
+                      v-model="currentTask.row.name" 
                       readonly 
                       class="detail-input"
                       :title="currentTask.row.id"
@@ -65,7 +65,7 @@
                   <div class="detail-item">
                     <span class="detail-label">工作量</span>
                     <el-input 
-                      :value="currentTask.row.hours + ' 天'" 
+                      :value="currentTask.row.workload + ' 天'" 
                       readonly 
                       class="detail-input"
                     />
@@ -79,7 +79,7 @@
                     <el-input
                       type="textarea"
                       :rows="3"
-                      :value="currentTask.row.cc || '无'"
+                      :value="currentTask.row.sender || '无'"
                       readonly
                       resize="none"
                       class="detail-textarea cc-textarea"
@@ -99,26 +99,53 @@
                   </div>
                 </div>
 
-                <!-- 项目和关联任务 -->
+                <!-- 项目 -->
                 <div class="detail-row">
                   <div class="detail-item full-width">
-                    <span class="detail-label">项目信息</span>
+                    <span class="detail-label">项目</span>
                     <el-input 
-                      :value="`${currentTask.row.project || '无'} ${currentTask.row.relatedTasks ? '(关联任务: ' + currentTask.row.relatedTasks.map(t => t.text).join(', ') + ')' : ''}`" 
+                      :value="`${currentTask.row.project || '无'}`" 
                       readonly 
                       class="detail-input"
                     />
                   </div>
                 </div>
 
-                <!-- 任务内容和挑战目标 -->
+                <!-- 关联任务 -->
                 <div class="detail-row">
                   <div class="detail-item full-width">
-                    <span class="detail-label">内容与目标</span>
+                    <span class="detail-label">关联任务</span>
+                    <el-input 
+                      :value="`${currentTask.row.related_task || '无'}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 任务内容 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">任务内容</span>
                     <el-input
                       type="textarea"
                       :rows="3"
-                      :value="`任务内容: ${currentTask.row.detail || '无'}\n挑战目标: ${currentTask.row.challenge || '无'}`"
+                      :value="`${currentTask.row.content || '无'}`"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 挑战目标 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">挑战目标</span>
+                    <el-input
+                      type="textarea"
+                      :rows="3"
+                      :value="`${currentTask.row.challenge || '无'}`"
                       readonly
                       resize="none"
                       class="detail-textarea"
@@ -146,15 +173,15 @@
                   <div class="detail-item">
                     <span class="detail-label">完成度</span>
                     <el-progress 
-                      :percentage="parseInt(currentTask.row.process || 0)" 
-                      :status="getProgressStatus(currentTask.row.process)"
+                      :percentage="parseInt(currentTask.row.progress || 0)" 
+                      :status="getProgressStatus(currentTask.row.progress)"
                       style="width: 200px;"
                     />
                   </div>
                   <div class="detail-item">
                     <span class="detail-label">实际工作量</span>
                     <el-input 
-                      :value="(currentTask.row.actualHours || '0') + ' 天'" 
+                      :value="(currentTask.row.act_workload || '0') + ' 天'" 
                       readonly 
                       class="detail-input"
                     />
@@ -263,13 +290,13 @@
           @cell-dblclick="handleRowDblClick"  
           :row-config="{ isHover: true }"
           :row-class-name="tableRowClassName">
-          <vxe-column field="text" title="任务名" width="20%" show-overflow></vxe-column>
-          <vxe-column field="status" title="状态" width="10%"></vxe-column>
+          <vxe-column field="name" title="任务名" width="18%" show-overflow></vxe-column>
+          <vxe-column field="status_name" title="状态" width="10%"></vxe-column>
           <vxe-column field="start_date" title="开始时间" width="15%" show-overflow></vxe-column>
           <vxe-column field="end_date" title="截止时间" width="15%" show-overflow></vxe-column>
-          <vxe-column field="hours" title="工作量(h)" width="10%"></vxe-column>
-          <vxe-column field="project" title="项目" width="20%" show-overflow></vxe-column>
-          <vxe-column field="tl" title="TL" width="10%"></vxe-column>
+          <vxe-column field="workload" title="工作量(天)" width="12%"></vxe-column>
+          <vxe-column field="project" title="项目" width="18%" show-overflow></vxe-column>
+          <vxe-column field="creator_name" title="创建人" width="11%"></vxe-column>
         </vxe-table>
       </div>
     </div>
@@ -277,7 +304,7 @@
     <div v-if="selectedRow" style="width:100%;">
       <el-form :model="form" label-width="auto" style="width: 100%;margin-top:10px">
         <el-form-item label="任务反馈:" style="margin-bottom: 10px;">
-          <el-text type="primary" style="margin-left: 10px;">{{ selectedRow ? selectedRow.row.text : '未选择任务' }}</el-text>
+          <el-text type="primary" style="margin-left: 10px;">{{ selectedRow ? selectedRow.row.name : '未选择任务' }}</el-text>
         </el-form-item>
         
         <el-form-item style="margin-bottom: 22px;">
@@ -333,20 +360,16 @@ const filteredTasks = computed(() => {
   let filtered = myTotalTasks.value;
   if (typeRadio.value !== 'all') {
     filtered = filtered.filter(event => {
-      if (typeRadio.value === 'pending') return event.status === '待下发';
-      if (typeRadio.value === 'running') return event.status === '进行中';
-      if (typeRadio.value === 'done') return event.status === '已完成';
+      if (typeRadio.value === 'pending') return event.status_name === '待下发';
+      if (typeRadio.value === 'running') return event.status_name === '进行中';
+      if (typeRadio.value === 'done') return event.status_name === '已完成';
       return true;
     });
   }
   return filtered.map(task => ({
     ...task,
-    start_date: task.start_date instanceof Date 
-      ? formatVxeDate(task.start_date) 
-      : task.start_date,
-    end_date: task.end_date instanceof Date 
-      ? formatVxeDate(task.end_date) 
-      : task.end_date,
+    start_date: formatVxeDate(task.start_date),
+    end_date: formatVxeDate(task.end_date),
   }));
 });
 
@@ -356,20 +379,20 @@ const stats = computed(() => {
   
   // 1. 计算基础数据
   const totalTasks = filtered.length;
-  const completedTasks = filtered.filter(t => t.status === '已完成').length;
+  const completedTasks = filtered.filter(t => t.status_name === '已完成').length;
   
   // 2. 计算总工作量（所有任务的hours之和）
-  const totalHours = filtered.reduce((sum, task) => sum + task.hours, 0);
+  const totalHours = filtered.reduce((sum, task) => sum + (task.workload*8), 0);
   
   // 3. 计算任务饱和度
-  const totalWorkdays = filtered.reduce((sum, task) => sum + task.workdays, 0);
+  const totalWorkdays = filtered.reduce((sum, task) => sum + task.diff_days, 0);
   const saturation = (totalHours / (totalWorkdays * 8)) * 100; // 转为百分比
   
   // 4. 计算待完成工作量
   const remainingHours = filtered.reduce((sum, task) => {
-    if (task.status === '进行中') {
-      const completed = task.hours * (parseFloat(task.process) / 100);
-      return sum + (task.hours - completed);
+    if (task.status_name === '进行中') {
+      const completed = task.workloads * (parseFloat(task.progress) / 100);
+      return sum + (task.workloads - completed);
     }
     return sum;
   }, 0);
@@ -418,7 +441,6 @@ const getInitViewTemplate = (date) => {
     // 计算有效工作日的任务数量以及任务饱和度
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const totalHours = getDayTotalWorkHours(events);
-
     // 单元框背景色
     const bgColor = totalHours > 8 ? "#ffdddd" : 
                         totalHours === 8 ? "#ddffdd" : "#fff3dd";
@@ -436,7 +458,7 @@ const getInitViewTemplate = (date) => {
 };
 
 // 监听视图变化
-scheduler.attachEvent('onViewChange', (view, date) => {
+scheduler.attachEvent('onViewChange', async (view, date) => {
   if (view === 'month') {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -447,7 +469,8 @@ scheduler.attachEvent('onViewChange', (view, date) => {
     const startDate = formatDate(firstDay);
     const endDate = formatDate(lastDay);
     
-    myPersonStore.getPersonTasks(startDate, endDate);
+    await myPersonStore.getPersonTasks(startDate, endDate);
+    scheduler.clearAll();
     scheduler.parse(toRaw(myTotalTasks.value));
     scheduler.updateView();
     selectedDates.value.clear();
@@ -578,25 +601,24 @@ const updateStatsForSelectedDates = () => {
       const taskId = e.id;
       if (tmpSelectedTask.includes(taskId)) return;
       tmpSelectedTask.push(taskId);
-      const taskStatus = e.status;
-      const taskHours = e.hours;
-      const taskRemain = taskHours * (1 - parseFloat(e.process) / 100);
-      const taskWorkdays = e.workdays
+      const taskStatus = e.status_name;
+      const taskHours = e.workload * 8;
+      const taskRemain = taskHours * (1 - parseFloat(e.progress) / 100);
+      const taskWorkdays = e.workload
       
       if (taskStatus === "已完成") completed += 1;
       totalHours += taskHours;
       totalRemain += taskRemain;
       totalTasks += 1;
-      totalWorkdays += e.workdays
+      totalWorkdays += e.workload
     });
   });
-  console.log(totalHours, totalWorkdays);
   stats.saturation = `${Math.min(100, Math.round((totalHours / (8 * totalWorkdays)) * 100))}%`;
   stats.completed = completed;
   stats.totalTasks = totalTasks;
   stats.total = `${totalHours.toFixed(1)}小时`;
   stats.remaining = `${totalRemain.toFixed(1)}小时`;
-  
+ 
   updatemyTotalTasks();
 };
 
@@ -609,7 +631,7 @@ const updatemyTotalTasks = () => {
     allEvents.push(...events);
   });
   
-  myTotalTasks.value = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
+  myPersonStore.allTask = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
 };
 
 // 处理日期点击事件
@@ -636,9 +658,11 @@ const onSubmit = () => {
   console.log('submit!')
 }
 
-onMounted(() => {
+onMounted(async () => {
   // 初始化加载数据
-  myPersonStore.getPersonTasks()
+  await myPersonStore.getPersonTasks()
+  console.log(myPersonStore.personCfg);
+  typeRadio.value = myPersonStore.personCfg["typeRadio"] ? myPersonStore.personCfg["typeRadio"] : "all";
 
   // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler)
@@ -650,9 +674,10 @@ onMounted(() => {
     'today',
     'next',
   ];
+  scheduler.config.row_height = 80;
   scheduler.init(schedulerContainer.value, new Date(), 'month');
   scheduler.templates.month_day = getInitViewTemplate;
-  scheduler.parse(toRaw(myTotalTasks.value));
+  scheduler.parse(toRaw(myTotalTasks));
   scheduler.updateView();
 
   scheduler.attachEvent("onEmptyClick", function(date, event){  
@@ -680,6 +705,10 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('mouseup', handleMouseUp);
 });
+
+const handleRadioChange = (val) => {
+  myPersonStore.updatePersonCfg["typeRadio"] = val;
+};
 </script>
 
 <style>
@@ -723,6 +752,10 @@ onUnmounted(() => {
 .dhx_cal_data .dhx_month_body, 
 .dhx_cal_data .dhx_month_head {
     height: 100% !important;
+}
+
+.dhx_cal_month_row {
+  height: 100px !important;
 }
 
 .month_day_events {

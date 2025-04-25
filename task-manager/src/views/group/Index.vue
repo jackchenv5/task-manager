@@ -14,10 +14,10 @@
               @change="handleGroupChange"
             >
               <el-option
-                v-for="item in groupOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
+                v-for="item in groups"
+                :key="item.id"
+                :label="item.name"
+                :value="item"
               />
             </el-select>
           </p>
@@ -137,7 +137,7 @@
                   <div class="detail-item">
                     <span class="detail-label">任务名称</span>
                     <el-input 
-                      v-model="currentTask.row.text" 
+                      v-model="currentTask.row.name" 
                       readonly 
                       class="detail-input"
                       :title="currentTask.row.id"
@@ -146,7 +146,7 @@
                   <div class="detail-item">
                     <span class="detail-label">工作量</span>
                     <el-input 
-                      :value="currentTask.row.hours + ' 天'" 
+                      :value="currentTask.row.workload + ' 天'" 
                       readonly 
                       class="detail-input"
                     />
@@ -160,7 +160,7 @@
                     <el-input
                       type="textarea"
                       :rows="3"
-                      :value="currentTask.row.cc || '无'"
+                      :value="currentTask.row.sender || '无'"
                       readonly
                       resize="none"
                       class="detail-textarea cc-textarea"
@@ -180,26 +180,53 @@
                   </div>
                 </div>
 
-                <!-- 项目和关联任务 -->
+                <!-- 项目 -->
                 <div class="detail-row">
                   <div class="detail-item full-width">
-                    <span class="detail-label">项目信息</span>
+                    <span class="detail-label">项目</span>
                     <el-input 
-                      :value="`${currentTask.row.project || '无'} ${currentTask.row.relatedTasks ? '(关联任务: ' + currentTask.row.relatedTasks.map(t => t.text).join(', ') + ')' : ''}`" 
+                      :value="`${currentTask.row.project || '无'}`" 
                       readonly 
                       class="detail-input"
                     />
                   </div>
                 </div>
 
-                <!-- 任务内容和挑战目标 -->
+                <!-- 关联任务 -->
                 <div class="detail-row">
                   <div class="detail-item full-width">
-                    <span class="detail-label">内容与目标</span>
+                    <span class="detail-label">关联任务</span>
+                    <el-input 
+                      :value="`${currentTask.row.related_task || '无'}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 任务内容 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">任务内容</span>
                     <el-input
                       type="textarea"
                       :rows="3"
-                      :value="`任务内容: ${currentTask.row.detail || '无'}\n挑战目标: ${currentTask.row.challenge || '无'}`"
+                      :value="`${currentTask.row.content || '无'}`"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 挑战目标 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">挑战目标</span>
+                    <el-input
+                      type="textarea"
+                      :rows="3"
+                      :value="`${currentTask.row.challenge || '无'}`"
                       readonly
                       resize="none"
                       class="detail-textarea"
@@ -227,15 +254,15 @@
                   <div class="detail-item">
                     <span class="detail-label">完成度</span>
                     <el-progress 
-                      :percentage="parseInt(currentTask.row.process || 0)" 
-                      :status="getProgressStatus(currentTask.row.process)"
+                      :percentage="parseInt(currentTask.row.progress || 0)" 
+                      :status="getProgressStatus(currentTask.row.progress)"
                       style="width: 200px;"
                     />
                   </div>
                   <div class="detail-item">
                     <span class="detail-label">实际工作量</span>
                     <el-input 
-                      :value="(currentTask.row.actualHours || '0') + ' 天'" 
+                      :value="(currentTask.row.act_workload || '0') + ' 天'" 
                       readonly 
                       class="detail-input"
                     />
@@ -339,14 +366,14 @@
             @checkbox-all="selectAllChangeEvent"
             @checkbox-change="selectChangeEvent">
             <vxe-column type="checkbox" width="5%"></vxe-column>
-            <vxe-column field="text" title="任务名" width="12%" show-overflow></vxe-column>
-            <vxe-column field="status" title="状态" width="10%"></vxe-column>
+            <vxe-column field="name" title="任务名" width="12%" show-overflow></vxe-column>
+            <vxe-column field="status_name" title="状态" width="10%"></vxe-column>
             <vxe-column field="start_date" title="开始时间" width="15%"></vxe-column>
-            <vxe-column field="end_date" title="截止时间" width="15%"></vxe-column>
-            <vxe-column field="hours" title="工作量(h)" width="10%"></vxe-column>
+            <vxe-column field="end_date" title="截止时间" width="15%" show-overflow></vxe-column>
+            <vxe-column field="workload" title="工作量(天)" width="10%"></vxe-column>
             <vxe-column field="project" title="项目" width="12%" show-overflow></vxe-column>
-            <vxe-column field="tl" title="TL" width="10%"></vxe-column>
-            <vxe-column field="worker" title="执行人" width="11%"></vxe-column>
+            <vxe-column field="creator_name" title="创建人" width="10%"></vxe-column>
+            <vxe-column field="receiver_name" title="执行人" width="11%"></vxe-column>
           </vxe-table>
         </div>
     </div>
@@ -365,15 +392,9 @@ import { useGroupStore } from '@/stores/group'
 
 const myGroupStore = useGroupStore()
 const myTotalTasks = computed(() => myGroupStore.allTask)
+const groups = computed(() => myGroupStore.allGroup)
 
 const taskTable = ref()
-// const myTotalTasks = ref([
-//   { id: 10001, text: 'Test1xxxxx', status: '进行中', start_date: '2025-02-01', end_date: '2025-02-03', hours: 28, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '30%', workdays: 1},
-//   { id: 10002, text: 'Test2', status: '进行中', start_date: '2025-02-03', end_date: '2025-02-05', hours: 21, project: '项目2', tl: '朱标', worker: '李四', process: '0%', workdays: 3 },
-//   { id: 10003, text: 'Test3', status: '待下发', start_date: '2025-02-05', end_date: '2025-02-08', hours: 30, project: '项目3', tl: '朱允炆', worker: '王五', process: '0%', workdays: 3 },
-//   { id: 10004, text: 'Test4', status: '已完成', start_date: '2025-02-08', end_date: '2025-02-15', hours: 42, project: '项目4', tl: '朱厚熜', worker: '诸葛亮', process: '100%', workdays: 6 },
-//   { id: 10005, text: 'Test5', status: '已完成', start_date: '2025-02-15', end_date: '2025-02-28', hours: 80, project: '项目5', tl: '朱由检', worker: '孙权', process: '100%', workdays: 10 }
-// ])
 const selectAllChangeEvent = ({ checked }) => {
   const $table = taskTable.value
   if ($table) {
@@ -397,16 +418,16 @@ const filteredTasks = computed(() => {
   let filtered = myTotalTasks.value;
   if (radio1.value !== 'all') {
     filtered = filtered.filter(event => {
-      if (radio1.value === 'pending') return event.status === '待下发';
-      if (radio1.value === 'running') return event.status === '进行中';
-      if (radio1.value === 'done') return event.status === '已完成';
+      if (radio1.value === 'pending') return event.status_name === '待下发';
+      if (radio1.value === 'running') return event.status_name === '进行中';
+      if (radio1.value === 'done') return event.status_name === '已完成';
       return true;
     });
   }
 
   // 再根据 checkedMembers 过滤 worker（不检查 tl）
   filtered = filtered.filter(event => 
-    checkedMembers.value.includes(event.worker)
+    checkedMembers.value.includes(event.receiver_name)
   );
 
   // 最后根据 selectedProjects 过滤项目
@@ -430,12 +451,8 @@ const filteredTasks = computed(() => {
 
   return filtered.map(task => ({
     ...task,
-    start_date: task.start_date instanceof Date 
-      ? formatVxeDate(task.start_date) 
-      : task.start_date,
-    end_date: task.end_date instanceof Date 
-      ? formatVxeDate(task.end_date) 
-      : task.end_date,
+    start_date: formatVxeDate(task.start_date),
+    end_date: formatVxeDate(task.end_date),
   }));
 });
 
@@ -482,9 +499,20 @@ const getInitViewTemplate = (date) => {
 
 // 获取容器引用
 const schedulerContainer = ref(null);
-onMounted(() => {
+onMounted(async () => {
+  // 根据userStores中存储的数据确定加载哪个组的数据 TODO
   // 初始化加载数据
-  myGroupStore.getAllTask('2025-02-01', '2025-02-28')
+  await myGroupStore.getAllTask();
+  await myGroupStore.getAllGroup();
+  console.log(myGroupStore.groupCfg);
+  selectedGroup.value = myGroupStore.groupCfg["selectedGroup"] ? myGroupStore.groupCfg["selectedGroup"] : "";
+  radio1.value = myGroupStore.groupCfg["radio"] ? myGroupStore.groupCfg["radio"] : "";
+  checkedMembers.value = myGroupStore.groupCfg["checkedMembers"] ? myGroupStore.groupCfg["checkedMembers"] : [];
+  selectedProjects.value = myGroupStore.groupCfg["selectedProjects"] ? myGroupStore.groupCfg["selectedProjects"] : [];
+  console.log(selectedGroup.value);
+  console.log(radio1.value);
+  console.log(checkedMembers.value);
+  console.log(selectedProjects.value);
 
   // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler);
@@ -496,115 +524,55 @@ onMounted(() => {
     'today',
     'next',
   ];
-  scheduler.init(schedulerContainer.value, new Date(2025, 1, 1), 'month');
-  // scheduler.templates.event_bar_text = function() { return ""; };
-  // scheduler.templates.event_text = function() { return ""; };
+  scheduler.init(schedulerContainer.value, new Date(), 'month');
   scheduler.templates.month_day = getInitViewTemplate;
   scheduler.parse(toRaw(myTotalTasks.value));
   scheduler.updateView();
 
-  // 这里需要根据后端返回的配置来确定当前是否是第一次操作
-  switchButtonValue.value = true;
-  handleToggleAll(true);
 });
 
 // ---*--- 组员变化相关方法 ---*---
 // 处理组选择变化
-const handleGroupChange = (value) => {
-  selectedGroup.value = value
+const handleGroupChange = (group) => {
+  console.log(group);
+  selectedGroup.value = group.name;
+  // 更新任务信息
+  // 获取当前视图状态
+  const state = scheduler.getState();
+
+  // 获取当前视图的第一天
+  const start_date = state.min_date; 
+
+  // 获取当前视图的最后一天
+  const end_date = state.max_date;
+
+  console.log("第一天:", formatVxeDate(start_date));
+  console.log("最后一天:", formatVxeDate(end_date));
+  myGroupStore.getAllTask(group.id, start_date, end_date);
 }
 
 // 计算当前组成员数
 const currentMemberCount = computed(() => {
-  const group = groupOptions.value.find(g => g.value === selectedGroup.value)
-  return group ? group.members.length : 0
+  const group = groups.value.find(g => g.name === selectedGroup.value);
+  return group ? group.users.length : 0
 })
 
-// 计算当前组总工作量
+// 计算当前组总工作量 
 const currentTotalHours = computed(() => {
-  const group = groupOptions.value.find(g => g.value === selectedGroup.value)
-  return group ? group.hours : 0
+  // 计算总工作量（所有任务的工作天数*8之和）
+  return myGroupStore.allTask.reduce((sum, task) => sum + (task.workload*8), 0);
 })
-
-// 这个数据也需要从后端传过来
-const groupOptions = ref([
-  {
-    value: '60',
-    label: '业务组有线团队',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 80
-  },
-  {
-    value: '59',
-    label: '业务组无线团队',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 60
-  },
-  {
-    value: '26',
-    label: '业务测试出-基础测试组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 70
-  },
-  {
-    value: '25',
-    label: '武汉测试处-产品组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 90
-  },
-  {
-    value: '24',
-    label: '武汉测试处-安全组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 120
-  },
-  {
-    value: '23',
-    label: '业务测试处-业务测试组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 60
-  },
-  {
-    value: '22',
-    label: '系统处-数据中心组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 10
-  },
-  {
-    value: '20',
-    label: '效能处自动化组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 50
-  },
-  {
-    value: '6',
-    label: '业务测试处-协议测试组',
-    members: ['张三', '李四', '王五', '诸葛亮', '许攸', '孙权', '李连杰', '周星驰', '刘亦菲'],
-    hours: 90
-  },
-  {
-    value: '1',
-    label: '效能处工具组',
-    members: ['张涛', '张世伟', '王俊坤', '乔志', '陈成'],
-    hours: 180
-  },
-])
 
 // 这个数据需要从后端传过来
-const selectedGroup = ref(groupOptions.value[0]?.value || '')
+const selectedGroup = ref('')
 
 // 当前选中的人员
 const checkedMembers = ref([])
 
 // 计算当前组的成员列表
 const currentGroupMembers = computed(() => {
-  const group = groupOptions.value.find(g => g.value === selectedGroup.value)
-
-  // 初始化状态和人员选择
-  radio1.value = "all";
-  switchButtonValue.value = false;
-  checkedMembers.value = []; // 清空选中成员
-  return group ? group.members : []
+  const group = groups.value.find(g => g.name === selectedGroup.value)
+  return group ? group.users : []
 })
 
 // ---*--- 状态人员变化相关方法 ---*---
@@ -624,7 +592,7 @@ const handleToggleAll = (isChecked) => {
     checkedMembers.value = [...currentGroupMembers.value]; // 选中所有成员
     // 获取当前选中成员对应的所有项目（去重）
     const projectsForMembers = myTotalTasks.value
-      .filter(task => checkedMembers.value.includes(task.worker))
+      .filter(task => checkedMembers.value.includes(task.receiver_name))
       .map(task => task.project);
     selectedProjects.value = [...new Set(projectsForMembers)]; // 去重后赋值
   } else {
@@ -645,7 +613,7 @@ const filteredProjects = computed(() => {
   
   // 1. 先筛选出 worker 在 checkedMembers 中的任务
   const tasksForMembers = myTotalTasks.value.filter(task => 
-    checkedMembers.value.includes(task.worker)
+    checkedMembers.value.includes(task.receiver_name)
   );
   
   // 2. 提取不重复的 project 列表
@@ -691,20 +659,20 @@ const stats = computed(() => {
   
   // 1. 计算基础数据
   const totalTasks = filtered.length;
-  const completedTasks = filtered.filter(t => t.status === '已完成').length;
+  const completedTasks = filtered.filter(t => t.status_name === '已完成').length;
   
-  // 2. 计算总工作量（所有任务的hours之和）
-  const totalHours = filtered.reduce((sum, task) => sum + task.hours, 0);
+  // 2. 计算总工作量（所有任务的工作天数*8之和）
+  const totalHours = filtered.reduce((sum, task) => sum + (task.workload*8), 0);
   
   // 3. 计算任务饱和度
-  const totalWorkdays = filtered.reduce((sum, task) => sum + task.workdays, 0);
+  const totalWorkdays = filtered.reduce((sum, task) => sum + task.workload, 0);
   const saturation = (totalHours / (totalWorkdays * 8)) * 100; // 转为百分比
   
   // 4. 计算待完成工作量
   const remainingHours = filtered.reduce((sum, task) => {
-    if (task.status === '进行中') {
-      const completed = task.hours * (parseFloat(task.process) / 100);
-      return sum + (task.hours - completed);
+    if (task.status_name === '进行中') {
+      const completed = task.workload*8 * (parseFloat(task.progress) / 100);
+      return sum + (task.workload * 8 - completed);
     }
     return sum;
   }, 0);
@@ -782,24 +750,24 @@ const updateStatsForSelectedDates = () => {
       const taskId = e.id;
       if (tmpSelectedTask.includes(taskId)) return;
       tmpSelectedTask.push(taskId);
-      const taskStatus = e.status;
-      const taskHours = e.hours;
-      const taskRemain = taskHours * (1 - parseFloat(e.process) / 100);
-      const taskWorkdays = e.workdays
+      const taskStatus = e.status_name;
+      const taskHours = e.workload * 8;
+      const taskRemain = taskHours * (1 - parseFloat(e.progress) / 100);
+      const taskWorkdays = e.workload
       
       if (taskStatus === "已完成") completed += 1;
       totalHours += taskHours;
       totalRemain += taskRemain;
       totalTasks += 1;
-      totalWorkdays += e.workdays
+      totalWorkdays += e.workload
     });
   });
-  stats.saturation = `${(totalHours / (8 * totalWorkdays)) * 100}%`;
+  stats.saturation = `${Math.min(100, Math.round((totalHours / (8 * totalWorkdays)) * 100))}%`;
   stats.completed = completed;
   stats.totalTasks = totalTasks;
   stats.total = `${totalHours.toFixed(1)}小时`;
   stats.remaining = `${totalRemain.toFixed(1)}小时`;
-  
+ 
 };
 
 // ---*--- 处理多选日期事件 ---*---
@@ -890,23 +858,23 @@ const handleMouseUp = () => {
 
 // ---*--- 处理日历视图切换事件 ---*---
 // 监听视图变化
-  scheduler.attachEvent('onViewChange', (view, date) => {
-    if (view === 'month') {
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1;
-      
-      const firstDay = new Date(year, month - 1, 1);
-      const lastDay = new Date(year, month, 0);
-      
-      const startDate = formatDate(firstDay);
-      const endDate = formatDate(lastDay);
-      
-      myGroupStore.getAllTask(startDate, endDate);
-      scheduler.parse(toRaw(myTotalTasks.value));
-      scheduler.updateView();
-      selectedDates.value.clear();
-    }
-  });
+scheduler.attachEvent('onViewChange', (view, date) => {
+  if (view === 'month') {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+    
+    const startDate = formatDate(firstDay);
+    const endDate = formatDate(lastDay);
+    
+    myGroupStore.getAllTask(startDate, endDate);
+    scheduler.parse(toRaw(myTotalTasks.value));
+    scheduler.updateView();
+    selectedDates.value.clear();
+  }
+});
 
 // ---*--- 处理表格双击事件 ---*---
 const showDetailPanel = ref(false);
@@ -985,6 +953,10 @@ const dispatchTasks = () => {
 
 .dhx_cal_month_cell {
   user-select: none;
+}
+
+.dhx_cal_month_row {
+  height: 100px !important;
 }
 
 .month_day_events {
