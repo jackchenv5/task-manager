@@ -450,7 +450,7 @@ const getInitViewTemplate = (date) => {
           <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
             ${date.getDate()}
           </div>
-          <div class="month_day_events" title="任务数量-总工作量">
+          <div class="month_day_events" title="当天任务数量-当天任务需要的总工时">
             ${events.length || '0'}-${totalHours}
           </div>
         </div>
@@ -707,7 +707,7 @@ onUnmounted(() => {
 });
 
 const handleRadioChange = (val) => {
-  myPersonStore.updatePersonCfg["typeRadio"] = val;
+  myPersonStore.personCfg["typeRadio"] = val;
 };
 </script>
 

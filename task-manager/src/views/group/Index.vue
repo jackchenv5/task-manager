@@ -25,7 +25,7 @@
           <p>总工作量：<span>{{ currentTotalHours }}h</span></p>
         </div>
         <div style="height:14vh;width: 65%;border: 1px solid rgb(93, 168, 230);border-radius: 5px;padding: 5px;">
-          <el-form :model="form" label-width="auto" style="max-width: 600px">
+          <el-form label-width="auto" style="max-width: 600px">
             <el-row :gutter="20"> <!-- 列间距 -->
               <el-col :span="16">
                 <el-form-item label="状态：">
@@ -52,11 +52,11 @@
 
             <el-form-item label="人员：">
               <el-checkbox-group v-model="checkedMembers" size="small">
-                <div style="overflow-x: auto;padding:2px">
+                <div style="overflow: auto;padding:2px; height: 8vh">
                   <el-checkbox-button 
                     v-for="member in currentGroupMembers" 
                     :key="member" 
-                    :label="member"
+                    :value="member"
                     style="margin:3px"
                   >
                     {{ member }}
@@ -67,41 +67,40 @@
           </el-form>
         </div>
       </div>
-        <el-select
-          v-model="selectedProjects"
-          multiple
-          filterable
-          placeholder="参与项目"
-          :disabled="checkedMembers.length === 0"
-          @visible-change="handleDropdownOpen"
-          @click="handleProjectSelectClick"
-        >
-          <!-- 全选选项（固定在顶部） -->
-          <el-option
-            v-if="filteredProjects.length > 0"
-            class="select-all-option"
-            label="全选"
-            value="SELECT_ALL"
-            @click="toggleSelectAll"
-          >
-            <span style="font-weight: bold">{{ selectedProjects.length > 0 ? '全不选' : '全选' }}</span>
-          </el-option>
+      <el-select
+  v-model="selectedProjects"
+  multiple
+  collapse-tags  
+  collapse-tags-tooltip  
+  style="max-height: 100px; overflow-y: auto;" 
+  filterable
+  placeholder="参与项目"
+  :disabled="checkedMembers.length === 0"
+  @visible-change="handleDropdownOpen"
+  @click="handleProjectSelectClick"
+>
+  <!-- 全选选项 -->
+  <el-option
+    v-if="filteredProjects.length > 0"
+    class="select-all-option"
+    style="position: sticky; top: 0; background: white; z-index: 1;"
+    label="全选"
+    value="SELECT_ALL"
+    @click="toggleSelectAll"
+  >
+    <span style="font-weight: bold">
+      {{ selectedProjects.length > 0 ? '全不选' : '全选' }}
+    </span>
+  </el-option>
 
-          <!-- 搜索框（通过 filterable 自动启用，此处为样式优化） -->
-          <template #prefix>
-            <el-icon :size="14" style="margin-top: 5px">
-              <Search />
-            </el-icon>
-          </template>
-
-          <!-- 项目列表 -->
-          <el-option
-            v-for="item in filteredProjects"
-            :key="item"
-            :label="item"
-            :value="item"
-          />
-        </el-select>
+  <!-- 项目列表 -->
+  <el-option
+    v-for="item in filteredProjects"
+    :key="item"
+    :label="item"
+    :value="item"
+  />
+</el-select>
       <div 
       ref="schedulerContainer" 
       style="width: 100%;height:70vh;"
@@ -360,7 +359,8 @@
         <vxe-table
             ref="taskTable"
             border
-            highlight-hover-row
+            :row-config="{ isHover: true }"
+            max-height="500"
             :data="filteredTasks"
             @cell-dblclick="handleRowDblClick"  
             @checkbox-all="selectAllChangeEvent"
@@ -454,6 +454,7 @@ const filteredTasks = computed(() => {
     start_date: formatVxeDate(task.start_date),
     end_date: formatVxeDate(task.end_date),
   }));
+  console.log(filtered);
 });
 
 // 设置日历初始渲染方式
@@ -478,12 +479,13 @@ const getInitViewTemplate = (date) => {
 
     // const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
-    const totalHours = getDayTotalWorkHours(events)
-    const currSaturation = Math.round( totalHours / 8 * 100) + "%";
+    const totalHours = getDayTotalWorkHours(events);
+    const saturation = Math.round( totalHours / (8 * currentGroupMembers.value.length) ) * 100
+    const currSaturation = saturation  + "%";
 
     // 单元狂背景色
-    const bgColor = totalHours > 8 ? "#ffdddd" : 
-                        totalHours === 8 ? "#ddffdd" : "#fff3dd";
+    const bgColor = saturation > 100  ? "#ffdddd" : 
+                        saturation === 100 ? "#ddffdd" : "#fff3dd";
 
     return `
         <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
@@ -500,19 +502,18 @@ const getInitViewTemplate = (date) => {
 // 获取容器引用
 const schedulerContainer = ref(null);
 onMounted(async () => {
-  // 根据userStores中存储的数据确定加载哪个组的数据 TODO
+  // 根据userStores中存储的数据确定加载哪个组的数据
   // 初始化加载数据
-  await myGroupStore.getAllTask();
+  await myGroupStore.getAllTask(myGroupStore.groupId);
   await myGroupStore.getAllGroup();
+  myGroupStore.getGroupCfg();
   console.log(myGroupStore.groupCfg);
-  selectedGroup.value = myGroupStore.groupCfg["selectedGroup"] ? myGroupStore.groupCfg["selectedGroup"] : "";
-  radio1.value = myGroupStore.groupCfg["radio"] ? myGroupStore.groupCfg["radio"] : "";
-  checkedMembers.value = myGroupStore.groupCfg["checkedMembers"] ? myGroupStore.groupCfg["checkedMembers"] : [];
-  selectedProjects.value = myGroupStore.groupCfg["selectedProjects"] ? myGroupStore.groupCfg["selectedProjects"] : [];
-  console.log(selectedGroup.value);
-  console.log(radio1.value);
-  console.log(checkedMembers.value);
-  console.log(selectedProjects.value);
+  selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
+  radio1.value = myGroupStore.groupCfg['radio'];
+  checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
+  selectedProjects.value = myGroupStore.groupCfg['selectedProjects'];
+  switchButtonValue.value = myGroupStore.groupCfg['switchButtonValue'];
+  console.log(switchButtonValue.value);
 
   // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler);
@@ -533,22 +534,47 @@ onMounted(async () => {
 
 // ---*--- 组员变化相关方法 ---*---
 // 处理组选择变化
-const handleGroupChange = (group) => {
+const handleGroupChange = async (group) => {
   console.log(group);
   selectedGroup.value = group.name;
   // 更新任务信息
   // 获取当前视图状态
-  const state = scheduler.getState();
+  var state = scheduler.getState();
+  var currentMonth = state.date.getMonth() + 1; // 月份从0开始，所以要+1
+  var currentYear = state.date.getFullYear();
+  console.log('currentMonth: ', currentMonth);
+  const firstDay = new Date(currentYear, currentMonth - 1, 1);
+  const lastDay = new Date(currentYear, currentMonth, 0);
+    
+  const startDate = formatDate(firstDay);
+  const endDate = formatDate(lastDay);
 
-  // 获取当前视图的第一天
-  const start_date = state.min_date; 
-
-  // 获取当前视图的最后一天
-  const end_date = state.max_date;
-
-  console.log("第一天:", formatVxeDate(start_date));
-  console.log("最后一天:", formatVxeDate(end_date));
-  myGroupStore.getAllTask(group.id, start_date, end_date);
+  console.log("第一天:", formatVxeDate(startDate));
+  console.log("最后一天:", formatVxeDate(endDate));
+  // 重新获取组的数据
+  await myGroupStore.getAllTask(group.id, startDate, endDate);
+  console.log(myGroupStore.groupCfg);
+  myGroupStore.groupCfg.selectedGroupId = group.id;
+  myGroupStore.groupCfg.selectedGroup = group.name;
+  myGroupStore.groupCfg.radio = 'all';
+  myGroupStore.groupCfg.checkedMembers = group.users;
+  const projectsForMembers = myGroupStore.allTask
+        .filter(task => group.users.includes(task.receiver_name))
+        .map(task => task.project);
+  myGroupStore.groupCfg.selectedProjects = [...new Set(projectsForMembers)];
+  myGroupStore.groupCfg.switchButtonValue = true;
+  console.log(myGroupStore.groupCfg);
+  console.log(myGroupStore.allTask);
+  selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
+  radio1.value = myGroupStore.groupCfg['radio'];
+  checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
+  selectedProjects.value = myGroupStore.groupCfg['selectedProjects'];
+  switchButtonValue.value = myGroupStore.groupCfg['switchButtonValue'];
+  // 重新渲染日历视图
+  scheduler.clearAll();
+  scheduler.parse(toRaw(myTotalTasks.value));
+  scheduler.updateView();
+  selectedDates.value.clear();
 }
 
 // 计算当前组成员数
@@ -560,7 +586,8 @@ const currentMemberCount = computed(() => {
 // 计算当前组总工作量 
 const currentTotalHours = computed(() => {
   // 计算总工作量（所有任务的工作天数*8之和）
-  return myGroupStore.allTask.reduce((sum, task) => sum + (task.workload*8), 0);
+  const totalHours = myGroupStore.allTask.reduce((sum, task) => sum + (task.workload*8), 0);
+  return totalHours.toFixed(2);
 })
 
 // 这个数据需要从后端传过来
@@ -641,9 +668,19 @@ const handleDropdownOpen = (open) => {
   }
 }
 
-// 监听人员变化时清空已选项目
+// 监听人员变化时， 根据人员的选择重新计算已选项目
 watch(checkedMembers, (newVal) => {
-  if (newVal.length === 0) selectedProjects.value = []
+  console.log(newVal);
+  if (newVal.length === 0) {
+    selectedProjects.value = [];
+    return
+  } else {
+    const projectsForMembers = myTotalTasks.value
+        .filter(task => newVal.includes(task.receiver_name))
+        .map(task => task.project);
+    selectedProjects.value = [...new Set(projectsForMembers)]
+  }
+  
 })
 
 // 处理项目选择框点击事件
@@ -655,14 +692,14 @@ const handleProjectSelectClick = () => {
 
 // ---*--- 计算任务统计信息 ---*---
 const stats = computed(() => {
-  const filtered = filteredTasks.value; // 获取筛选后的任务
+  const filtered = filteredTasks.value.filter(task => task.status_name !== '草稿'); // 获取筛选后的任务
   
   // 1. 计算基础数据
   const totalTasks = filtered.length;
   const completedTasks = filtered.filter(t => t.status_name === '已完成').length;
   
   // 2. 计算总工作量（所有任务的工作天数*8之和）
-  const totalHours = filtered.reduce((sum, task) => sum + (task.workload*8), 0);
+  const totalHours = filtered.reduce((sum, task) => sum + (task.diff_days*8), 0);
   
   // 3. 计算任务饱和度
   const totalWorkdays = filtered.reduce((sum, task) => sum + task.workload, 0);
@@ -858,7 +895,7 @@ const handleMouseUp = () => {
 
 // ---*--- 处理日历视图切换事件 ---*---
 // 监听视图变化
-scheduler.attachEvent('onViewChange', (view, date) => {
+scheduler.attachEvent('onViewChange', async (view, date) => {
   if (view === 'month') {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -869,7 +906,8 @@ scheduler.attachEvent('onViewChange', (view, date) => {
     const startDate = formatDate(firstDay);
     const endDate = formatDate(lastDay);
     
-    myGroupStore.getAllTask(startDate, endDate);
+    await myGroupStore.getAllTask(myGroupStore.groupCfg['selectedGroupId'], startDate, endDate);
+    scheduler.clearAll();
     scheduler.parse(toRaw(myTotalTasks.value));
     scheduler.updateView();
     selectedDates.value.clear();

@@ -45,13 +45,20 @@ const FormatVxeDate = (date) => {
 };
 
 // 获取日历中每一天的工时总数
+// const GetDayTotalWorkHours = (events) => {
+//     let totalHours = 0;
+//     events.forEach(e => {
+//         totalHours += ((e.workload * 8) / e.diff_days);
+//     });
+//     return totalHours.toFixed(1);
+// }
+
 const GetDayTotalWorkHours = (events) => {
-    let totalHours = 0;
-    events.forEach(e => {
-        totalHours += ((e.workload * 8) / e.diff_days);
-    });
-    return totalHours.toFixed(1);
-}
+    return events
+        .filter(e => e.status_name !== '草稿')
+        .reduce((sum, e) => sum + ((e.workload * 8) / e.diff_days), 0)
+        .toFixed(1);
+};
 
 const GetProgressStatus = (process) => {
     const percent = parseInt(process);

@@ -10,11 +10,10 @@ const myUserStore = useUserStore()
 export const useGroupStore = defineStore('group', () => {
   const allTask = ref([]);
   const allGroup = ref([]);
-  const groupCfg = myUserStore.getUserConfig("group")
+  const groupCfg = ref({});
+  const groupId = myUserStore.loginUser.config.selectedGroupId ? myUserStore.loginUser.config.selectedGroupId : myUserStore.loginUser.groupId;
 
-  const  getAllTask = async (startDate,endDate) => {
-    // 获取当前用户组信息， 这个从groupCfg中获取 TODO
-    const curGroupId = 25; 
+  const  getAllTask = async (curGroupId,startDate,endDate) => {
     if (startDate === undefined && endDate === undefined) {
       const currentDate = new Date();
       const year = currentDate.getFullYear();
@@ -51,7 +50,35 @@ export const useGroupStore = defineStore('group', () => {
     allGroup.value = response.result.items;
   };
 
+  const getGroupCfg = () => {
+    // 获取用户组配置信息
+    groupCfg.value = myUserStore.getUserConfig("group") ? myUserStore.getUserConfig("group") : {};
+    if (!groupCfg.value.hasOwnProperty('selectedGroupId')) {
+      groupCfg.value['selectedGroupId'] = myUserStore.loginUser.groupId
+    }
+    if (!groupCfg.value.hasOwnProperty('selectedGroup')) {
+      groupCfg.value['selectedGroup'] = myUserStore.loginUser.groupName
+    }
+    if (!groupCfg.value.hasOwnProperty('radio')) {
+      groupCfg.value['radio'] = 'all'
+    }
+    if (!groupCfg.value.hasOwnProperty('checkedMembers')) {
+      const group = allGroup.value.find(g => g.name === groupCfg.value.selectedGroup);
+      groupCfg.value['checkedMembers'] = group ? group.users : []
+    }
+    if (!groupCfg.value.hasOwnProperty('selectedProjects')) {
+      const projectsForMembers = allTask.value
+        .filter(task => groupCfg.value.checkedMembers.includes(task.receiver_name))
+        .map(task => task.project);
+      groupCfg.value['selectedProjects'] = [...new Set(projectsForMembers)]
+    }
+    if (!groupCfg.value.hasOwnProperty('switchButtonValue')) {
+      groupCfg.value['switchButtonValue'] = true
+    }
+
+  }
+
   const feedbackTask = (id,feedInfo) =>{}
   const dispatchTask = (id) => {}
-  return { allTask, allGroup, groupCfg, getAllTask, feedbackTask, dispatchTask, getAllGroup }
+  return { allTask, allGroup, groupCfg, groupId, getAllTask, feedbackTask, dispatchTask, getAllGroup, getGroupCfg }
 })
