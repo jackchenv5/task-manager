@@ -3,18 +3,29 @@ import { defineStore } from 'pinia'
 
 import { checkLogin } from '@/api/login/login'
 
-import { saveConfig } from '@/api/data/data'
+import { saveConfig,getUserDetailApi } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
     id: 1001,
     username: "陈菁菁",
     emp_num: "007101",
+    role:0,
+    role_name:'',
+    group_leader:'',
+    email:'',
+    group:-1,
+    group_name:'',
     role: "发布者",
     config: {"group": {"selectedGroup": "武汉测试处-产品组", "radio": "pending", "checkedMembers": ["刘兵"], "selectedProjects": ["RT-TT-2024-004_2025年路由器滚动版本项目"]},
              "person": {"typeRadio": "pending"},
         }
   })
+
+  const initUser =async (id) =>{
+      const curUserInfo = await getUserDetailApi(id)
+      loginUser.value = curUserInfo
+  }
 
   const login = () => {
     let loginURL = `${import.meta.env.VITE_LOGIN_URL}/login_for=${window.location.origin}`
@@ -32,7 +43,9 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const setUserConfig = (key, value) => {
+    //TODO 增加保存结果判断
     loginUser.value.config[key] = value
+    saveUserConfig()
     return true
   }
 
