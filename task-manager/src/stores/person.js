@@ -7,8 +7,8 @@ import { get } from '@/utils/httpData'
 const myUserStore = useUserStore()
 
 export const usePersonStore = defineStore('person', () => {
-  const allTask = ref([])
-  const personCfg = myUserStore.getUserConfig("person")
+  const allTask = ref([]);
+  const personCfg = myUserStore.getUserConfig("person") ? myUserStore.getUserConfig("person") : {}
 
   const  getPersonTasks = async (startDate,endDate) => {
     // 获取当前用户信息

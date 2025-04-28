@@ -17,9 +17,16 @@ export const useUserStore = defineStore('user', () => {
     group:-1,
     group_name:'',
     role: "发布者",
-    config: {"group": {"selectedGroup": "武汉测试处-产品组", "radio": "pending", "checkedMembers": ["刘兵"], "selectedProjects": ["RT-TT-2024-004_2025年路由器滚动版本项目"]},
-             "person": {"typeRadio": "pending"},
-        }
+    groupId: 6,
+    groupName: "业务测试处-协议测试组",
+    config: {}
+    // config: {"group": {"selectedGroup": "武汉测试处-产品组",
+    //                    "radio": "pending", 
+    //                    "checkedMembers": ["刘兵"], 
+    //                    "selectedProjects": ["RT-TT-2024-004_2025年路由器滚动版本项目"],
+    //                    "selectedGroupId": 25},
+    //          "person": {"typeRadio": "pending"},
+    //     }
   })
 
   const initUser =async (id) =>{

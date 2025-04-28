@@ -123,7 +123,7 @@
 
         </el-scrollbar>
       </div>
-      <div ref="schedulerContainer" style="width: 100%;height:70vh;"></div>
+      <Calendar style="width: 100%;height:70vh;"></Calendar>
     </div>
     <div class="right">
       <div style="width: 100%;height:64vh;background-color: white;border:1px solid #aaa;">
@@ -206,10 +206,8 @@
 </template>
  
 <script setup>
-import "dhtmlx-scheduler";
-import { initSchedulerConfig } from '@/utils/scheduler'
 import { onMounted, ref, reactive, watch } from 'vue';
-
+import Calendar from './calendar/Calendar.vue'
 import { useUserStore } from '@/stores/user'
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
@@ -324,33 +322,11 @@ const tableData = ref([
   { id: 10004, name: 'Test4', receiver: '陈成F', role: 'Designer', sex: 'Women', age: 24, address: 'Shanghai' }
 ])
 
-// 获取容器引用
-const schedulerContainer = ref(null);
-var myEvents0 = [
-];
-onMounted(() => {
-  // 确保 scheduler 对象存在
-  if (scheduler) {
-    // 初始化 Scheduler
-    scheduler = initSchedulerConfig(schedulerContainer, scheduler)
-    // 将数据加载到调度器
-    scheduler.parse(myEvents0, "json");
-    // 获取特定日期范围内的所有事件
-    var fromDate = new Date(2025, 1, 12); // 注意：月份是从0开始计数的，即1表示二月
-    var toDate = new Date(2025, 1, 15);
-    var events = scheduler.getEvents(fromDate, toDate);
-    console.log(events); // 输出事件列表
-
-  } else {
-    console.error('Scheduler is not properly imported.');
-  }
-});
 const value = ref(true)
 
 </script>
 
 <style>
-@import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
 
 
 /* 左侧和右侧 div 的样式 */
