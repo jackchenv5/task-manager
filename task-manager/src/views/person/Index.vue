@@ -78,7 +78,7 @@
                     <span class="detail-label">邮件抄送</span>
                     <el-input
                       type="textarea"
-                      :rows="3"
+                      :rows=3
                       :value="currentTask.row.sender || '无'"
                       readonly
                       resize="none"
@@ -129,7 +129,7 @@
                     <span class="detail-label">任务内容</span>
                     <el-input
                       type="textarea"
-                      :rows="3"
+                      :rows=3
                       :value="`${currentTask.row.content || '无'}`"
                       readonly
                       resize="none"
@@ -144,7 +144,7 @@
                     <span class="detail-label">挑战目标</span>
                     <el-input
                       type="textarea"
-                      :rows="3"
+                      :rows=3
                       :value="`${currentTask.row.challenge || '无'}`"
                       readonly
                       resize="none"
@@ -159,7 +159,7 @@
                     <span class="detail-label">详细描述</span>
                     <el-input
                       type="textarea"
-                      :rows="4"
+                      :rows=4
                       :value="currentTask.row.description || '无'"
                       readonly
                       resize="none"
@@ -284,7 +284,6 @@
       <div style="min-width: 100%; display: inline-block">
         <vxe-table
           border
-          highlight-hover-row
           :data="filteredTasks"
           @cell-click="handleRowClick"  
           @cell-dblclick="handleRowDblClick"  
@@ -302,7 +301,7 @@
     </div>
     
     <div v-if="selectedRow" style="width:100%;">
-      <el-form :model="form" label-width="auto" style="width: 100%;margin-top:10px">
+      <el-form label-width="auto" style="width: 100%;margin-top:10px">
         <el-form-item label="任务反馈:" style="margin-bottom: 10px;">
           <el-text type="primary" style="margin-left: 10px;">{{ selectedRow ? selectedRow.row.name : '未选择任务' }}</el-text>
         </el-form-item>
@@ -311,19 +310,20 @@
           <div style="display: flex; align-items: center;">
             <div style="display: flex; align-items: center; margin-right: 40px;margin-left: 20px;">
               <el-text style="margin-right: 10px;">实际工作量:</el-text>
-              <el-input-number v-model="num" :min="1" :max="30" />
+              <el-input-number v-model="feedback_act_workload" :min="1" :max="30" />
             </div>
             <div style="display: flex; align-items: center;">
               <el-text style="margin-right: 20px;">进度:</el-text>
-              <el-slider v-model="value" show-input :step="10" show-stops style="width: 350px;" />
+              <el-slider v-model="feedback_progress" show-input :step="10" show-stops style="width: 350px;" />
             </div>
           </div>
         </el-form-item>
         
         <el-form-item>
-          <el-input 
+          <el-input
+            v-model="feedback_info" 
             type="textarea" 
-            rows="10"
+            :rows="10"
             placeholder="请输入反馈信息..."
           />
         </el-form-item>
@@ -347,6 +347,8 @@ import { VxeTable, VxeColumn } from 'vxe-table'
 import 'vxe-table/lib/style.css';
 import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus } from '@/utils/public'
 import { usePersonStore } from '@/stores/person'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus';
 
 // 获取容器引用
 const schedulerContainer = ref(null);
@@ -354,6 +356,9 @@ const schedulerContainer = ref(null);
 // 从 usePersonStore 缓存中获取当前用户的数据
 const myPersonStore = usePersonStore()
 const myTotalTasks = computed(() => myPersonStore.allTask)
+
+const myUserStore = useUserStore()
+const personCfg = ref({});
 
 // 根据用户选择过滤当前需要显示的任务
 const filteredTasks = computed(() => {
@@ -460,6 +465,8 @@ const getInitViewTemplate = (date) => {
 // 监听视图变化
 scheduler.attachEvent('onViewChange', async (view, date) => {
   if (view === 'month') {
+    selectedRow.value = null;
+    selectedRowIndex.value = -1;
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     
@@ -480,6 +487,10 @@ scheduler.attachEvent('onViewChange', async (view, date) => {
 // 处理表格行点击
 const handleRowClick = (row) => {
   //  if (event.detail > 1) return; // 双击时直接返回
+  if (row.row.status_name !== "进行中") {
+    ElMessage.warning(`无法反馈该状态（${row.row.status_name}）的任务`);
+    return;
+  }
    selectedRow.value = row;
    selectedRowIndex.value = filteredTasks.value.findIndex(item => item.id === row.id);
 };
@@ -654,15 +665,41 @@ const handleRowDblClick = (row) => {
   showDetailPanel.value = true;
 };
 
-const onSubmit = () => {
-  console.log('submit!')
+// 反馈进度
+const feedback_act_workload = ref(-1);
+const feedback_progress = ref(-1);
+const feedback_info = ref('');
+const onSubmit = async () => {
+  console.log(selectedRow.value.row.id);
+  console.log(feedback_act_workload.value, feedback_progress.value, feedback_info.value);
+  console.log(feedback_progress.vlaue === 0, feedback_info.vlaue === '');
+  if (feedback_progress.value === 0) {
+    ElMessage.warning("进度不能为0");
+    return;
+  }
+  if (feedback_info.value === '') {
+    ElMessage.warning("反馈信息不能为空");
+    return;
+  }
+  const feedInfo = {"act_workload": feedback_act_workload.value, "progress": feedback_progress.value, "feedback": feedback_info.value};
+  try {
+    await myPersonStore.feedbackTask(selectedRow.value.row.id, feedInfo);
+    ElMessage.success("反馈成功！！！")
+  } catch (err) {
+    ElMessage.error(`反馈失败：${err}`)
+  }
+  
 }
 
 onMounted(async () => {
   // 初始化加载数据
-  await myPersonStore.getPersonTasks()
-  console.log(myPersonStore.personCfg);
-  typeRadio.value = myPersonStore.personCfg["typeRadio"] ? myPersonStore.personCfg["typeRadio"] : "all";
+  await myUserStore.initUser(1001); // 测试用
+  await myPersonStore.getPersonTasks();
+  personCfg.value = myUserStore.loginUser.config["person"] ? myUserStore.loginUser.config["person"] : {};
+  console.log(personCfg.value);
+  
+  typeRadio.value = personCfg.value["typeRadio"] ? personCfg.value["typeRadio"] : "all";
+  console.log(typeRadio.value);
 
   // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler)
@@ -707,7 +744,9 @@ onUnmounted(() => {
 });
 
 const handleRadioChange = (val) => {
-  myPersonStore.personCfg["typeRadio"] = val;
+  personCfg.value['typeRadio'] = val;
+  console.log(personCfg.value);
+  myUserStore.setUserConfig("person", personCfg.value);
 };
 </script>
 

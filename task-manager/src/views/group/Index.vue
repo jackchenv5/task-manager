@@ -68,39 +68,39 @@
         </div>
       </div>
       <el-select
-  v-model="selectedProjects"
-  multiple
-  collapse-tags  
-  collapse-tags-tooltip  
-  style="max-height: 100px; overflow-y: auto;" 
-  filterable
-  placeholder="参与项目"
-  :disabled="checkedMembers.length === 0"
-  @visible-change="handleDropdownOpen"
-  @click="handleProjectSelectClick"
->
-  <!-- 全选选项 -->
-  <el-option
-    v-if="filteredProjects.length > 0"
-    class="select-all-option"
-    style="position: sticky; top: 0; background: white; z-index: 1;"
-    label="全选"
-    value="SELECT_ALL"
-    @click="toggleSelectAll"
-  >
-    <span style="font-weight: bold">
-      {{ selectedProjects.length > 0 ? '全不选' : '全选' }}
-    </span>
-  </el-option>
+          v-model="selectedProjects"
+          multiple
+          collapse-tags  
+          collapse-tags-tooltip  
+          style="max-height: 100px; overflow-y: auto;" 
+          filterable
+          placeholder="参与项目"
+          :disabled="checkedMembers.length === 0"
+          @visible-change="handleDropdownOpen"
+          @click="handleProjectSelectClick"
+        >
+          <!-- 全选选项 -->
+          <el-option
+            v-if="filteredProjects.length > 0"
+            class="select-all-option"
+            style="position: sticky; top: 0; background: white; z-index: 1;"
+            label="全选"
+            value="SELECT_ALL"
+            @click="toggleSelectAll"
+          >
+            <span style="font-weight: bold">
+              {{ selectedProjects.length > 0 ? '全不选' : '全选' }}
+            </span>
+          </el-option>
 
-  <!-- 项目列表 -->
-  <el-option
-    v-for="item in filteredProjects"
-    :key="item"
-    :label="item"
-    :value="item"
-  />
-</el-select>
+          <!-- 项目列表 -->
+          <el-option
+            v-for="item in filteredProjects"
+            :key="item"
+            :label="item"
+            :value="item"
+          />
+        </el-select>
       <div 
       ref="schedulerContainer" 
       style="width: 100%;height:70vh;"
@@ -389,8 +389,11 @@ import { ElMessage } from 'element-plus';
 import { VxeUI } from 'vxe-table'
 import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus } from '@/utils/public'
 import { useGroupStore } from '@/stores/group'
+import { useUserStore } from '@/stores/user'
+import { taskPublishApi } from '@/api/data/data'
 
 const myGroupStore = useGroupStore()
+const myUserStore = useUserStore()
 const myTotalTasks = computed(() => myGroupStore.allTask)
 const groups = computed(() => myGroupStore.allGroup)
 
@@ -504,16 +507,16 @@ const schedulerContainer = ref(null);
 onMounted(async () => {
   // 根据userStores中存储的数据确定加载哪个组的数据
   // 初始化加载数据
+  await myUserStore.initUser(427);
   await myGroupStore.getAllTask(myGroupStore.groupId);
   await myGroupStore.getAllGroup();
-  myGroupStore.getGroupCfg();
+  await myGroupStore.getGroupCfg();
   console.log(myGroupStore.groupCfg);
   selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
   radio1.value = myGroupStore.groupCfg['radio'];
   checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
   selectedProjects.value = myGroupStore.groupCfg['selectedProjects'];
   switchButtonValue.value = myGroupStore.groupCfg['switchButtonValue'];
-  console.log(switchButtonValue.value);
 
   // 初始化 Scheduler
   scheduler = initSchedulerConfig(schedulerContainer, scheduler);
@@ -575,6 +578,9 @@ const handleGroupChange = async (group) => {
   scheduler.parse(toRaw(myTotalTasks.value));
   scheduler.updateView();
   selectedDates.value.clear();
+  // 记录当前操作
+  myGroupStore.setGroupCfg('selectedGroupId', group.id);
+  myGroupStore.setGroupCfg('selectedGroup', group.name);
 }
 
 // 计算当前组成员数
@@ -608,7 +614,8 @@ const switchButtonValue = ref(false)
 
 // 处理状态单选变化
 const handleStatusChange = (val) => {
-  console.log("当前选中状态:", val);
+  console.log(val);
+  myGroupStore.setGroupCfg('radio', val);
 };
 
 // 处理全选/清空切换
@@ -622,11 +629,17 @@ const handleToggleAll = (isChecked) => {
       .filter(task => checkedMembers.value.includes(task.receiver_name))
       .map(task => task.project);
     selectedProjects.value = [...new Set(projectsForMembers)]; // 去重后赋值
+    // 记录操作
+    myGroupStore.setGroupCfg('radio', 'all');
+    myGroupStore.setGroupCfg('switchButtonValue', true);
   } else {
     // 清空操作
     radio1.value = "all";
     checkedMembers.value = []; // 清空选中成员
     selectedProjects.value = []; // 同时清空项目选择
+    // 记录操作
+    myGroupStore.setGroupCfg('radio', 'all');
+    myGroupStore.setGroupCfg('switchButtonValue', false);
   }
 };
 
@@ -652,7 +665,6 @@ const filteredProjects = computed(() => {
 
 // 全选/取消全选逻辑
 const toggleSelectAll = () => {
-  console.log(selectedProjects.value, selectedProjects.value.length);
   if (selectedProjects.value.length > 1) {
     selectedProjects.value = []
   } else {
@@ -670,16 +682,16 @@ const handleDropdownOpen = (open) => {
 
 // 监听人员变化时， 根据人员的选择重新计算已选项目
 watch(checkedMembers, (newVal) => {
-  console.log(newVal);
   if (newVal.length === 0) {
     selectedProjects.value = [];
-    return
   } else {
     const projectsForMembers = myTotalTasks.value
         .filter(task => newVal.includes(task.receiver_name))
         .map(task => task.project);
     selectedProjects.value = [...new Set(projectsForMembers)]
   }
+  // 记录操作
+  myGroupStore.setGroupCfg('checkedMembers', [...newVal]);
   
 })
 
@@ -689,6 +701,20 @@ const handleProjectSelectClick = () => {
     ElMessage.warning('请先选择人员');
   }
 };
+
+// 监听选择项目变化的处理操作
+// watch: {
+//   selectedProjects(newVal, oldVal) {
+//     console.log("选项变化:", newVal);
+//     myGroupStore.setGroupCfg('selectedProjects', newVal)
+//   },
+// },
+watch(selectedProjects, (newVal) => {
+  console.log("选项变化:", newVal);
+  // 记录操作
+  myGroupStore.setGroupCfg('selectedProjects', [...newVal]);
+  
+})
 
 // ---*--- 计算任务统计信息 ---*---
 const stats = computed(() => {
@@ -925,6 +951,13 @@ const handleRowDblClick = (row) => {
 
 // ---*--- 处理下发任务事件 ---*---
 const dispatchTasks = () => {
+  // 如果当前用户不是所选组的leader， 则不允许下发
+  const group = groups.value.find(g => g.name === selectedGroup.value)
+  if (myUserStore.loginUser.username !== group.group_leader) {
+    ElMessage.warning("您不是当前组的leader， 无法下发任务");
+    return
+  }
+
   if (taskTable.value) {
     const selectedRows = taskTable.value.getCheckboxRecords()
     
@@ -935,7 +968,25 @@ const dispatchTasks = () => {
     
     console.log('选中的任务:', selectedRows)
     // 实际下发逻辑
-    // api.dispatchTasks(selectedRows.map(row => row.id))
+    // 用法：
+    //  ids: 以","衔接的ID字符串
+    //  publisher : 发布者的用户ID
+    // data = [1,2,3,4,5]
+    // const params = {
+    //     ids: data.join(","),
+    //     publisher: userInfo.id
+    //   }
+    const ids = selectedRows
+      .map(row => row.id)  // 提取每个 Proxy 对象的 id
+      .join(',');    
+    console.log(ids); 
+    const params = {'ids': ids, 'publisher': myUserStore.loginUser.id,}
+    try {
+      myGroupStore.dispatchTask(params)
+    } catch (err) {
+      ElMessage.error(`下发任务失败: ${err}`)
+    }
+    
   }
 }
 

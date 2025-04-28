@@ -66,8 +66,10 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const saveUserConfig = async () => {
-    saveConfig(loginUser.value.id, loginUser.value.config)
+    console.log(loginUser.value.config);
+    const res = await saveConfig(loginUser.value.id, loginUser.value.config)
+    console.log('save config res: ', res);
   }
 
-  return { loginUser, checkAndLogin, getUserConfig, setUserConfig, saveUserConfig }
+  return { loginUser, checkAndLogin, getUserConfig, setUserConfig, initUser,  saveUserConfig }
 })
