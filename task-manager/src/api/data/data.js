@@ -15,3 +15,14 @@ export const getTaskDataApi = (params) => get('/tasks', params)
 
 // 提交任务修改
 export const taskModifyApi = (pk, params) =>api.patch(`/tasks/${pk}/`,params);
+
+// 批量下发任务
+export const taskPublishApi = (params) =>api.get('/task/notify-tasks-by-receiver/',params);
+// 用法：
+//  ids: 以","衔接的ID字符串
+//  publisher : 发布者的用户ID
+// data = [1,2,3,4,5]
+// const params = {
+//     ids: data.join(","),
+//     publisher: userInfo.id
+//   }
