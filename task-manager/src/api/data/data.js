@@ -13,3 +13,5 @@ export const saveConfig = (id,data) => patch(`/users/${id}/`,{config:data})
 // 获取用户任务数据
 export const getTaskDataApi = (params) => get('/tasks', params)
 
+// 提交任务修改
+export const taskModifyApi = (pk, params) =>api.patch(`/tasks/${pk}/`,params);
