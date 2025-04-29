@@ -7,11 +7,12 @@ from user.models import Role,Group
 class UserSerializer(serializers.ModelSerializer):
     role_name = serializers.SerializerMethodField()
     group = serializers.SerializerMethodField()
+    group_name = serializers.SerializerMethodField()
     group_leader = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id','username','emp_num','role','email','config','role_name','group','group_leader']
+        fields = ['id','username','emp_num','role','email','config','role_name','group','group_name','group_leader']
 
         extra_kwargs = {
             'config': {'required': False}  # 允许不传此字段
@@ -22,6 +23,13 @@ class UserSerializer(serializers.ModelSerializer):
         if groups:
             return groups[0].id
         return 0
+    
+    def get_group_name(self, obj):
+        groups = obj.group.all()
+        if groups:
+            return groups[0].name
+        return ''
+
     def get_group_leader(self, obj):
         groups = obj.group.all()
         if groups:
