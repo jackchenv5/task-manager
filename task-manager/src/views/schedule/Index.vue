@@ -1,8 +1,7 @@
 <template>
   <!-- 对话框区 -->
-  <SelectUserDialog :visible="isShowSelectUserDialog" v-model="selectUsers" @change="handleSelectChange"
-    :title="userDialogTitle" @update:modelValue="updateSelectUsers" @update:visible="updateVisible"
-    @comfirm="SelectUserConfirm">
+  <SelectUserDialog :visible="isShowSelectUserDialog" v-model="selectUsers" :title="userDialogTitle"
+    @update:modelValue="updateSelectUsers" @update:visible="updateVisible" @comfirm="SelectUserConfirm">
   </SelectUserDialog>
   <!-- 对话框区 END -->
   <div style="display: flex;height: 94vh;width: 100%;overflow: hidden;">
@@ -31,7 +30,8 @@
                   inactive-text="抄送人员" />
               </el-col>
             </el-row>
-            <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
+            <div
+              style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
               <el-tag v-for="tag in userPool" :key="tag.id" closable :type="tag.isSelect ? 'success' : 'info'"
                 style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
                 @click="handleSelectUser(tag.id)">
@@ -54,7 +54,8 @@
             </el-row>
             <el-scrollbar style="height: 14vh;">
               <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;"
-                closable>{{ item }}</el-tag>
+                closable>{{
+                item }}</el-tag>
             </el-scrollbar>
           </div>
         </div>
@@ -99,7 +100,8 @@
         </div>
         <div style="width: 30%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
           <div style="font-weight:600;font-size:18px;margin-top: 5px;margin-left: 15px;">统计数据</div>
-          <div style="display: flex;flex-direction: column;justify-content: space-around;height: 70%;margin-left: 15px;">
+          <div
+            style="display: flex;flex-direction: column;justify-content: space-around;height: 70%;margin-left: 15px;">
             <div>时间：2025-04-16~2025-04-24</div>
             <div>任务数：10 个</div>
             <div>任务工时：10 H</div>
@@ -109,12 +111,13 @@
         <el-scrollbar style="width: 45%;height:15vh;border:1px solid #9e9fa0;background-color: white;">
           <template v-for="item in curUserTasksRef">
             <div style="display: flex;flex-direction: row;">
-              <el-text truncated style="width: 20%;">{{item.name}}</el-text>
+              <el-text truncated style="width: 20%;">{{ item.name }}</el-text>
               <div style="width: 80%;">
-                <el-progress  :stroke-width="20"
-                :percentage="100 * item.workload / curUserTasksWorkloadsRef" style="margin-top:5px;">
-                <span style="font-size:15px;">{{ `${item.workload}天(${100 * item.workload / curUserTasksWorkloadsRef | 0}%)` }}</span>
-              </el-progress>
+                <el-progress :stroke-width="20" :percentage="100 * item.workload / curUserTasksWorkloadsRef"
+                  style="margin-top:5px;">
+                  <span style="font-size:15px;">{{ `${item.workload}天(${100 * item.workload / curUserTasksWorkloadsRef |
+                    0}%)` }}</span>
+                </el-progress>
               </div>
 
             </div>
@@ -204,7 +207,7 @@
     </div>
   </div>
 </template>
- 
+
 <script setup>
 import { onMounted, ref, reactive, watch } from 'vue';
 import Calendar from './calendar/Calendar.vue'
@@ -218,7 +221,7 @@ const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
 const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds, curUserTasksRef, curUserTasksWorkloadsRef } = storeToRefs(scheduleStore)
 
-//人员池、執行者 选择框逻辑
+//人员池逻辑
 //===================================================================================================
 
 import SelectUserDialog from '@/components/dialog/SelectUser.vue'
@@ -280,11 +283,11 @@ const handleSelectUser = (id) => {
 // 人员池 tag 逻辑 END
 
 
-// 执行人员池 逻辑
+// 执行人员 逻辑
 // =======================================================================================================
 const handleSelectReceiverUser = (id) => {
   console.log(id, '选中')
-  scheduleStore.getCurUserInfo(id, '2025-01-01', '2025-01-30')
+  scheduleStore.getCurUserTasks(id, '2025-01-01', '2025-01-30')
 }
 
 const handleDeleteReceiverUser = (id) => {
@@ -327,8 +330,6 @@ const value = ref(true)
 </script>
 
 <style>
-
-
 /* 左侧和右侧 div 的样式 */
 .left,
 .right {

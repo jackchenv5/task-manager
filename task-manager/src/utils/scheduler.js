@@ -1,4 +1,4 @@
-export const initSchedulerConfig = (schedulerContainer, scheduler) => {
+export const initSchedulerConfig = (scheduler) => {
   // 中文汉化
   scheduler.i18n.setLocale({
     date: {
@@ -70,6 +70,7 @@ export const initSchedulerConfig = (schedulerContainer, scheduler) => {
     }
   });
 
+  // scheduler.config.date_format="%Y-%m-%d";
   scheduler.plugins({
     // tooltip: true
   });
@@ -84,64 +85,8 @@ export const initSchedulerConfig = (schedulerContainer, scheduler) => {
   ];
   scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
   //
-  scheduler.templates.event_class = function (start, end, event) {
-    return "my_event";
-  };
-
-  scheduler.renderEvent = function (container, ev) {
-    var container_width = container.style.width; // e.g. "105px"
-
-    // move section
-    var html = "<div class='dhx_event_move my_event_move' style='width: " +
-      container_width + "'></div>";
-
-    // a container for the event's content
-    html += "<div class='my_event_body'>";
-    html += "<span class='event_date'>";
-    //two options here:show only start date for short events or start+end for long ones
-    if ((ev.end_date - ev.start_date) / 60000 > 40) {//if an event is longer than 40 minutes
-      html += scheduler.templates.event_header(ev.start_date, ev.end_date, ev);
-      html += "</span><br/>";
-    } else {
-      html += scheduler.templates.event_date(ev.start_date) + "</span>";
-    }
-    // displaying the event's text
-    html += "<span>" + scheduler.templates.event_text(ev.start_date, ev.end_date, ev) +
-      "</span>" + "</div>";
-
-    // the resize section
-    html += "<div class='dhx_event_resize my_event_resize' style='width: " +
-      container_width + "'></div>";
-
-    container.innerHTML = html;
-    return true; //required, true - to display a custom form, false - the default form
-  };
-
-
   // 日历单击事件处理
   //定制弹出框
-  scheduler.showLightbox = function (id) {
-    console.log('show lightbox', id)
-    // var ev = scheduler.getEvent(id);
-    // scheduler.startLightbox(id, custom_form );
-    //document.getElementById("some_input").value = ev.text;
-  }
-  //needs to be attached to the 'save' button
-  scheduler.attachEvent("onLightbox", function (id) {
-    console.log('light box')
-    //any custom logic here
-  });
-  function save_form() {
-    var ev = scheduler.getEvent(scheduler.getState().lightbox_id);
-    // ...'here you need to retrieve values from the form'...
-    //ev.text = document.getElementById("some_input").value;
-    scheduler.endLightbox(true, custom_form);
-  }
-  //needs to be attached to the 'cancel' button
-  function close_form(argument) {
-    scheduler.endLightbox(false, custom_form);
-  }
-
   scheduler.attachEvent("onBeforeDrag", function (id, mode, e){
     //any custom logic here
     console.log('before drag')
@@ -154,6 +99,7 @@ scheduler.attachEvent("onDragEnd", function(id, mode, e){
 });
 //关闭双击创建
 scheduler.config.dblclick_create = false;
+scheduler.config.max_month_events = 0;
 
 scheduler.attachEvent("onBeforeEventCreated", function (e){
   //any custom logic here
@@ -161,10 +107,6 @@ scheduler.attachEvent("onBeforeEventCreated", function (e){
   return false;
 });
 
-// scheduler.attachEvent("onMouseMove", function (id, e){
-//   //any custom logic here
-//   console.log('mouse move',e)
-// });
 scheduler.attachEvent("onMouseDown", function(className){
   //any custom logic here
   console.log(className,'mouse down')
@@ -185,7 +127,4 @@ scheduler.attachEvent("onEmptyClick", function (date, e){
   console.log('empty click')
   return false
 });
-  scheduler.init(schedulerContainer.value, new Date(), 'month');
-
-  return scheduler
 }
