@@ -86,6 +86,7 @@ export const useGroupStore = defineStore('group', () => {
   const dispatchTask = async (params) => {
     console.log(params);
     const res = await taskPublishApi(params);
+    console.log(res);
     return res;
   }
 

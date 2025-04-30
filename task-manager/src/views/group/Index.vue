@@ -288,7 +288,7 @@
         </transition>
     </div>
     <div class="right">
-      <el-card style="background: rgb(240, 238, 238);width:100%;margin-top:1px;">
+      <el-card style="background: rgb(240, 238, 238);width:100%;margin-top:10px;height:10vh">
           <div style="display: flex; width: 100%;">
             <div style="flex: 1; padding: 0 8px; min-width: 0;">
               <el-statistic :title="'任务饱和度'" :value="stats.saturation">
@@ -352,15 +352,18 @@
             </div>
         </div>
       </el-card>
-      <div style="margin: 10px; text-align: center;width:100%">
+      <div style="margin: 10px; text-align: center;width:100%; height: 5vh">
         <el-button size="small" type="primary" :icon="Promotion" @click="dispatchTasks">下发任务</el-button>
       </div>
-      <div style="overflow:auto;height: 70vh;width: 100%">
+      <div style="overflow:auto;width: 100%; height: calc(90vh - 15vh - 20px)">
         <vxe-table
             ref="taskTable"
             border
+            max-height=565
+            show-header
+            stripe
+            auto-resize
             :row-config="{ isHover: true }"
-            max-height="500"
             :data="filteredTasks"
             @cell-dblclick="handleRowDblClick"  
             @checkbox-all="selectAllChangeEvent"
@@ -457,7 +460,6 @@ const filteredTasks = computed(() => {
     start_date: formatVxeDate(task.start_date),
     end_date: formatVxeDate(task.end_date),
   }));
-  console.log(filtered);
 });
 
 // 设置日历初始渲染方式
@@ -487,8 +489,8 @@ const getInitViewTemplate = (date) => {
     const currSaturation = saturation  + "%";
 
     // 单元狂背景色
-    const bgColor = saturation > 100  ? "#ffdddd" : 
-                        saturation === 100 ? "#ddffdd" : "#fff3dd";
+    const bgColor = saturation > 100  ? "#ff0000" : 
+                        saturation === 100 ? "#00ff00" : "#FFEE58";
 
     return `
         <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
@@ -511,15 +513,38 @@ onMounted(async () => {
   await myGroupStore.getAllTask(myGroupStore.groupId);
   await myGroupStore.getAllGroup();
   await myGroupStore.getGroupCfg();
-  console.log(myGroupStore.groupCfg);
+  console.log(myGroupStore.groupCfg['selectedProjects']);
   selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
   radio1.value = myGroupStore.groupCfg['radio'];
   checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
   selectedProjects.value = myGroupStore.groupCfg['selectedProjects'];
   switchButtonValue.value = myGroupStore.groupCfg['switchButtonValue'];
 
+  // 监听选择项目变化的处理操作
+  watch(selectedProjects, (newVal) => {
+    // 记录操作
+    console.log('changed....')
+    myGroupStore.setGroupCfg('selectedProjects', [...newVal]);
+  }
+  )
+
+  // 监听人员变化时， 根据人员的选择重新计算已选项目
+  watch(checkedMembers, (newVal) => {
+    if (newVal.length === 0) {
+      selectedProjects.value = [];
+    } else {
+      const projectsForMembers = myTotalTasks.value
+          .filter(task => newVal.includes(task.receiver_name))
+          .map(task => task.project);
+      selectedProjects.value = [...new Set(projectsForMembers)]
+    }
+    // 记录操作
+    myGroupStore.setGroupCfg('checkedMembers', [...newVal]);
+  }
+  )
+
   // 初始化 Scheduler
-  scheduler = initSchedulerConfig(schedulerContainer, scheduler);
+  scheduler = initSchedulerConfig(scheduler);
   scheduler.config.dblclick_create = false;
   scheduler.config.header = [
     'month',
@@ -538,25 +563,20 @@ onMounted(async () => {
 // ---*--- 组员变化相关方法 ---*---
 // 处理组选择变化
 const handleGroupChange = async (group) => {
-  console.log(group);
   selectedGroup.value = group.name;
   // 更新任务信息
   // 获取当前视图状态
   var state = scheduler.getState();
   var currentMonth = state.date.getMonth() + 1; // 月份从0开始，所以要+1
   var currentYear = state.date.getFullYear();
-  console.log('currentMonth: ', currentMonth);
   const firstDay = new Date(currentYear, currentMonth - 1, 1);
   const lastDay = new Date(currentYear, currentMonth, 0);
     
   const startDate = formatDate(firstDay);
   const endDate = formatDate(lastDay);
 
-  console.log("第一天:", formatVxeDate(startDate));
-  console.log("最后一天:", formatVxeDate(endDate));
   // 重新获取组的数据
   await myGroupStore.getAllTask(group.id, startDate, endDate);
-  console.log(myGroupStore.groupCfg);
   myGroupStore.groupCfg.selectedGroupId = group.id;
   myGroupStore.groupCfg.selectedGroup = group.name;
   myGroupStore.groupCfg.radio = 'all';
@@ -566,8 +586,6 @@ const handleGroupChange = async (group) => {
         .map(task => task.project);
   myGroupStore.groupCfg.selectedProjects = [...new Set(projectsForMembers)];
   myGroupStore.groupCfg.switchButtonValue = true;
-  console.log(myGroupStore.groupCfg);
-  console.log(myGroupStore.allTask);
   selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
   radio1.value = myGroupStore.groupCfg['radio'];
   checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
@@ -592,7 +610,7 @@ const currentMemberCount = computed(() => {
 // 计算当前组总工作量 
 const currentTotalHours = computed(() => {
   // 计算总工作量（所有任务的工作天数*8之和）
-  const totalHours = myGroupStore.allTask.reduce((sum, task) => sum + (task.workload*8), 0);
+  const totalHours = myGroupStore.allTask.reduce((sum, task) => sum + (task.diff_days*8), 0);
   return totalHours.toFixed(2);
 })
 
@@ -614,7 +632,6 @@ const switchButtonValue = ref(false)
 
 // 处理状态单选变化
 const handleStatusChange = (val) => {
-  console.log(val);
   myGroupStore.setGroupCfg('radio', val);
 };
 
@@ -680,21 +697,6 @@ const handleDropdownOpen = (open) => {
   }
 }
 
-// 监听人员变化时， 根据人员的选择重新计算已选项目
-watch(checkedMembers, (newVal) => {
-  if (newVal.length === 0) {
-    selectedProjects.value = [];
-  } else {
-    const projectsForMembers = myTotalTasks.value
-        .filter(task => newVal.includes(task.receiver_name))
-        .map(task => task.project);
-    selectedProjects.value = [...new Set(projectsForMembers)]
-  }
-  // 记录操作
-  myGroupStore.setGroupCfg('checkedMembers', [...newVal]);
-  
-})
-
 // 处理项目选择框点击事件
 const handleProjectSelectClick = () => {
   if (checkedMembers.value.length === 0) {
@@ -702,23 +704,10 @@ const handleProjectSelectClick = () => {
   }
 };
 
-// 监听选择项目变化的处理操作
-// watch: {
-//   selectedProjects(newVal, oldVal) {
-//     console.log("选项变化:", newVal);
-//     myGroupStore.setGroupCfg('selectedProjects', newVal)
-//   },
-// },
-watch(selectedProjects, (newVal) => {
-  console.log("选项变化:", newVal);
-  // 记录操作
-  myGroupStore.setGroupCfg('selectedProjects', [...newVal]);
-  
-})
 
 // ---*--- 计算任务统计信息 ---*---
 const stats = computed(() => {
-  const filtered = filteredTasks.value.filter(task => task.status_name !== '草稿'); // 获取筛选后的任务
+  const filtered = filteredTasks.value // 获取筛选后的任务
   
   // 1. 计算基础数据
   const totalTasks = filtered.length;
@@ -966,23 +955,21 @@ const dispatchTasks = () => {
       return
     }
     
-    console.log('选中的任务:', selectedRows)
-    // 实际下发逻辑
-    // 用法：
-    //  ids: 以","衔接的ID字符串
-    //  publisher : 发布者的用户ID
-    // data = [1,2,3,4,5]
-    // const params = {
-    //     ids: data.join(","),
-    //     publisher: userInfo.id
-    //   }
     const ids = selectedRows
       .map(row => row.id)  // 提取每个 Proxy 对象的 id
       .join(',');    
-    console.log(ids); 
     const params = {'ids': ids, 'publisher': myUserStore.loginUser.id,}
     try {
-      myGroupStore.dispatchTask(params)
+      myGroupStore.dispatchTask(params);
+      // 修改数据的状态
+      myGroupStore.allTask.forEach(task => {
+        if (selectedRows.some(row => row.id === task.id)) {
+          task.status_name = '进行中';
+          task.status = 4;
+        }
+      });
+      ElMessage.success('下发任务成功！');
+      
     } catch (err) {
       ElMessage.error(`下发任务失败: ${err}`)
     }
@@ -1024,6 +1011,10 @@ const dispatchTasks = () => {
     height: 100% !important;
 }
 
+.dhx_cal_month_row {
+  height: 90px !important;
+}
+
 .dhx_cal_event_line {
   display: none !important;
 }
@@ -1044,16 +1035,12 @@ const dispatchTasks = () => {
   user-select: none;
 }
 
-.dhx_cal_month_row {
-  height: 100px !important;
-}
-
 .month_day_events {
   position: absolute; 
   top: 50%; 
   left: 50%; 
   transform: translate(-50%, -50%); 
-  font-size: 1.4em; 
+  font-size: 1.2em; 
   font-weight: bold;
   width: max-content;
 }

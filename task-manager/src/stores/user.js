@@ -30,7 +30,8 @@ export const useUserStore = defineStore('user', () => {
   })
 
   const initUser = async (id) =>{
-      const curUserInfo = await getUserDetailApi(id)
+      const curUserInfo = await getUserDetailApi(id);
+      console.log(curUserInfo);
       loginUser.value = curUserInfo
   }
 

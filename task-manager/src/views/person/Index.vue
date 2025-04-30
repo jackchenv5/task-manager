@@ -447,8 +447,8 @@ const getInitViewTemplate = (date) => {
     const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
     const totalHours = getDayTotalWorkHours(events);
     // 单元框背景色
-    const bgColor = totalHours > 8 ? "#ffdddd" : 
-                        totalHours === 8 ? "#ddffdd" : "#fff3dd";
+    const bgColor = totalHours > 8 ? "#ff0000" : 
+                        totalHours === 8 ? "#00ff00" : "#FFEE58";
 
     return `
         <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
