@@ -349,6 +349,8 @@ import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgress
 import { usePersonStore } from '@/stores/person'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus';
+import { driver } from 'driver.js'
+import 'driver.js/dist/driver.css'
 
 // 获取容器引用
 const schedulerContainer = ref(null);
@@ -451,7 +453,7 @@ const getInitViewTemplate = (date) => {
                         totalHours === 8 ? "#00ff00" : "#FFEE58";
 
     return `
-        <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
+        <div class="month_day_total" data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
           <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
             ${date.getDate()}
           </div>
@@ -737,6 +739,9 @@ onMounted(async () => {
       cell.classList.add('highlighted');
     }
   });
+
+  // 启动引导程序
+  driverObj.drive();
 });
 
 onUnmounted(() => {
@@ -748,6 +753,21 @@ const handleRadioChange = (val) => {
   console.log(personCfg.value);
   myUserStore.setUserConfig("person", personCfg.value);
 };
+
+const driverObj = driver({
+  showProgress: true,
+  steps: [
+    { element: '.el-radio-group', popover: { title: '选择任务类型', description: '右边的任务列表会根据选择的任务类型过滤任务', side: "left", align: 'start' }},
+    { element: '.dhx_cal_nav_button', popover: { title: '切换日历月份', description: '切换月份会重新渲染日历和更新右边的任务列表', side: "left", align: 'start' }},
+    { element: '.dhx_cal_data', popover: { title: '任务总览', description: '显示当前月中每一天的任务情况， 可以点击或者拖拽多选某一段时间的任务情况', side: "left", align: 'start' }},
+    { element: '.month_day_total', popover: { title: '具体某一天的任务情况', description: '当天的任务数量 -- 当天任务总工时(单位小时)', side: "left", align: 'start' }},
+    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的', side: "left", align: 'start' }},
+    { element: '.vxe-table', popover: { title: '任务列表', description: '根据状态和日历过滤显示任务', side: "left", align: 'start' }},
+    { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '单击反馈任务进度、双击查看任务详情', side: "left", align: 'start' }},
+    { popover: { title: '恭喜', description: '您已完成所有引导，欢迎使用任务管理系统！' } }
+  ]
+});
+
 </script>
 
 <style>

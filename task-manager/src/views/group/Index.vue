@@ -2,7 +2,7 @@
   <div style="display: flex;height: 90vh;width: 100%;">
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
-        <div style="height:14vh;width: 30%;border: 1px solid rgb(93, 168, 230);border-radius: 5px;padding: 5px;">
+        <div class="show-group-total" style="height:14vh;width: 30%;border: 1px solid rgb(93, 168, 230);border-radius: 5px;padding: 5px;">
           <p>当前组：
             <el-select
               v-model="selectedGroup"
@@ -68,6 +68,7 @@
         </div>
       </div>
       <el-select
+          class="project-select"
           v-model="selectedProjects"
           multiple
           collapse-tags  
@@ -394,6 +395,8 @@ import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgress
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
 import { taskPublishApi } from '@/api/data/data'
+import { driver } from 'driver.js'
+import 'driver.js/dist/driver.css'
 
 const myGroupStore = useGroupStore()
 const myUserStore = useUserStore()
@@ -493,7 +496,7 @@ const getInitViewTemplate = (date) => {
                         saturation === 100 ? "#00ff00" : "#FFEE58";
 
     return `
-        <div data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
+        <div class="month_day_total" data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
           <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
             ${date.getDate()}
           </div>
@@ -558,6 +561,8 @@ onMounted(async () => {
   scheduler.parse(toRaw(myTotalTasks.value));
   scheduler.updateView();
 
+  // 启动引导程序
+  driverObj.drive();
 });
 
 // ---*--- 组员变化相关方法 ---*---
@@ -977,6 +982,24 @@ const dispatchTasks = () => {
   }
 }
 
+// ---*--- 引导程序 ---*---
+const driverObj = driver({
+  showProgress: true,
+  steps: [
+    { element: '.show-group-total', popover: { title: '小组选择', description: '选择对应的小组会更新整个页面的状态为新选的小组', side: "left", align: 'start' }},
+    { element: '.el-form-item', popover: { title: '任务状态选择', description: '根据状态过滤右边任务列表', side: "left", align: 'start' }},
+    { element: '.el-switch', popover: { title: '全选/清空', description: '选择当前组的所有人员和项目的任务情况', side: "left", align: 'start' }},
+    { element: '.project-select', popover: { title: '选择项目', description: '选择当前所选人员包含的项目， 放在数字上即可全览和删除', side: "left", align: 'start' }},
+    { element: '.dhx_cal_nav_button', popover: { title: '切换日历月份', description: '切换月份会重新渲染日历和更新右边的任务列表', side: "left", align: 'start' }},
+    { element: '.dhx_cal_data', popover: { title: '任务总览', description: '显示当前月中每一天的任务情况， 可以点击或者拖拽多选某一段时间的任务情况', side: "left", align: 'start' }},
+    { element: '.month_day_total', popover: { title: '具体某一天的任务情况', description: '当天的任务数量 -- 当天任务饱和度', side: "left", align: 'start' }},
+    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的', side: "left", align: 'start' }},
+    { element: '.vxe-table', popover: { title: '任务列表', description: '根据状态、人员、项目和日历过滤显示任务', side: "left", align: 'start' }},
+    { element: '.el-button', popover: { title: '下发任务', description: '选择下面列表中的任务， 一键下发任务', side: "left", align: 'start' }},
+    { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '双击查看任务详情', side: "left", align: 'start' }},
+    { popover: { title: '恭喜', description: '您已完成所有引导，欢迎使用任务管理系统！' } }
+  ]
+});
 </script>
 
 <style>
