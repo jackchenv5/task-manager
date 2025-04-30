@@ -702,7 +702,7 @@ onMounted(async () => {
   console.log(typeRadio.value);
 
   // 初始化 Scheduler
-  scheduler = initSchedulerConfig(schedulerContainer, scheduler)
+  scheduler = initSchedulerConfig(scheduler)
   scheduler.config.dblclick_create = false;
   scheduler.config.header = [
     'month',

@@ -127,4 +127,5 @@ scheduler.attachEvent("onEmptyClick", function (date, e){
   console.log('empty click')
   return false
 });
+return scheduler
 }

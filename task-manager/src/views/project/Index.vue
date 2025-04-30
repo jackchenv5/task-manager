@@ -141,7 +141,7 @@ onMounted(() => {
   if (scheduler) {
 
     // 初始化 Scheduler
-    scheduler = initSchedulerConfig(schedulerContainer, scheduler)
+    scheduler = initSchedulerConfig(scheduler)
     // 将数据加载到调度器
     scheduler.parse(myEvents0, "json");
     // 获取特定日期范围内的所有事件

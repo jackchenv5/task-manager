@@ -45,4 +45,8 @@ const navStore = useNavStore()
     color: white;
     background: black;
   }
+
+  .dhx_month_link{
+    display: none!important;
+}
 </style>
