@@ -32,7 +32,7 @@
             </el-row>
             <div
               style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in userPool" :key="tag.id" closable :type="tag.isSelect ? 'success' : 'info'"
+              <el-tag v-for="tag in userPool" :key="tag.id" closable :type="tag.id === curSelectUser ? 'success' : (curReceiverIDs.includes(tag.id) ? 'warning' : 'primary') "
                 style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
                 @click="handleSelectUser(tag.id)">
                 {{ tag.username }}
@@ -69,7 +69,7 @@
           <div
             style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px 0px;margin-left: 8px;">
 
-            <el-tag v-for="tag in curReceivers" :key="tag.id" closable :type="tag.isSelect ? 'success' : 'info'"
+            <el-tag v-for="tag in curReceivers" :key="tag.id" closable :type="tag.id === curSelectUser ? 'success' : 'warning'"
               style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteReceiverUser(tag.id)"
               @click="handleSelectReceiverUser(tag.id)">
               {{ tag.username }}
@@ -270,6 +270,12 @@ const handleDeleteUser = (id) => {
   scheduleStore.deleteUserofPool(id)
 }
 
+const getUserPoolTagType = (id) => {
+  //人员池人员 为当前选中人员 
+   if(id === curSelectUser.value) return 'success'
+   // 人员池人员 为当前执行人员池
+   if(curReceiverIDs.includes(id)) return 'warning'
+}
 // 选中人员
 const handleSelectUser = (id) => {
   const idPoolIndex = userPoolIds.value.indexOf(id)
