@@ -122,10 +122,5 @@ scheduler.attachEvent("onDblClick", function (id, e){
   console.log('double click')
   return false;
 })
-scheduler.attachEvent("onEmptyClick", function (date, e){
-  //any custom logic here
-  console.log('empty click')
-  return false
-});
 return scheduler
 }

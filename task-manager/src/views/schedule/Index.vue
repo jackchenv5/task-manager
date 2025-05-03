@@ -287,6 +287,7 @@ const handleSelectUser = (id) => {
 // =======================================================================================================
 const handleSelectReceiverUser = (id) => {
   console.log(id, '选中')
+  curSelectUser.value = id
   scheduleStore.getCurUserTasks(id, '2025-01-01', '2025-01-30')
 }
 
