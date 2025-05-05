@@ -5,9 +5,9 @@
 <script setup>
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { ref, watch, onMounted, reactive } from 'vue'
+import { ref, watch, onMounted, reactive, nextTick } from 'vue'
 
-import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus } from '@/utils/public'
+import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus,getCurMonthStartAndEndStr } from '@/utils/public'
 // 获取容器引用
 const schedulerContainer = ref()
 
@@ -15,7 +15,7 @@ import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
 const scheduleStore = useScheduleStore()
-const { curUserScheduleTasksRef,curSelectUser } = storeToRefs(scheduleStore)
+const { curUserScheduleTasksRef, curSelectUser,curSelectDateStat } = storeToRefs(scheduleStore)
 
 // 拖拽选择相关状态
 const dragSelectState = reactive({
@@ -25,17 +25,51 @@ const dragSelectState = reactive({
 });
 
 const selectedDates = ref(new Set());
+
+watch(()=>selectedDates.value.size,(newValue)=>{
+    console.log('change...',selectedDates.value)
+
+    const dateSize = selectedDates.value.size
+    console.log('dateSize',dateSize)
+    if(dateSize === 0) return
+
+    const selectedDatesList = [...selectedDates.value]
+    const startDateStr = selectedDatesList[0]
+    const endDateStr = selectedDatesList[dateSize-1]
+    console.log(startDateStr,endDateStr)
+    const startDate = new Date(startDateStr)
+    const endDate = new Date(endDateStr)
+
+    console.log(startDate,endDate)
+    // 计算有效工作日的任务数量以及任务饱和度
+
+    //任务数
+    const eventCount = scheduler.getEvents(startDate, endDate).length;
+
+    let totalHours = 0
+
+    selectedDatesList.forEach(x=>{
+        const date = new Date(x)
+        const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+        totalHours += getDayTotalWorkHours(events,false)
+    })
+    console.log(totalHours)
+    // 饱和度
+    const workLoadPer = Math.floor(100*totalHours/(dateSize*8))
+    console.log(workLoadPer)
+    scheduleStore.updateSelectDateStat(startDateStr,endDateStr,totalHours,eventCount,workLoadPer)
+
+})
+
 const clearHighlightedDates = () => {
     document.querySelectorAll('.highlighted').forEach(el => {
         el.classList.remove('highlighted');
     });
 };
 const handleMouseDown = (event) => {
-    console.log('mouse down')
     if (event.button !== 0) return;
 
     const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
-    console.log('cell', cell)
     if (!cell) return;
 
     const dateStr = cell.dataset.date;
@@ -61,12 +95,49 @@ const handleMouseUp = () => {
         // 小延迟清除标记，避免快速连续操作的问题
         setTimeout(() => {
             dragSelectState.justEndedSelection = false;
-        }, 500);
+        }, 1000);
 
         dragSelectState.isSelecting = false;
     }
 };
 
+// 日历div中处理鼠标移动事件
+const handleMouseMove = (event) => {
+    if (!dragSelectState.isSelecting) return;
+    const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
+    if (!cell) return;
+
+    const endDateStr = cell.dataset.date;
+    updateDragSelection(endDateStr);
+};
+
+// 更新拖拽选区
+const updateDragSelection = (endDateStr) => {
+    const startDate = dragSelectState.startDate;
+    if (!startDate) return;
+
+    const endDate = new Date(endDateStr);
+    const dateRange = getDateRange(startDate, endDate);
+
+    clearHighlightedDates();
+
+    dateRange.forEach(dateStr => {
+        if (isWorkday(new Date(dateStr))) {
+            const cell = document.querySelector(`[data-date="${dateStr}"]`);
+            if (cell) {
+                cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
+                selectedDates.value.add(dateStr);
+            }
+        }
+    });
+}
+// 处理日期点击事件
+const handleDateClick = (date) => {
+    const dateStr = formatDate(date);
+    selectedDates.value.clear();
+    selectedDates.value.add(dateStr);
+    clearHighlightedDates();
+};
 const getDateRange = (startDate, endDate) => {
     const range = [];
     const current = new Date(startDate);
@@ -83,25 +154,16 @@ const getDateRange = (startDate, endDate) => {
 
 scheduler.attachEvent('onViewChange', async (view, date) => {
     if (view === 'month') {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;
-
-        const firstDay = new Date(year, month - 1, 1);
-        const lastDay = new Date(year, month, 0);
-
-        const startDate = formatDate(firstDay);
-        const endDate = formatDate(lastDay);
-        console.log('in view change',curSelectUser.value)
-        if(!curSelectUser.value) return
+        const [startDate,endDate] = getCurMonthStartAndEndStr(date);
+        if (!curSelectUser.value) return
         scheduleStore.getCurUserTasks(curSelectUser.value, startDate, endDate)
-        console.log(startDate, endDate)
 
     }
 });
 watch(curUserScheduleTasksRef, () => {
-    console.log('tasks change...', curUserScheduleTasksRef.value)
     if (scheduler) {
-        console.log('in change ...')
+        console.log('cur task change')
+        console.log(curUserScheduleTasksRef.value)
         scheduler.clearAll();
         scheduler.parse(curUserScheduleTasksRef.value);
         scheduler.updateView();
@@ -145,43 +207,6 @@ const getInitViewTemplate = (date) => {
     `;
 };
 
-// 日历div中处理鼠标移动事件
-const handleMouseMove = (event) => {
-    if (!dragSelectState.isSelecting) return;
-    const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
-    if (!cell) return;
-
-    const endDateStr = cell.dataset.date;
-    updateDragSelection(endDateStr);
-};
-
-// 更新拖拽选区
-const updateDragSelection = (endDateStr) => {
-    const startDate = dragSelectState.startDate;
-    if (!startDate) return;
-
-    const endDate = new Date(endDateStr);
-    const dateRange = getDateRange(startDate, endDate);
-
-    clearHighlightedDates();
-
-    dateRange.forEach(dateStr => {
-        if (isWorkday(new Date(dateStr))) {
-            const cell = document.querySelector(`[data-date="${dateStr}"]`);
-            if (cell) {
-                cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
-                selectedDates.value.add(dateStr);
-            }
-        }
-    });
-}
-// 处理日期点击事件
-const handleDateClick = (date) => {
-    const dateStr = formatDate(date);
-    selectedDates.value.clear();
-    selectedDates.value.add(dateStr);
-    clearHighlightedDates();
-};
 onMounted(() => {
     // 确保 scheduler 对象存在
     if (scheduler) {
@@ -194,13 +219,10 @@ onMounted(() => {
         // scheduler.parse(myEvents0, "json");
         scheduler.attachEvent("onEmptyClick", function (date, event) {
             // 如果是拖拽结束时的点击，忽略这次事件
-            console.log(dragSelectState.justEndedSelection)
             if (dragSelectState.justEndedSelection) {
                 dragSelectState.justEndedSelection = false;
                 return;
             }
-            console.log('============return')
-
             // 如果正在拖拽选择中，忽略点击
             if (dragSelectState.isSelecting) return;
             const currentMonth = scheduler.getState().date.getMonth();

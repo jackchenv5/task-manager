@@ -7,8 +7,8 @@ import { saveConfig,getUserDetailApi } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    id: 1001,
-    username: "陈菁菁",
+    id: 608,
+    username: "chenchengf",
     emp_num: "007101",
     role:0,
     role_name:'',

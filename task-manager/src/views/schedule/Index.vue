@@ -32,7 +32,8 @@
             </el-row>
             <div
               style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
-              <el-tag v-for="tag in userPool" :key="tag.id" closable :type="tag.id === curSelectUser ? 'success' : (curReceiverIDs.includes(tag.id) ? 'warning' : 'primary') "
+              <el-tag v-for="tag in userPool" :key="tag.id" closable
+                :type="tag.id === curSelectUser ? 'success' : (curReceiverIDs.includes(tag.id) ? 'warning' : 'primary')"
                 style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
                 @click="handleSelectUser(tag.id)">
                 {{ tag.username }}
@@ -55,7 +56,7 @@
             <el-scrollbar style="height: 14vh;">
               <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;"
                 closable>{{
-                item }}</el-tag>
+                  item }}</el-tag>
             </el-scrollbar>
           </div>
         </div>
@@ -69,8 +70,9 @@
           <div
             style="display: flex;width:fit-content;border: 1px solid rgb(14, 43, 66);border-radius: 5px;padding: 5px 0px;margin-left: 8px;">
 
-            <el-tag v-for="tag in curReceivers" :key="tag.id" closable :type="tag.id === curSelectUser ? 'success' : 'warning'"
-              style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteReceiverUser(tag.id)"
+            <el-tag v-for="tag in curReceivers" :key="tag.id" closable
+              :type="tag.id === curSelectUser ? 'success' : 'warning'" style="cursor: pointer;"
+              :disable-transitions="false" @close="handleDeleteReceiverUser(tag.id)"
               @click="handleSelectReceiverUser(tag.id)">
               {{ tag.username }}
             </el-tag>
@@ -89,11 +91,12 @@
           <div style="font-weight:600;font-size:18px;margin-top: 5px;margin-left: 15px;">当前用户</div>
           <div style="display:flex;justify-content: space-around;padding: 10px;">
             <div style="display:flex;flex-direction:column;justify-content: space-around;align-items: center;">
-              <div>陈成F</div>
+              <div>{{ curSelectUserInfo.username }}</div>
               <div style="font-size: 12px;">工作强度</div>
             </div>
             <div style="display:flex;flex-direction:column;justify-content: start;align-items: center;">
-              <el-progress type="dashboard" :percentage="80" :stroke-width="15" :width="70" striped-flow />
+              <el-progress type="dashboard" :percentage="curSelectDateStat.per" :stroke-width="15" :width="70"
+                striped-flow />
             </div>
           </div>
 
@@ -102,9 +105,9 @@
           <div style="font-weight:600;font-size:18px;margin-top: 5px;margin-left: 15px;">统计数据</div>
           <div
             style="display: flex;flex-direction: column;justify-content: space-around;height: 70%;margin-left: 15px;">
-            <div>时间：2025-04-16~2025-04-24</div>
-            <div>任务数：10 个</div>
-            <div>任务工时：10 H</div>
+            <div>时间：{{ curSelectDateStat.startDate }}~{{ curSelectDateStat.endDate }}</div>
+            <div>任务数：{{ curSelectDateStat.workNum }}</div>
+            <div>任务工时：{{ curSelectDateStat.workloads }}H</div>
           </div>
 
         </div>
@@ -130,40 +133,47 @@
     </div>
     <div class="right">
       <div style="width: 100%;height:64vh;background-color: white;border:1px solid #aaa;">
-        <el-form style="padding: 10px;" label-position="top">
+        <el-form ref="formRef" :rules="formRules" style="padding: 10px;" label-position="top">
           <el-row>
             <el-col :span="12">
-              <el-form-item label="名称:">
-                <el-input></el-input>
+              <el-form-item label="名称:" prop="name" required>
+                <el-input v-model="formData.name"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="11">
               <el-form-item label="项目:">
-                <el-input></el-input>
+                <el-input v-model="formData.project"></el-input>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
-              <el-form-item label="执行人:">
-                <el-input></el-input>
+              <el-form-item label="执行人:" prop="receiver">
+                <Select style="width: 95%;" v-model="formData.receiver" :api="getUserApi" label-field="username"
+                  value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
+
               </el-form-item>
             </el-col>
             <el-col :span="11">
               <el-form-item label="抄送:">
-                <el-input></el-input>
+                <Select style="width: 95%;" v-model="formData.sender" :api="getUserApi" label-field="username"
+                  value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
               </el-form-item>
             </el-col>
           </el-row>
           <el-row>
             <el-col :span="12">
-              <el-form-item label="时间范围:">
-                <el-input></el-input>
+              <el-form-item label="时间范围:" required>
+                <el-date-picker v-model="formData.start_time" type="date" placeholder="Pick a day" size="default"
+                  style="width: 11vw;" />
+                <span>~</span>
+                <el-date-picker v-model="formData.deadline_time" type="date" placeholder="Pick a day" size="default"
+                  style="width: 11vw;" />
               </el-form-item>
             </el-col>
             <el-col :span="11">
-              <el-form-item label="工作量:">
-                <el-input></el-input>
+              <el-form-item label="工作量:" prop="workload">
+                <el-input-number v-model="formData.workload" :precision="1" :step="0.5" />
               </el-form-item>
             </el-col>
           </el-row>
@@ -171,36 +181,40 @@
 
             <el-row>
               <el-col :span="12">
-                <el-form-item label="任务内容:">
-                  <el-input type="textarea" :rows="4"></el-input>
+                <el-form-item label="任务内容:" prop="content">
+                  <el-input type="textarea" :rows="4" v-model="formData.content"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="11">
                 <el-form-item label="挑战目标:">
-                  <el-input type="textarea" :rows="4"></el-input>
+                  <el-input type="textarea" :rows="4" v-model="formData.challenge"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-form-item label="任务描述:">
-              <el-input type="textarea" :rows="1"></el-input>
+              <el-input type="textarea" :rows="1" v-model="formData.description"></el-input>
+            </el-form-item>
+            <el-form-item label="关联任务:">
+              <el-input type="text" v-model="formData.related_task"></el-input>
             </el-form-item>
           </el-scrollbar>
           <el-form-item>
             <el-button type="primary" @click="onSubmit">提交</el-button>
-            <el-button>清空</el-button>
+            <el-button @click="resetForm">清空</el-button>
           </el-form-item>
 
         </el-form>
       </div>
-      <div style="width: 49.8vw;height:25vh;">
-        <vxe-table :data="tableData">
-          <vxe-column type="checkbox" width="60"></vxe-column>
-          <vxe-column field="name" title="任务名"></vxe-column>
-          <vxe-column field="receiver" title="执行人"></vxe-column>
-          <vxe-column field="sex" title="开始时间"></vxe-column>
-          <vxe-column field="age" title="截止时间"></vxe-column>
-          <vxe-column field="age" title="工作量"></vxe-column>
-
+      <div style="width: 49.8vw;height:30vh;border: 1px solid white;">
+        <vxe-table :data="schduleTableData" border show-header stripe auto-resize max-height="220"
+          :row-config="{ isHover: true }">
+          <vxe-column type="checkbox" width="5%"></vxe-column>
+          <vxe-column field="name" title="任务名" width="12%" show-overflow></vxe-column>
+          <vxe-column field="status_name" title="状态" width="10%"></vxe-column>
+          <vxe-column field="start_time" title="开始时间" width="15%"></vxe-column>
+          <vxe-column field="deadline_time" title="截止时间" width="15%" show-overflow></vxe-column>
+          <vxe-column field="workload" title="量(天)" width="10%"></vxe-column>
+          <vxe-column field="receiver_name" title="执行人" width="11%"></vxe-column>
           <vxe-column title="按钮组" width="200" :cell-render="btnGroupCellRender"></vxe-column>
         </vxe-table>
       </div>
@@ -214,12 +228,14 @@ import Calendar from './calendar/Calendar.vue'
 import { useUserStore } from '@/stores/user'
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
-
+import { getCurMonthStartAndEndStr, formatDate, TaskStatus } from '@/utils/public'
+import Select from '@/components/selects/MutiSelect.vue'
+import { getUserApi, taskAddApi } from '@/api/data/data'
 
 const userStore = useUserStore()
 const scheduleStore = useScheduleStore()
 const { loginUser } = storeToRefs(userStore)
-const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds, curUserTasksRef, curUserTasksWorkloadsRef } = storeToRefs(scheduleStore)
+const { curReceivers, curReceiverIDs, curSelectUser, curSelectUserInfo, userPool, userPoolIds, curUserTasksRef, curUserTasksWorkloadsRef, curSelectDateStat, schduleTableData } = storeToRefs(scheduleStore)
 
 //人员池逻辑
 //===================================================================================================
@@ -270,12 +286,6 @@ const handleDeleteUser = (id) => {
   scheduleStore.deleteUserofPool(id)
 }
 
-const getUserPoolTagType = (id) => {
-  //人员池人员 为当前选中人员 
-   if(id === curSelectUser.value) return 'success'
-   // 人员池人员 为当前执行人员池
-   if(curReceiverIDs.includes(id)) return 'warning'
-}
 // 选中人员
 const handleSelectUser = (id) => {
   const idPoolIndex = userPoolIds.value.indexOf(id)
@@ -294,7 +304,8 @@ const handleSelectUser = (id) => {
 const handleSelectReceiverUser = (id) => {
   console.log(id, '选中')
   curSelectUser.value = id
-  scheduleStore.getCurUserTasks(id, '2025-01-01', '2025-01-30')
+  const [starDateStr, endDateStr] = getCurMonthStartAndEndStr(new Date())
+  scheduleStore.getCurUserTasks(id, starDateStr, endDateStr)
 }
 
 const handleDeleteReceiverUser = (id) => {
@@ -306,14 +317,135 @@ const handleDeleteReceiverUser = (id) => {
 // =======================================================================================================
 // 执行人员池 逻辑 END
 
+// 提交form 表单功能
+const formRef = ref()
+const initFormData = ref({
+  name: null,
+  content: null,
+  challenge: null,
+  creator: loginUser.value.id,
+  receiver: curReceivers.value,
+  start_time: null,
+  deadline_time: null,
+  description: null,
+  sender: null,
+  workload: null,
+  status: TaskStatus.PEND,
+  project: null,
+  related_task: null,
+})
+const formData = reactive({ ...initFormData.value })
+watch(formData, (newVal) => {
+  curReceivers.value = formData.receiver
+})
+const formRules = reactive({
+  name: [
+    {
+      required: true,
+      message: '请输入任务名',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+  receiver: [
+    {
+      required: true,
+      message: '请输入执行者',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+  content: [
+    {
+      required: true,
+      message: '请输入任务内容',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+  start_time: [
+    {
+      required: true,
+      message: '请输入任务开始时间',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+  deadline_time: [
+    {
+      required: true,
+      message: '请输入任务截止时间',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+  workload: [
+    {
+      required: true,
+      message: '请输入任务工时',
+      validator: (rule, value, callback) => {
+        console.log(rule)
+        console.log(value)
+        //TODO 实现真正的验证
+        callback()
+      }
+    }],
+})
+
+const onSubmit = async () => {
+  console.log('form =====>', formData)
+  //TODO 提交前验证！
+  // 准备所有请求的Promise数组
+  const addTaskPromises = formData.receiver.map(receiver => {
+    const tmpFormData = {
+      ...formData,
+      receiver: receiver.id,
+      start_time: formatDate(formData.start_time),
+      deadline_time: formatDate(formData.deadline_time),
+      sender: formData.sender ? formData.sender.map(s => s.id).join(",") : ""
+    };
+    console.log('Submitting task:', tmpFormData);
+    return taskAddApi(tmpFormData); // 假设taskAddApi返回的是axios Promise
+  });
+  // 等待所有任务添加完成
+  const responses = await Promise.all(addTaskPromises);
+  scheduleStore.getTableData()
+}
+
+const resetForm = () => {
+  for (let key in formData) {
+    if (formData.hasOwnProperty(key)) {
+      formData[key] = initFormData.value[key]; // 将每个值乘以2
+    }
+  }
+}
+// 提交form 表单功能 END
+
+// table 表
 import { VxeUI } from 'vxe-pc-ui'
+
 const btnGroupCellRender = reactive({
   name: 'VxeButtonGroup',
   props: {
     mode: 'text'
   },
   options: [
-    { content: '查看', name: 'view' },
+    { content: '编辑', name: 'view' },
     { content: '删除', status: 'error', name: 'del' }
   ],
   events: {
@@ -325,12 +457,11 @@ const btnGroupCellRender = reactive({
     }
   }
 })
-const tableData = ref([
-  { id: 10001, name: 'Test1', receiver: '陈成F', role: 'Develop', sex: 'Man', age: 28, address: 'test abc' },
-  { id: 10002, name: 'Test2', receiver: '陈成F', role: 'Test', sex: 'Women', age: 22, address: 'Guangzhou' },
-  { id: 10003, name: 'Test3', receiver: '陈成F', role: 'PM', sex: 'Man', age: 32, address: 'Shanghai' },
-  { id: 10004, name: 'Test4', receiver: '陈成F', role: 'Designer', sex: 'Women', age: 24, address: 'Shanghai' }
-])
+onMounted(() => {
+  scheduleStore.getTableData()
+})
+// table 表 END
+
 
 const value = ref(true)
 
@@ -347,6 +478,7 @@ const value = ref(true)
   justify-content: start;
   /* 内容水平居中 */
   align-items: start;
+  width: 49vw;
   /* 内容垂直居中 */
   background-color: #f1f3f6;
 }
