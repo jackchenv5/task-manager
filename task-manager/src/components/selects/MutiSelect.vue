@@ -109,7 +109,6 @@ const loadOptions = async () => {
         originData.value = Array.isArray(data) ? data : []
         orginOptions.value = Array.isArray(data) ? data : []
         options.value = orginOptions.value
-        console.log(options.value)
     } catch (error) {
         console.error('加载选项失败:', error)
     } finally {

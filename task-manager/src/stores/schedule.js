@@ -117,12 +117,23 @@ const getTableData = async () =>{
   //项目池
   const projectPool = ref([])
 
+  // 当前要展示的任务数据
+
+  const curTaskDetailRef = ref({})
   
+  const updateCurTaskDetail = (taskObj) =>{
+    curTaskDetailRef.value = taskObj
+  }
+  
+  // 当前要展示的任务数据END
+
   return {
     curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser,curSelectUserInfo,
     userPool, userPoolIds, addToUserPool, deleteUserofPool, clearUserPool, getCurUserTasks,
     curUserTasksRef, curUserTasksWorkloadsRef,
     curUserScheduleTasksRef,updateSelectDateStat,
-    curSelectDateStat,schduleTableData,getTableData
+    curSelectDateStat,schduleTableData,getTableData,
+    // 任务详情
+    curTaskDetailRef,updateCurTaskDetail
   }
 })

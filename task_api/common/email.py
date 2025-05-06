@@ -94,6 +94,7 @@ def send_email(html_content,to_email,cc=None,subject="",action="任务下发"):
     email.content_subtype = 'html'  # 明确指定内容为 HTML
     email.body = html_content  # 将 HTML 字符串设置为邮件正文
     # 发送邮件
-    email.send()
+    # email.send()
+    return
 
 
