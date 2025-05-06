@@ -512,16 +512,15 @@ const schedulerContainer = ref(null);
 onMounted(async () => {
   // 根据userStores中存储的数据确定加载哪个组的数据
   // 初始化加载数据
-  await myUserStore.initUser(427);
-  await myGroupStore.getAllTask(myGroupStore.groupId);
-  await myGroupStore.getAllGroup();
-  await myGroupStore.getGroupCfg();
-  console.log(myGroupStore.groupCfg['selectedProjects']);
-  selectedGroup.value = myGroupStore.groupCfg['selectedGroup'];
-  radio1.value = myGroupStore.groupCfg['radio'];
-  checkedMembers.value = myGroupStore.groupCfg['checkedMembers'];
-  selectedProjects.value = myGroupStore.groupCfg['selectedProjects'];
-  switchButtonValue.value = myGroupStore.groupCfg['switchButtonValue'];
+  await myUserStore.initUser(427)
+  await myGroupStore.getAllTask(myGroupStore.groupId)
+  await myGroupStore.getAllGroup()
+  await myGroupStore.getGroupCfg()
+  selectedGroup.value = myGroupStore.groupCfg.selectedGroup
+  radio1.value = myGroupStore.groupCfg.radio
+  checkedMembers.value = myGroupStore.groupCfg.checkedMembers
+  selectedProjects.value = myGroupStore.groupCfg.selectedProjects
+  switchButtonValue.value = myGroupStore.groupCfg.switchButtonValue
 
   // 监听选择项目变化的处理操作
   watch(selectedProjects, (newVal) => {
@@ -562,7 +561,10 @@ onMounted(async () => {
   scheduler.updateView();
 
   // 启动引导程序
-  driverObj.drive();
+  if (!myGroupStore.groupCfg.groupTutorialComplete) {
+    driverObj.drive();
+  }
+  
 });
 
 // ---*--- 组员变化相关方法 ---*---
@@ -997,9 +999,16 @@ const driverObj = driver({
     { element: '.vxe-table', popover: { title: '任务列表', description: '根据状态、人员、项目和日历过滤显示任务', side: "left", align: 'start' }},
     { element: '.el-button', popover: { title: '下发任务', description: '选择下面列表中的任务， 一键下发任务', side: "left", align: 'start' }},
     { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '双击查看任务详情', side: "left", align: 'start' }},
-    { popover: { title: '恭喜', description: '您已完成所有引导，欢迎使用任务管理系统！' } }
+    { popover: { title: '恭喜', description: '您已完成当前页面所有引导，欢迎使用任务管理系统！', onNextClick: () => { handleTutorialComplete() } } }
   ]
 });
+
+const handleTutorialComplete = () => {
+  myGroupStore.groupCfg.groupTutorialComplete = true
+  myUserStore.setUserConfig("group", myGroupStore.groupCfg)
+  driverObj.destroy()
+}
+
 </script>
 
 <style>

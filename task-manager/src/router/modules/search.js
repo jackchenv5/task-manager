@@ -9,7 +9,7 @@ export default [
         {
           path: "index",
           name: "searchIndex",
-          component: () => import("@/views/schedule/Index.vue"),
+          component: () => import("@/views/search/Index.vue"),
           // meta: { cacheable: true }
         },
       ]
