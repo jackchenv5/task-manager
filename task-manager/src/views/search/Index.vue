@@ -7,7 +7,7 @@
           <el-col :span="8">
             <el-form-item label="组内人员">
               <Select
-                v-model="queryForm.groupMembers"
+                v-model="queryForm.group"
                 placeholder="请选择组"
                 :api="getUserGroupApi"
                 :params="{}"
@@ -23,7 +23,7 @@
           <el-col :span="8">
             <el-form-item label="执行人">
               <Select
-                v-model="queryForm.executor"
+                v-model="queryForm.receiver"
                 placeholder="请选择执行人"
                 :api="getUserApi"
                 label-field="username"
@@ -38,7 +38,7 @@
           <el-col :span="8">
             <el-form-item label="创建人">
               <Select
-                v-model="queryForm.tl"
+                v-model="queryForm.creator"
                 placeholder="请选择创建人"
                 :api="getUserApi"
                 label-field="username"
@@ -72,6 +72,7 @@
           
           <el-col :span="8">
             <el-form-item label="时间范围">
+            <el-config-provider :locale="locale">
               <el-date-picker
                 v-model="queryForm.timeRange"
                 type="daterange"
@@ -81,18 +82,21 @@
                 value-format="YYYY-MM-DD"
                 clearable
               />
+              </el-config-provider>
             </el-form-item>
           </el-col>
           
           <el-col :span="8">
             <el-form-item label="标定时间">
+            <el-config-provider :locale="locale">
               <el-date-picker
-                v-model="queryForm.calibrationTime"
+                v-model="queryForm.flag_time"
                 type="date"
                 placeholder="选择标定时间"
                 value-format="YYYY-MM-DD"
                 clearable
               />
+              </el-config-provider>
             </el-form-item>
           </el-col>
         </el-row>
@@ -117,7 +121,7 @@
           <el-col :span="8">
             <el-form-item label="关键字查询">
               <el-input
-                v-model="queryForm.keyword"
+                v-model="queryForm.search_text"
                 placeholder="请输入任务名称或描述"
                 clearable
               />
@@ -143,8 +147,8 @@
       
       <vxe-table
         border
-        resizable
-        highlight-current-row
+        auto-resize
+        :row-config="{ isHover: true }"
         :data="tableData"
         :loading="loading"
         height="600"
@@ -161,13 +165,13 @@
           </template>
         </vxe-column>
         
-        <vxe-column field="executor" title="执行者" width="120"></vxe-column>
-        <vxe-column field="startTime" title="开始时间" width="150"></vxe-column>
-        <vxe-column field="endTime" title="截止时间" width="150"></vxe-column>
+        <vxe-column field="receiver" title="执行者" width="120"></vxe-column>
+        <vxe-column field="start_time" title="开始时间" width="150"></vxe-column>
+        <vxe-column field="deadline_time" title="截止时间" width="150"></vxe-column>
         <vxe-column field="workload" title="工作量(人天)" width="120"></vxe-column>
         <vxe-column field="project" title="项目" width="150" show-overflow></vxe-column>
-        <vxe-column field="relatedTask" title="关联任务" width="150" show-overflow></vxe-column>
-        <vxe-column field="tl" title="创建人" width="120"></vxe-column>
+        <vxe-column field="related_task" title="关联任务" width="150" show-overflow></vxe-column>
+        <vxe-column field="creator_name" title="创建人" width="120"></vxe-column>
         
         <vxe-column title="操作" width="120" fixed="right">
           <template #default="{ row }">
@@ -193,19 +197,22 @@
 import { ref, reactive, onMounted } from 'vue'
 import Select from '@/components/selects/MutiSelect.vue'
 import { Download } from '@element-plus/icons-vue'
-import {  getUserGroupApi, getUserApi, getProjectApi } from '@/api/data/data'
+import {  getUserGroupApi, getUserApi, getProjectApi, getTaskDataApi } from '@/api/data/data'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+import { TaskStatus } from '@/utils/public'
 
+const locale = zhCn
 
 // 筛选表单数据
 const queryForm = reactive({
-  groupMembers: [],
-  executor: '',
-  tl: '',
+  group: '',
+  receiver: '',
+  creator: '',
   status: '',
   timeRange: [],
-  calibrationTime: '',
+  flag_time: '',
   project: '',
-  keyword: ''
+  search_text: ''
 })
 
 // 分页数据
@@ -218,11 +225,12 @@ const page = reactive({
 // 表格数据
 const tableData = ref([])
 const loading = ref(false)
+const queryItems = ref([])
 
 const statusOptions = ref([
-  { value: 'pending', label: '待开始' },
-  { value: 'in_progress', label: '进行中' },
-  { value: 'completed', label: '已完成' }
+  { value: 'PEND', label: '待下发' },
+  { value: 'PROGRESS', label: '进行中' },
+  { value: 'FINISH', label: '已完成' }
 ])
 
 // 获取状态标签类型
@@ -242,31 +250,54 @@ const getBusyLevelColor = (percentage) => {
   return '#F56C6C'
 }
 
+const taskStatus = {
+    待下发: 1,
+    进行中: 4,
+    已完成: 2
+}
+
 // 查询方法
-const handleQuery = () => {
+const handleQuery = async () => {
   loading.value = true
   page.currentPage = 1
-  fetchData()
+  // 获取所有的筛选条件\
+  const params = {
+    group: queryForm.group.id? queryForm.group.id : "",  // 组内人员（数组）
+    receiver: queryForm.receiver.id? queryForm.receiver.id : "",          // 执行人
+    creator: queryForm.creator.id? queryForm.creator.id : "",                     // 创建人
+    status: TaskStatus[queryForm.status] ? TaskStatus[queryForm.status] : "",             // 状态
+    start_time: queryForm.timeRange.length == 2? queryForm.timeRange[0] : "",  // 时间范围开始
+    deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
+    flag_time: queryForm.flag_time, // 标定时间
+    project: queryForm.project.name? queryForm.project.name : "",           // 项目
+    search_text: queryForm.search_text             // 关键字
+  }
+  console.log(params);
+  const response = await getTaskDataApi(params)
+  console.log(response)
+  queryItems.value = response.result.items
+  tableData.value = queryItems.value.slice(0, page.pageSize)
+  page.total = queryItems.value.length
+  loading.value = false;
 }
 
 // 重置查询条件
 const resetQuery = () => {
   Object.assign(queryForm, {
-    groupMembers: [],
-    executor: '',
-    tl: '',
+    group: '',
+    receiver: '',
+    creator: '',
     status: '',
     timeRange: [],
-    calibrationTime: '',
+    flag_time: '',
     project: '',
-    keyword: ''
+    search_text: ''
   })
-  handleQuery()
 }
 
 // 分页变化
 const handlePageChange = () => {
-  fetchData()
+  tableData.value = queryItems.value.slice((page.currentPage - 1) * page.pageSize, page.currentPage * page.pageSize)
 }
 
 // 获取表格数据
@@ -322,7 +353,7 @@ const handleDetail = (row) => {
 
 // 初始化加载数据
 onMounted(() => {
-  fetchData()
+  
 })
 </script>
 

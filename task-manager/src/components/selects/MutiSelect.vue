@@ -39,7 +39,7 @@ const props = defineProps({
         default: '请选择'
     },
     api: {
-        type: String,
+        type: [String, Function],
         default: ''
     },
     dataFiled: {
@@ -62,7 +62,7 @@ const props = defineProps({
         type: Array
     },
     modelValue: {  // 默认的 v-model 属性名
-        type: String,
+        type: [String, Array],
         default: '',
     },
 })
