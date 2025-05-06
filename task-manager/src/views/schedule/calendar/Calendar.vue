@@ -48,17 +48,16 @@ onMounted(() => {
 <style>
 @import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
 
-.dhx_month_link{
-    display: none!important;
-}
+
 .hide_event {
     display: none!important;
 }
-.my-month-day{
+.my-month-day-waring{
     border: 1px solid red;
+    background-color:blue;
 }
-.dhx_cal_month_cell{
-    background-color: azure;
-}
+/* .dhx_cal_month_cell{
+    background-color: unset;
+} */
 /* the background color for the whole container and its border*/
 </style>
