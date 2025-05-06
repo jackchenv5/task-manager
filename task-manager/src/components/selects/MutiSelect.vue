@@ -2,8 +2,7 @@
 
 <template>
     <el-select ref="selectRef" v-model="selectedValue" :placeholder="placeholder" :multiple="multiple" @focus="focus" :value-key="valueField"
-        :clearable="clearable" :loading="loading" :filterable="filterable" :remote="remote" :remote-method="remoteMethod"
-        style="width: 240px">
+        :clearable="clearable" :loading="loading" :filterable="filterable" :remote="remote" :remote-method="remoteMethod">
         <el-option v-for="item in options" :key="item[valueField]" :label="item[labelField]" :value="item" />
     </el-select>
 </template>
@@ -40,7 +39,7 @@ const props = defineProps({
         default: '请选择'
     },
     api: {
-        type: String,
+        type: [String, Function],
         default: ''
     },
     dataFiled: {
@@ -63,7 +62,7 @@ const props = defineProps({
         type: Array
     },
     modelValue: {  // 默认的 v-model 属性名
-        type: String,
+        type: [String, Array],
         default: '',
     },
 })
@@ -93,6 +92,7 @@ const loadOptions = async () => {
 
     try {
         const response = await props.api()
+        console.log(response)
         // 处理API返回数据
         if (!response.hasOwnProperty(props.dataFiled)) {
             console.log(`response:${response} 不存在指定的data字段:${props.dataFiled}`)

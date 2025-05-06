@@ -741,7 +741,11 @@ onMounted(async () => {
   });
 
   // 启动引导程序
-  driverObj.drive();
+  // console.log(personCfg.value.tutorialComplete);
+  if (!personCfg.value.personTutorialComplete) {
+    driverObj.drive();
+  }
+  
 });
 
 onUnmounted(() => {
@@ -761,12 +765,19 @@ const driverObj = driver({
     { element: '.dhx_cal_nav_button', popover: { title: '切换日历月份', description: '切换月份会重新渲染日历和更新右边的任务列表', side: "left", align: 'start' }},
     { element: '.dhx_cal_data', popover: { title: '任务总览', description: '显示当前月中每一天的任务情况， 可以点击或者拖拽多选某一段时间的任务情况', side: "left", align: 'start' }},
     { element: '.month_day_total', popover: { title: '具体某一天的任务情况', description: '当天的任务数量 -- 当天任务总工时(单位小时)', side: "left", align: 'start' }},
-    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的', side: "left", align: 'start' }},
+    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的情况', side: "left", align: 'start' }},
     { element: '.vxe-table', popover: { title: '任务列表', description: '根据状态和日历过滤显示任务', side: "left", align: 'start' }},
-    { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '单击反馈任务进度、双击查看任务详情', side: "left", align: 'start' }},
-    { popover: { title: '恭喜', description: '您已完成所有引导，欢迎使用任务管理系统！' } }
+    { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '单击表格中的任务反馈任务进度、双击查看任务详情', side: "left", align: 'start' }},
+    { popover: { title: '恭喜', description: '您已完成当前页面所有引导，欢迎使用任务管理系统！', onNextClick: () => { handleTutorialComplete() } } }
   ]
 });
+
+const handleTutorialComplete = () => {
+  console.log(111111)
+  personCfg.value.personTutorialComplete = true
+  myUserStore.setUserConfig("person", personCfg.value)
+  driverObj.destroy()
+}
 
 </script>
 
