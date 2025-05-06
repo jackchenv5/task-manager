@@ -1,7 +1,9 @@
 import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-
+import { defineStore,storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
+import { useUserStore } from '@/stores/user'
+const myUserStore = useUserStore()
+const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
 
   // 首次加载，同步loginUser配置
@@ -52,14 +54,35 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   // 当前选择人员
   const curSelectUser = ref()
+  const curSelectUserInfo = computed( ()=>{
+     return curSelectUser.value ? curReceivers.value.filter(x=>x.id === curSelectUser.value)[0] : {}
+  })
   const curUserTasksRef = ref([])
 
-  // 当前选中人员的原始任务数据
+  // 当前选中人员的任务总工时
   const curUserTasksWorkloadsRef = computed(() => {
     const allWorkloads = curUserTasksRef.value.reduce((sum, task) => sum + task.workload, 0);
     return allWorkloads
   })
 
+  //当前选中日期的统计数据
+const curSelectDateStat = ref({
+  startDate:'',
+  endDate:'',
+  workloads:0,
+  workNum:0,
+  per:0,
+})
+// 跟新选中日期的统计数据
+const updateSelectDateStat = (startDate,endDate,workloads,workNum,per) =>{
+  curSelectDateStat.value.startDate = startDate
+  curSelectDateStat.value.endDate = endDate
+  curSelectDateStat.value.workloads = workloads
+  curSelectDateStat.value.workNum = workNum
+  curSelectDateStat.value.per = per
+
+}
+ // 基于原始数据的任务渲染数据
   const curUserScheduleTasksRef = computed(() => {
     return curUserTasksRef.value.map(x => {
       return { start_date: x.start_time, end_date: x.deadline_time, text: x.name, ...x }
@@ -72,15 +95,34 @@ export const useScheduleStore = defineStore('schedule', () => {
     curUserTasksRef.value = curUserTasks.result.items.sort((a, b) => b.workload - a.workload)
   }
 
+
+// table 数据
+const schduleTableData = ref([])
+
+// 获取schedule 表格数据
+// 过滤项，1.自己创建的
+// 2.最近100条数据
+
+const getTableData = async () =>{
+    console.log(loginUser.value,'======>')
+    const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id})
+    schduleTableData.value = curCreatorTasks.result?.items
+    console.log(schduleTableData.value)
+}
+
+// table 数据END
+
   // 当前选中人员任务 END
 
   //项目池
   const projectPool = ref([])
 
+  
   return {
-    curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser
-    , userPool, userPoolIds, addToUserPool, deleteUserofPool, clearUserPool, getCurUserTasks,
+    curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser,curSelectUserInfo,
+    userPool, userPoolIds, addToUserPool, deleteUserofPool, clearUserPool, getCurUserTasks,
     curUserTasksRef, curUserTasksWorkloadsRef,
-    curUserScheduleTasksRef
+    curUserScheduleTasksRef,updateSelectDateStat,
+    curSelectDateStat,schduleTableData,getTableData
   }
 })

@@ -35,7 +35,7 @@ const FormatDate = (date) => {
 
 // 辅助函数：格式化日期为 YYYY-MM-DD ( VXE表格使用)
 const FormatVxeDate = (date) => {
-    if (!(date instanceof Date)){
+    if (!(date instanceof Date)) {
         return date.split(' ')[0];
     };
     const year = date.getFullYear();
@@ -53,11 +53,11 @@ const FormatVxeDate = (date) => {
 //     return totalHours.toFixed(1);
 // }
 
-const GetDayTotalWorkHours = (events) => {
-    return events
+const GetDayTotalWorkHours = (events, transStr = true) => {
+    const total = events
         .filter(e => e.status_name !== '草稿')
         .reduce((sum, e) => sum + ((e.workload * 8) / e.diff_days), 0)
-        .toFixed(1);
+    return transStr ? total.toFixed(1) : total
 };
 
 const GetProgressStatus = (process) => {
@@ -66,11 +66,67 @@ const GetProgressStatus = (process) => {
     if (percent >= 70) return 'primary';
     if (percent >= 30) return 'warning';
     return 'exception';
-  };
+};
+
+// added by chenchengf
+
+// 获取当前月的起始日期字符，用于日历组件
+const GetCurMonthStartAndEndStr = (date) => {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const firstDay = new Date(year, month - 1, 1);
+    const lastDay = new Date(year, month, 0);
+
+    const startDate = formatDate(firstDay);
+    const endDate = formatDate(lastDay);
+    return [startDate, endDate]
+}
+
+/**
+ * 将"YYYY-MM-DD"格式的日期字符串转换为Date对象
+ * @param {string} dateStr - 格式为"2025-02-08"的日期字符串
+ * @returns {Date} 对应的Date对象
+ * @throws {Error} 如果输入格式不正确则抛出错误
+ */
+function ParseDateString(dateStr) {
+    // 验证输入格式
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        throw new Error('日期格式不正确，应为YYYY-MM-DD格式');
+    }
+
+    // 分割年月日
+    const parts = dateStr.split('-');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // 月份从0开始
+    const day = parseInt(parts[2], 10);
+
+    // 验证日期有效性
+    const date = new Date(year, month, day);
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month ||
+        date.getDate() !== day
+    ) {
+        throw new Error('无效的日期');
+    }
+
+    return date;
+}
+
+// END 
 
 // 封装基础方法
 export const isWorkday = (date) => IsWorkday(date)
 export const formatDate = (date) => FormatDate(date)
 export const formatVxeDate = (date) => FormatVxeDate(date)
-export const getDayTotalWorkHours = (events) => GetDayTotalWorkHours(events)
+export const getDayTotalWorkHours = (events,transStr) => GetDayTotalWorkHours(events,transStr)
 export const getProgressStatus = (process) => GetProgressStatus(process)
+export const getCurMonthStartAndEndStr = (date) => GetCurMonthStartAndEndStr(date)
+export const parseDateString = (dateStr) => ParseDateString(dateStr)
+
+export const TaskStatus = {
+    PEND:1,
+    PROGRESS:4,
+    DRAFT:3,
+    FINISH:4
+}

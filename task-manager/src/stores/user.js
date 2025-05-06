@@ -7,8 +7,8 @@ import { saveConfig,getUserDetailApi } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    id: 1001,
-    username: "陈菁菁",
+    id: 608,
+    username: "chenchengf",
     emp_num: "007101",
     role:0,
     role_name:'',
@@ -30,7 +30,8 @@ export const useUserStore = defineStore('user', () => {
   })
 
   const initUser = async (id) =>{
-      const curUserInfo = await getUserDetailApi(id)
+      const curUserInfo = await getUserDetailApi(id);
+      console.log(curUserInfo);
       loginUser.value = curUserInfo
   }
 
