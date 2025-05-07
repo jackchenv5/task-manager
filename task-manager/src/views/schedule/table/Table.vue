@@ -24,10 +24,8 @@
                 </el-col>
                 <el-col :span="12">
                     <el-form-item label="抄送:">
-                        <Select style="width: 95%;" v-model="curTaskDetailRef.sender" :api="getUserApi"
-                            label-field="username" value-field="id" filterable multiple
-                            :filter-field="['username', 'emp_num', 'email']"></Select>
-                    </el-form-item>
+                    <Select style="width: 95%;" v-model="curTaskDetailRef.sender" :api="getUserApi" label-field="username" value-field="username" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
+                </el-form-item>
                 </el-col>
             </el-row>
             <el-row>
@@ -112,7 +110,7 @@ const btnGroupCellRender = reactive({
             if (params.name === 'edit') {
                 disabled.value = false
                 console.log('=========================', cellParams.row)
-                scheduleStore.updateCurTaskDetail({ ...cellParams.row })
+                scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender.split(",") })
                 openDrawer()
             } else if (params.name === 'del') {
                 console.log('========================del=', cellParams.row.id)
@@ -132,7 +130,7 @@ const btnGroupCellRender = reactive({
 
 const handleRowDblClick = (cellParams) => {
     disabled.value = true
-    scheduleStore.updateCurTaskDetail({ ...cellParams.row })
+    scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender.split(",") })
     openDrawer()
 }
 

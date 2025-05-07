@@ -1,4 +1,4 @@
-import { get,patch} from '@/utils/httpData'
+import { get,patch,post,del} from '@/utils/httpData'
 
 // 获取用户任务数据
 export const getUserApi = (params) => get('/users', params)
@@ -13,6 +13,12 @@ export const getTaskDataApi = (params) => get('/tasks', params)
 
 // 提交任务修改
 export const taskModifyApi = (pk, params) => patch(`/tasks/${pk}/`,params);
+
+// 提交任务增加
+export const taskAddApi = (params) => post(`/tasks/`,params);
+
+// 提交任务删除
+export const taskDeleteApi = (id) => del(`/tasks/${id}`);
 
 // 批量下发任务
 export const taskPublishApi = (params) => get('/task/notify-tasks-by-receiver/',params);
