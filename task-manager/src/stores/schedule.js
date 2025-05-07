@@ -7,11 +7,36 @@ const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
 
   // 首次加载，同步loginUser配置
+  const schedule_config  = ref({
+    'schedule_user_pool':null,
+    'schedule_receiver':null,
+    'schedule_select_user':null,
+    'schedule_project_pool':null,
+
+})
+  // 一次加载所有关于schedule 的config
+  const initScheduleConfig = () => {
+    schedule_config.value.schedule_user_pool = useScheduleStore.getUserConfig('schedule_user_pool')
+    schedule_config.value.schedule_receiver = useScheduleStore.getUserConfig('schedule_receiver')
+    schedule_config.value.schedule_select_user = useScheduleStore.getUserConfig('schedule_select_user')
+    schedule_config.value.schedule_project_pool = useScheduleStore.getUserConfig('schedule_project_pool')
+  }
+
+  const saveScheduleConfig = () => {
+    useScheduleStore.setUserConfig('schedule_user_pool',schedule_config.value.schedule_user_pool)
+    Object.entries(schedule_config.value).forEach(([key, value]) => {
+      console.log(`Key: ${key}, Value: ${value}`);
+      useScheduleStore.setUserConfig(key,value)
+    });
+}
 
   //人员池
   // 1. 数据都是原生的用户对象
   // 2. 
-  const userPool = ref([])
+  const userPool = computed(() => schedule_config.value.schedule_user_pool)
+
+
+
   const userPoolIds = computed(() => userPool.value.length === 0 ? [] : userPool.value.map(x => x.id))
 
   const addToUserPool = (user) => {
@@ -31,8 +56,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   // 当前执行人员
 
-  const curReceivers = ref([])
-
+  const curReceivers = computed(() => schedule_config.value.schedule_receiver)
   // ✅ 计算属性，自动依赖跟踪
   const curReceiverIDs = computed(() => curReceivers.value.length === 0 ? [] : curReceivers.value.map(x => x.id));
 
@@ -53,7 +77,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 当前执行人员 END
 
   // 当前选择人员
-  const curSelectUser = ref()
+  const curSelectUser =  computed(() => schedule_config.value.schedule_select_user)
   const curSelectUserInfo = computed( ()=>{
      return curSelectUser.value ? curReceivers.value.filter(x=>x.id === curSelectUser.value)[0] : {}
   })

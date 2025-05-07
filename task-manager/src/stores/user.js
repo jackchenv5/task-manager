@@ -31,7 +31,6 @@ export const useUserStore = defineStore('user', () => {
 
   const initUser = async (id) =>{
       const curUserInfo = await getUserDetailApi(id);
-      console.log(curUserInfo);
       loginUser.value = curUserInfo
   }
 
@@ -59,7 +58,13 @@ export const useUserStore = defineStore('user', () => {
 
   const getUserConfig = (key) => {
     if(key){
-      return loginUser.value.config[key]
+      // 有此属性配置，直接返回
+      if(loginUser.hasOwnProperty(key)){
+        return loginUser.value.config[key]
+      }
+      // 没有此属性，创建属性，并赋值null
+      loginUser.value.config[key] = null
+      return null
     }else{
       return loginUser.value.config
     }

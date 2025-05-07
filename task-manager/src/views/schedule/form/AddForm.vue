@@ -15,15 +15,12 @@
         <el-row>
             <el-col :span="12">
                 <el-form-item label="执行人:" prop="receiver">
-                    <Select style="width: 95%;" v-model="formData.receiver" :api="getUserApi" label-field="username"
-                        value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
-
+                    <Select style="width: 95%;" v-model="formData.receiver" :api="getUserApi" label-field="username" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
                 </el-form-item>
             </el-col>
             <el-col :span="11">
                 <el-form-item label="抄送:">
-                    <Select style="width: 95%;" v-model="formData.sender" :api="getUserApi" label-field="username"
-                        value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
+                    <Select style="width: 95%;" v-model="formData.sender" :api="getUserApi" label-field="username"  filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
                 </el-form-item>
             </el-col>
         </el-row>

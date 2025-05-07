@@ -3,7 +3,7 @@
         <el-form :model="form">
             <el-form-item label="用户选择：" :label-width="formLabelWidth">
                 <Select style="width: 95%;" v-model="selectedOption" :api="getUserApi" label-field="username"
-                    value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
+                 filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
             </el-form-item>
         </el-form>
         <template #footer>
@@ -27,7 +27,7 @@ const props = defineProps({
         default: false
     },
     modelValue: {  // 默认的 v-model 属性名
-        type: Object,
+        type: Array,
         // default: [],
     },
 })
