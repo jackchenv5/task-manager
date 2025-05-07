@@ -137,21 +137,20 @@
     </el-card>
     
     <el-card shadow="never" class="table-card">
-      <vxe-toolbar>
+      <!-- <vxe-toolbar>
         <template #buttons>
           <el-button type="primary" size="small" @click="exportData">
             <el-icon><Download /></el-icon>导出数据
           </el-button>
         </template>
-      </vxe-toolbar>
+      </vxe-toolbar> -->
       
       <vxe-table
         border
-        auto-resize
         :row-config="{ isHover: true }"
         :data="tableData"
         :loading="loading"
-        height="600"
+        :height="tableHeight"
       >
         <vxe-column type="seq" width="60" title="序号"></vxe-column>
         <vxe-column field="id" title="ID" width="100"></vxe-column>
@@ -202,6 +201,23 @@ import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import { TaskStatus } from '@/utils/public'
 
 const locale = zhCn
+
+// 表格高度
+const tableHeight = ref(500)
+
+function calculateTableHeight() {
+  // 获取窗口总高度
+  const windowHeight = window.innerHeight;
+  // 获取el-header的高度
+  const header = document.querySelector('.el-header.head');
+  const headerHeight = header ? header.offsetHeight : 0;
+  // 获取filter-card的高度
+  const filterCard = document.querySelector('.filter-card');
+  const filterHeight = filterCard ? filterCard.offsetHeight : 0;
+  // 计算表格高度（减去20px的额外空间）
+  tableHeight.value = windowHeight - headerHeight - filterHeight - 140;
+  console.log(windowHeight, headerHeight, filterHeight, tableHeight.value)
+}
 
 // 筛选表单数据
 const queryForm = reactive({
@@ -353,8 +369,12 @@ const handleDetail = (row) => {
 
 // 初始化加载数据
 onMounted(() => {
-  
+  calculateTableHeight()
+  // window.addEventListener('resize', calculateTableHeight)
+  // tableHeight.value = 600
 })
+
+
 </script>
 
 <style scoped>
@@ -363,20 +383,12 @@ onMounted(() => {
 }
 
 .filter-card {
-  margin-bottom: 20px;
+  height: 20vh;
+  margin-bottom: 10px;
 }
 
 .table-card {
-  margin-top: 20px;
+  margin-top: 10px;
 }
-
-.button-group {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  height: 100%;
-}
-
-
 
 </style>
