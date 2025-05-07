@@ -56,15 +56,16 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
-  const getUserConfig = (key) => {
+  const getUserConfig = (key,defalut='') => {
+    console.log('=============get config',key,loginUser.value.config)
     if(key){
       // 有此属性配置，直接返回
-      if(loginUser.hasOwnProperty(key)){
+      if(loginUser.value.config.hasOwnProperty(key)){
         return loginUser.value.config[key]
       }
       // 没有此属性，创建属性，并赋值null
-      loginUser.value.config[key] = null
-      return null
+      loginUser.value.config[key] = defalut
+      return defalut
     }else{
       return loginUser.value.config
     }
@@ -72,7 +73,6 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const saveUserConfig = async () => {
-    console.log(loginUser.value.config);
     const res = await saveConfig(loginUser.value.id, loginUser.value.config)
     console.log('save config res: ', res);
   }

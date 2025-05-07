@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed,watch } from 'vue'
 import { defineStore,storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
@@ -6,42 +6,48 @@ const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
 
-  // 首次加载，同步loginUser配置
-  const schedule_config  = ref({
-    'schedule_user_pool':null,
-    'schedule_receiver':null,
-    'schedule_select_user':null,
-    'schedule_project_pool':null,
+  // 需要加载的配置
+  const userPool = ref([])
+  const curReceivers = ref([])
+  const curSelectUser =  ref()
+  const projectPool = ref([
+    'CP-V003R016C000_嵌入式软件平台智算网络快速收敛及设备健康度检查等关键技术研发',
+    'RT-TT-2024-004_2025年路由器滚动版本项目',
+    'SW-V010R002C002(PB069)_4U及1U高端数据中心交换机项目',
+    'SW-V010R001C238_2024数据中心专项-重大入围支撑项目',
+    'SW-V010R001C238_2024数据中心专项-重大入围支撑项目'
+  ])
 
-})
+  const curSelectProjectRef = ref('')
+
+  // 首次加载，同步loginUser配置
   // 一次加载所有关于schedule 的config
   const initScheduleConfig = () => {
-    schedule_config.value.schedule_user_pool = useScheduleStore.getUserConfig('schedule_user_pool')
-    schedule_config.value.schedule_receiver = useScheduleStore.getUserConfig('schedule_receiver')
-    schedule_config.value.schedule_select_user = useScheduleStore.getUserConfig('schedule_select_user')
-    schedule_config.value.schedule_project_pool = useScheduleStore.getUserConfig('schedule_project_pool')
+    console.log('load config',myUserStore.getUserConfig('schedule_user_pool',[]))
+    userPool.value = myUserStore.getUserConfig('schedule_user_pool',[])
+    // curReceivers.value = myUserStore.getUserConfig('schedule_receiver',[])
+    // curSelectUser.value = myUserStore.getUserConfig('schedule_select_user',null)
+    // projectPool.value = myUserStore.getUserConfig('schedule_project_pool',[])
   }
 
+  // watch([userPool,curReceivers,curSelectUser,projectPool],()=>{
+  //   saveScheduleConfig()
+  // })
   const saveScheduleConfig = () => {
-    useScheduleStore.setUserConfig('schedule_user_pool',schedule_config.value.schedule_user_pool)
-    Object.entries(schedule_config.value).forEach(([key, value]) => {
-      console.log(`Key: ${key}, Value: ${value}`);
-      useScheduleStore.setUserConfig(key,value)
-    });
+      console.log('save config')
+      myUserStore.setUserConfig('schedule_user_pool',userPool.value)
+      // myUserStore.setUserConfig('schedule_receiver',curReceivers.value)
+      // myUserStore.setUserConfig('schedule_select_user',curSelectUser.value)
+      myUserStore.setUserConfig('schedule_project_pool',projectPool.value)
 }
 
-  //人员池
-  // 1. 数据都是原生的用户对象
-  // 2. 
-  const userPool = computed(() => schedule_config.value.schedule_user_pool)
-
-
-
+// 人员池
   const userPoolIds = computed(() => userPool.value.length === 0 ? [] : userPool.value.map(x => x.id))
 
   const addToUserPool = (user) => {
     if (userPoolIds.value.includes(user.id)) return
     userPool.value.push(user)
+    saveScheduleConfig()
   }
 
   const deleteUserofPool = (id) => {
@@ -56,7 +62,7 @@ export const useScheduleStore = defineStore('schedule', () => {
 
   // 当前执行人员
 
-  const curReceivers = computed(() => schedule_config.value.schedule_receiver)
+
   // ✅ 计算属性，自动依赖跟踪
   const curReceiverIDs = computed(() => curReceivers.value.length === 0 ? [] : curReceivers.value.map(x => x.id));
 
@@ -77,7 +83,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 当前执行人员 END
 
   // 当前选择人员
-  const curSelectUser =  computed(() => schedule_config.value.schedule_select_user)
+ 
   const curSelectUserInfo = computed( ()=>{
      return curSelectUser.value ? curReceivers.value.filter(x=>x.id === curSelectUser.value)[0] : {}
   })
@@ -139,7 +145,7 @@ const getTableData = async () =>{
   // 当前选中人员任务 END
 
   //项目池
-  const projectPool = ref([])
+
 
   // 当前要展示的任务数据
 
@@ -157,7 +163,11 @@ const getTableData = async () =>{
     curUserTasksRef, curUserTasksWorkloadsRef,
     curUserScheduleTasksRef,updateSelectDateStat,
     curSelectDateStat,schduleTableData,getTableData,
+    //项目池
+    projectPool,curSelectProjectRef,
     // 任务详情
-    curTaskDetailRef,updateCurTaskDetail
+    curTaskDetailRef,updateCurTaskDetail,
+    //
+    initScheduleConfig,saveScheduleConfig,
   }
 })

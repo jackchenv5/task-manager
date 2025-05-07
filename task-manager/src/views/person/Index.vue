@@ -662,8 +662,7 @@ const showDetailPanel = ref(false);
 const currentTask = ref({});
 
 // 表格双击事件处理
-const handleRowDblClick = (row,row1) => {
-  console.log(row,row1)
+const handleRowDblClick = (row) => {
   currentTask.value = row;
   showDetailPanel.value = true;
 };

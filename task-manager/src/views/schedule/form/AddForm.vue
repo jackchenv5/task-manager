@@ -1,5 +1,5 @@
 <template>
-    <el-form ref="formRef" :rules="formRules" style="padding: 10px;" label-position="top">
+    <el-form ref="formRef" :rules="formRules" style="padding: 10px;" label-position="top" :model="formData">
         <el-row>
             <el-col :span="12">
                 <el-form-item label="名称:" prop="name" required>
@@ -83,7 +83,7 @@ const scheduleStore = useScheduleStore()
 
 const { loginUser } = storeToRefs(userStore)
 
-const { curReceivers } = storeToRefs(scheduleStore)
+const { curReceivers,curSelectProjectRef } = storeToRefs(scheduleStore)
 
 
 // 提交form 表单功能
@@ -100,79 +100,64 @@ const initFormData = ref({
   sender: null,
   workload: null,
   status: TaskStatus.PEND,
-  project: null,
+  project: curSelectProjectRef.value,
   related_task: null,
 })
-const formData = reactive({ ...initFormData.value })
+const formData = reactive({ ...initFormData.value,receiver:curReceivers.value })
 watch(formData, (newVal) => {
   curReceivers.value = formData.receiver
+})
+
+watch(curSelectProjectRef, (newVal) => {
+    formData.project = curSelectProjectRef.value
+})
+
+
+watch(curReceivers, (newVal) => {
+   formData.receiver = curReceivers.value 
 })
 const formRules = reactive({
   name: [
     {
       required: true,
       message: '请输入任务名',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
+      // validator: (rule, value, callback) => {
+      //   console.log(rule)
+      //   console.log(value)
+      //   //TODO 实现真正的验证
+      //   callback()
+      // }
     }],
   receiver: [
     {
       required: true,
       message: '请输入执行者',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
+      // validator: (rule, value, callback) => {
+      //   console.log(rule)
+      //   console.log(value)
+      //   //TODO 实现真正的验证
+      //   callback()
+      // }
     }],
   content: [
     {
       required: true,
       message: '请输入任务内容',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
     }],
   start_time: [
     {
       required: true,
       message: '请输入任务开始时间',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
     }],
   deadline_time: [
     {
       required: true,
       message: '请输入任务截止时间',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
     }],
   workload: [
     {
       required: true,
       message: '请输入任务工时',
-      validator: (rule, value, callback) => {
-        console.log(rule)
-        console.log(value)
-        //TODO 实现真正的验证
-        callback()
-      }
     }],
 })
 
@@ -198,8 +183,9 @@ const onSubmit = async () => {
 
 const resetForm = () => {
   for (let key in formData) {
+    if(['receiver','project'].includes(key)) continue
     if (formData.hasOwnProperty(key)) {
-      formData[key] = initFormData.value[key]; // 将每个值乘以2
+      formData[key] = initFormData.value[key];
     }
   }
 }
