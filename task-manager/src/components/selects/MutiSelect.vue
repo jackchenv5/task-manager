@@ -62,7 +62,7 @@ const props = defineProps({
         type: Array
     },
     modelValue: {  // 默认的 v-model 属性名
-        type: [Number, Array],
+        type: [Number, Array, String],
         default: '',
     },
 })

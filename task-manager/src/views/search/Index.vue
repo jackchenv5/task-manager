@@ -1,5 +1,182 @@
 <template>
   <div class="query-container">
+    <!-- 半屏详情面板 -->
+        <transition name="slide-left">
+          <div 
+            v-if="showDetailPanel" 
+            class="halfscreen-detail-panel"
+            @click.self="showDetailPanel = false"
+          >
+            <div class="detail-content-wrapper">
+              <!-- 关闭按钮 -->
+              <el-button 
+                class="close-btn"
+                type="danger" 
+                @click="showDetailPanel = false"
+                circle
+                size="small"
+              >
+                <el-icon><Close /></el-icon>
+              </el-button>
+
+              <h2 class="detail-title">任务详情</h2>
+
+              <div class="detail-grid">
+                <!-- 任务名称和工作量 -->
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">任务名称</span>
+                    <el-input 
+                      v-model="currentTask.name" 
+                      readonly 
+                      class="detail-input"
+                      :title="currentTask.id"
+                    />
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">工作量</span>
+                    <el-input 
+                      :value="currentTask.workload + ' 天'" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 邮件抄送 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">邮件抄送</span>
+                    <el-input
+                      type="textarea"
+                      :rows=3
+                      :value="currentTask.sender || '无'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea cc-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 开始时间和截止时间 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">开始时间 - 截止时间</span>
+                    <el-input 
+                      :value="`${currentTask.start_time} 至 ${currentTask.deadline_time}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 项目 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">项目</span>
+                    <el-input 
+                      :value="`${currentTask.project || '无'}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 关联任务 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">关联任务</span>
+                    <el-input 
+                      :value="`${currentTask.related_task || '无'}`" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 任务内容 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">任务内容</span>
+                    <el-input
+                      type="textarea"
+                      :rows=3
+                      :value="`${currentTask.content || '无'}`"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 挑战目标 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">挑战目标</span>
+                    <el-input
+                      type="textarea"
+                      :rows=3
+                      :value="`${currentTask.challenge || '无'}`"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 描述信息 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">详细描述</span>
+                    <el-input
+                      type="textarea"
+                      :rows=4
+                      :value="currentTask.description || '无'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+
+                <!-- 完成度和实际工作量 -->
+                <div class="detail-row">
+                  <div class="detail-item">
+                    <span class="detail-label">完成度</span>
+                    <el-progress 
+                      :percentage="parseInt(currentTask.progress || 0)" 
+                      :status="getProgressStatus(currentTask.progress)"
+                      style="width: 200px;"
+                    />
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">实际工作量</span>
+                    <el-input 
+                      :value="(currentTask.act_workload || '0') + ' 天'" 
+                      readonly 
+                      class="detail-input"
+                    />
+                  </div>
+                </div>
+
+                <!-- 反馈信息 -->
+                <div class="detail-row">
+                  <div class="detail-item full-width">
+                    <span class="detail-label">反馈记录</span>
+                    <el-input
+                      type="textarea"
+                      :rows="4"
+                      :value="currentTask.feedback || '无反馈记录'"
+                      readonly
+                      resize="none"
+                      class="detail-textarea"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
     <el-card shadow="never" class="filter-card">
       <el-form :model="queryForm" label-width="100px" label-position="left" class="uniform-form">
         <el-row :gutter="20">
@@ -174,7 +351,7 @@
         
         <vxe-column title="操作" width="120" fixed="right">
           <template #default="{ row }">
-            <el-button type="text" size="small" @click="handleDetail(row)">详情</el-button>
+            <el-button link size="small" @click="handleDetail(row)">详情</el-button>
           </template>
         </vxe-column>
       </vxe-table>
@@ -198,7 +375,7 @@ import Select from '@/components/selects/MutiSelect.vue'
 import { Download } from '@element-plus/icons-vue'
 import {  getUserGroupApi, getUserApi, getProjectApi, getTaskDataApi } from '@/api/data/data'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
-import { TaskStatus } from '@/utils/public'
+import { TaskStatus, getProgressStatus } from '@/utils/public'
 
 const locale = zhCn
 
@@ -252,8 +429,8 @@ const statusOptions = ref([
 // 获取状态标签类型
 const getStatusTagType = (status) => {
   const map = {
-    0: 'warning',
-    1: '',
+    1: 'warning',
+    4: 'primary',
     2: 'success'
   }
   return map[status] || ''
@@ -277,15 +454,16 @@ const handleQuery = async () => {
   loading.value = true
   page.currentPage = 1
   // 获取所有的筛选条件\
+  console.log(queryForm)
   const params = {
-    group: queryForm.group.id? queryForm.group.id : "",  // 组内人员（数组）
-    receiver: queryForm.receiver.id? queryForm.receiver.id : "",          // 执行人
-    creator: queryForm.creator.id? queryForm.creator.id : "",                     // 创建人
+    group: queryForm.group? queryForm.group : "",  // 组内人员（数组）
+    receiver: queryForm.receiver? queryForm.receiver : "",          // 执行人
+    creator: queryForm.creator? queryForm.creator : "",                     // 创建人
     status: TaskStatus[queryForm.status] ? TaskStatus[queryForm.status] : "",             // 状态
     start_time: queryForm.timeRange.length == 2? queryForm.timeRange[0] : "",  // 时间范围开始
     deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
     flag_time: queryForm.flag_time, // 标定时间
-    project: queryForm.project.name? queryForm.project.name : "",           // 项目
+    project: queryForm.project? queryForm.project : "",           // 项目
     search_text: queryForm.search_text             // 关键字
   }
   console.log(params);
@@ -316,46 +494,6 @@ const handlePageChange = () => {
   tableData.value = queryItems.value.slice((page.currentPage - 1) * page.pageSize, page.currentPage * page.pageSize)
 }
 
-// 获取表格数据
-const fetchData = () => {
-  // 模拟API请求
-  setTimeout(() => {
-    tableData.value = [
-      {
-        id: 'T1001',
-        name: '用户登录功能开发',
-        busyLevel: 65,
-        status_name: '进行中',
-        status: 1,
-        executor: '张三',
-        startTime: '2023-05-10',
-        endTime: '2023-05-20',
-        workload: 5,
-        project: '项目A',
-        relatedTask: 'T1002,T1003',
-        tl: '张TL'
-      },
-      // 更多模拟数据...
-      {
-        id: 'T1002',
-        name: '订单管理模块优化',
-        busyLevel: 30,
-        status_name: '待下发',
-        status: 0,
-        executor: '李四',
-        startTime: '2023-05-15',
-        endTime: '2023-05-25',
-        workload: 3,
-        project: '项目B',
-        relatedTask: 'T1001',
-        tl: '李TL'
-      }
-    ]
-    page.total = 25
-    loading.value = false
-  }, 500)
-}
-
 // 导出数据
 const exportData = () => {
   // 实现导出逻辑
@@ -363,8 +501,15 @@ const exportData = () => {
 }
 
 // 查看详情
+const showDetailPanel = ref(false);
+const currentTask = ref({});
+
 const handleDetail = (row) => {
   console.log('查看详情', row)
+  currentTask.value = row;
+  showDetailPanel.value = true
+  console.log(showDetailPanel.value)
+
 }
 
 // 初始化加载数据
@@ -373,6 +518,8 @@ onMounted(() => {
   // window.addEventListener('resize', calculateTableHeight)
   // tableHeight.value = 600
 })
+
+// 侧面弹出框
 
 
 </script>
@@ -389,6 +536,94 @@ onMounted(() => {
 
 .table-card {
   margin-top: 10px;
+}
+
+/* 半屏详情面板样式 */
+.halfscreen-detail-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  display: flex;
+}
+
+.detail-content-wrapper {
+  width: 50%;
+  height: 100%;
+  background: white;
+  padding: 30px;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  z-index: 1;
+}
+
+.detail-title {
+  margin: 0 0 20px 0;
+  color: #303133;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail-row {
+  display: flex;
+  gap: 20px;
+}
+
+.detail-item {
+  flex: 1;
+}
+
+.detail-item.full-width {
+  min-width: 100%;
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #606266;
+}
+
+.detail-input {
+  width: 100%;
+}
+
+.detail-input .el-input__inner {
+  background-color: #f5f7fa;
+  color: #606266;
+  cursor: default;
+}
+
+.detail-textarea {
+  width: 100%;
+}
+
+.detail-textarea .el-textarea__inner {
+  background-color: #f5f7fa;
+  color: #606266;
+  cursor: default;
+  font-family: inherit;
+}
+
+.cc-textarea .el-textarea__inner {
+  height: 80px;
+  overflow-y: auto;
 }
 
 </style>
