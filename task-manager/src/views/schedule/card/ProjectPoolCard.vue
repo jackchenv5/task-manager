@@ -10,12 +10,44 @@
             </el-col>
         </el-row>
         <el-scrollbar style="height: 14vh;">
-            <el-tag v-for="item in projectPool" :key="item" type="warning" style="width: 95%;margin-bottom: 3px;"
-                closable>{{
-                    item }}</el-tag>
+            <el-tag v-for="item in projectPool" :key="item" :type="curSelectProjectRef === item ? 'success' : '' " class="my-tag" closable @click="handleProjectClick(item)">
+                <el-text truncated style="width:400px ;" >{{ item }}</el-text>
+            </el-tag>
         </el-scrollbar>
     </div>
 </template>
 <script setup>
+import { ref, reactive, onMounted } from 'vue'
+import SelectUserDialog from '@/components/dialog/SelectUser.vue'
+import { useScheduleStore } from '@/stores/schedule'
+import { storeToRefs } from 'pinia'
+import project from '@/router/modules/project';
+
+const scheduleStore = useScheduleStore()
+const { projectPool,curSelectProjectRef } = storeToRefs(scheduleStore)
+
+const handleProjectClick = (project)=>{
+    curSelectProjectRef.value = project
+}
 
 </script>
+
+<style scoped>
+.my-tag {
+    margin: 3px;
+    cursor: pointer;
+    
+}
+
+.tag-content {
+    max-width: 100%;
+    /* /* vertical-align: middle; */
+}
+
+/* .el-tag .el-tag__close {
+    margin-left: 8px;
+    border: 1px solid;
+    border-radius: 3px;
+
+} */
+</style>
