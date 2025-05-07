@@ -111,182 +111,166 @@
       @mouseleave="handleMouseUp">
       </div>
       <!-- 半屏详情面板 -->
-        <transition name="slide-left">
-          <div 
-            v-if="showDetailPanel" 
-            class="halfscreen-detail-panel"
-            @click.self="showDetailPanel = false"
-          >
-            <div class="detail-content-wrapper">
-              <!-- 关闭按钮 -->
-              <el-button 
-                class="close-btn"
-                type="danger" 
-                @click="showDetailPanel = false"
-                circle
-                size="small"
-              >
-                <el-icon><Close /></el-icon>
-              </el-button>
+        <el-drawer
+          v-model="showDetailPanel"
+          title="任务详情"
+          direction="ltr"
+          size="50%"
+        >
+          <div class="detail-grid">
+            <!-- 任务名称和工作量 -->
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">任务名称</span>
+                <el-input 
+                  v-model="currentTask.name" 
+                  readonly 
+                  class="detail-input"
+                  :title="currentTask.id"
+                />
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">工作量</span>
+                <el-input 
+                  :value="currentTask.workload + ' 天'" 
+                  readonly 
+                  class="detail-input"
+                />
+              </div>
+            </div>
 
-              <h2 class="detail-title">任务详情</h2>
+            <!-- 邮件抄送 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">邮件抄送</span>
+                <el-input
+                  type="textarea"
+                  :rows="3"
+                  :value="currentTask.sender || '无'"
+                  readonly
+                  resize="none"
+                  class="detail-textarea cc-textarea"
+                />
+              </div>
+            </div>
 
-              <div class="detail-grid">
-                <!-- 任务名称和工作量 -->
-                <div class="detail-row">
-                  <div class="detail-item">
-                    <span class="detail-label">任务名称</span>
-                    <el-input 
-                      v-model="currentTask.row.name" 
-                      readonly 
-                      class="detail-input"
-                      :title="currentTask.row.id"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">工作量</span>
-                    <el-input 
-                      :value="currentTask.row.workload + ' 天'" 
-                      readonly 
-                      class="detail-input"
-                    />
-                  </div>
-                </div>
+            <!-- 开始时间和截止时间 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">开始时间 - 截止时间</span>
+                <el-input 
+                  :value="`${currentTask.start_time} 至 ${currentTask.deadline_time}`" 
+                  readonly 
+                  class="detail-input"
+                />
+              </div>
+            </div>
 
-                <!-- 邮件抄送 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">邮件抄送</span>
-                    <el-input
-                      type="textarea"
-                      :rows="3"
-                      :value="currentTask.row.sender || '无'"
-                      readonly
-                      resize="none"
-                      class="detail-textarea cc-textarea"
-                    />
-                  </div>
-                </div>
+            <!-- 项目 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">项目</span>
+                <el-input 
+                  :value="`${currentTask.project || '无'}`" 
+                  readonly 
+                  class="detail-input"
+                />
+              </div>
+            </div>
 
-                <!-- 开始时间和截止时间 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">开始时间 - 截止时间</span>
-                    <el-input 
-                      :value="`${formatDate(currentTask.row.start_date)} 至 ${formatDate(currentTask.row.end_date)}`" 
-                      readonly 
-                      class="detail-input"
-                    />
-                  </div>
-                </div>
+            <!-- 关联任务 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">关联任务</span>
+                <el-input 
+                  :value="`${currentTask.related_task || '无'}`" 
+                  readonly 
+                  class="detail-input"
+                />
+              </div>
+            </div>
 
-                <!-- 项目 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">项目</span>
-                    <el-input 
-                      :value="`${currentTask.row.project || '无'}`" 
-                      readonly 
-                      class="detail-input"
-                    />
-                  </div>
-                </div>
+            <!-- 任务内容 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">任务内容</span>
+                <el-input
+                  type="textarea"
+                  :rows="3"
+                  :value="`${currentTask.content || '无'}`"
+                  readonly
+                  resize="none"
+                  class="detail-textarea"
+                />
+              </div>
+            </div>
 
-                <!-- 关联任务 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">关联任务</span>
-                    <el-input 
-                      :value="`${currentTask.row.related_task || '无'}`" 
-                      readonly 
-                      class="detail-input"
-                    />
-                  </div>
-                </div>
+            <!-- 挑战目标 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">挑战目标</span>
+                <el-input
+                  type="textarea"
+                  :rows="3"
+                  :value="`${currentTask.challenge || '无'}`"
+                  readonly
+                  resize="none"
+                  class="detail-textarea"
+                />
+              </div>
+            </div>
 
-                <!-- 任务内容 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">任务内容</span>
-                    <el-input
-                      type="textarea"
-                      :rows="3"
-                      :value="`${currentTask.row.content || '无'}`"
-                      readonly
-                      resize="none"
-                      class="detail-textarea"
-                    />
-                  </div>
-                </div>
+            <!-- 描述信息 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">详细描述</span>
+                <el-input
+                  type="textarea"
+                  :rows="4"
+                  :value="currentTask.description || '无'"
+                  readonly
+                  resize="none"
+                  class="detail-textarea"
+                />
+              </div>
+            </div>
 
-                <!-- 挑战目标 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">挑战目标</span>
-                    <el-input
-                      type="textarea"
-                      :rows="3"
-                      :value="`${currentTask.row.challenge || '无'}`"
-                      readonly
-                      resize="none"
-                      class="detail-textarea"
-                    />
-                  </div>
-                </div>
+            <!-- 完成度和实际工作量 -->
+            <div class="detail-row">
+              <div class="detail-item">
+                <span class="detail-label">完成度</span>
+                <el-progress 
+                  :percentage="parseInt(currentTask.progress || 0)" 
+                  :status="getProgressStatus(currentTask.progress)"
+                  style="width: 200px;"
+                />
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">实际工作量</span>
+                <el-input 
+                  :value="(currentTask.act_workload || '0') + ' 天'" 
+                  readonly 
+                  class="detail-input"
+                />
+              </div>
+            </div>
 
-                <!-- 描述信息 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">详细描述</span>
-                    <el-input
-                      type="textarea"
-                      :rows="4"
-                      :value="currentTask.row.description || '无'"
-                      readonly
-                      resize="none"
-                      class="detail-textarea"
-                    />
-                  </div>
-                </div>
-
-                <!-- 完成度和实际工作量 -->
-                <div class="detail-row">
-                  <div class="detail-item">
-                    <span class="detail-label">完成度</span>
-                    <el-progress 
-                      :percentage="parseInt(currentTask.row.progress || 0)" 
-                      :status="getProgressStatus(currentTask.row.progress)"
-                      style="width: 200px;"
-                    />
-                  </div>
-                  <div class="detail-item">
-                    <span class="detail-label">实际工作量</span>
-                    <el-input 
-                      :value="(currentTask.row.act_workload || '0') + ' 天'" 
-                      readonly 
-                      class="detail-input"
-                    />
-                  </div>
-                </div>
-
-                <!-- 反馈信息 -->
-                <div class="detail-row">
-                  <div class="detail-item full-width">
-                    <span class="detail-label">反馈记录</span>
-                    <el-input
-                      type="textarea"
-                      :rows="4"
-                      :value="currentTask.row.feedback || '无反馈记录'"
-                      readonly
-                      resize="none"
-                      class="detail-textarea"
-                    />
-                  </div>
-                </div>
+            <!-- 反馈信息 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">反馈记录</span>
+                <el-input
+                  type="textarea"
+                  :rows="4"
+                  :value="currentTask.feedback || '无反馈记录'"
+                  readonly
+                  resize="none"
+                  class="detail-textarea"
+                />
               </div>
             </div>
           </div>
-        </transition>
+        </el-drawer>
     </div>
     <div class="right">
       <el-card style="background: rgb(240, 238, 238);width:100%;margin-top:10px;height:10vh">
@@ -365,8 +349,7 @@
             stripe
             auto-resize
             :row-config="{ isHover: true }"
-            :data="filteredTasks"
-            @cell-dblclick="handleRowDblClick"  
+            :data="filteredTasks" 
             @checkbox-all="selectAllChangeEvent"
             @checkbox-change="selectChangeEvent">
             <vxe-column type="checkbox" width="5%"></vxe-column>
@@ -378,6 +361,11 @@
             <vxe-column field="project" title="项目" width="12%" show-overflow></vxe-column>
             <vxe-column field="creator_name" title="创建人" width="10%"></vxe-column>
             <vxe-column field="receiver_name" title="执行人" width="11%"></vxe-column>
+            <vxe-column title="操作" width="100" fixed="right">
+              <template #default="{ row }">
+                <el-button link size="small" @click="handleRowDblClick(row)">详情</el-button>
+              </template>
+            </vxe-column>
           </vxe-table>
         </div>
     </div>
@@ -995,9 +983,9 @@ const driverObj = driver({
     { element: '.dhx_cal_nav_button', popover: { title: '切换日历月份', description: '切换月份会重新渲染日历和更新右边的任务列表', side: "left", align: 'start' }},
     { element: '.dhx_cal_data', popover: { title: '任务总览', description: '显示当前月中每一天的任务情况， 可以点击或者拖拽多选某一段时间的任务情况', side: "left", align: 'start' }},
     { element: '.month_day_total', popover: { title: '具体某一天的任务情况', description: '当天的任务数量 -- 当天任务饱和度', side: "left", align: 'start' }},
-    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的', side: "left", align: 'start' }},
+    { element: '.is-always-shadow', popover: { title: '任务详情', description: '显示下面列表中所有任务的情况', side: "left", align: 'start' }},
     { element: '.vxe-table', popover: { title: '任务列表', description: '根据状态、人员、项目和日历过滤显示任务', side: "left", align: 'start' }},
-    { element: '.el-button', popover: { title: '下发任务', description: '选择下面列表中的任务， 一键下发任务', side: "left", align: 'start' }},
+    { element: '.el-button', popover: { title: '下发任务', description: '选择下面列表中的任务， 一键下发待下发的任务', side: "left", align: 'start' }},
     { element: '.vxe-body--row', popover: { title: '具体任务信息', description: '双击查看任务详情', side: "left", align: 'start' }},
     { popover: { title: '恭喜', description: '您已完成当前页面所有引导，欢迎使用任务管理系统！', onNextClick: () => { handleTutorialComplete() } } }
   ]
