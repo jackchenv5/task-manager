@@ -204,11 +204,9 @@ const getInitViewTemplate = (date) => {
 
   const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
   const totalHours = getDayTotalWorkHours(events);
-  
+  let workloadClass = "workload-0"
   // 根据工时范围确定样式类
-  const workloadClass = 
-    totalHours < 4 ? "workload-low" :
-    totalHours <= 8 ? "workload-medium" : "workload-high";
+  if(totalHours > 0 ) workloadClass =  totalHours < 4 ? "workload-low" : totalHours <= 8 ? "workload-medium" : "workload-high";
 
   return `
     <div class="month_day_total ${workloadClass}" data-date="${formatDate(date)}">
@@ -311,16 +309,23 @@ onMounted(() => {
 }
 
 /* 工时区间重构配色方案 */
+.workload-0 { 
+  background: #eee;  /* 强化后的浅蓝 */
+}
+
+
+
+/* 工时区间重构配色方案 */
 .workload-low { 
   background: #B3E5FC;  /* 强化后的浅蓝 */
 }
 
 .workload-medium {
-  background: #E1BEE7;  /* 提亮后的浅紫 */
+  background: #75adf7;  /* 提亮后的浅紫 */
 }
 
 .workload-high {
-  background: #FFCDD2;  /* 加深后的浅红 */
+  background: #bd545e;  /* 加深后的浅红 */
 }
 
 /* 日期数字 (iOS时间组件风格) */

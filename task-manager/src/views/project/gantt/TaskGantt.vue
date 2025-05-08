@@ -28,6 +28,13 @@ const initGantt = () => {
   gantt.config.empty_text = "暂无任务数据";  // [4](@ref)空数据提示
   gantt.config.auto_types = true;  // [1](@ref)自动推断任务类型
 
+  gantt.config.columns = [
+    { name: "text",       label: "任务名",  width: "*", tree: true },
+    { name: "start_date", label: "开始时间", align: "center" },
+    { name: "duration",   label: "持续时间",   align: "center" },
+    { name: "receiver_name",   label: "执行者",   align: "center" },
+];
+
   gantt.config.drag_progress = false;
 };
 

@@ -1,5 +1,4 @@
 
-import { log } from 'vxe-pc-ui';
 <template>
       <!-- 对话框区 -->
   <SelectUserDialog :visible="isShowSelectUserDialog" v-model="selectUsers" title="用户池选择"
@@ -11,7 +10,7 @@ import { log } from 'vxe-pc-ui';
             <el-col :span="4">
                 <div style="margin-top:5px;color:white;background-color: black;border-radius: 5px;">人员池</div>
             </el-col>
-            <el-col :span="10">
+            <el-col :span="10" :offset="10">
                 <el-button @click="addUserPool">添加</el-button>
                 <el-popconfirm title="确认清空用户池？" @confirm="scheduleStore.clearUserPool" placement="right">
                     <template #reference>
@@ -19,12 +18,6 @@ import { log } from 'vxe-pc-ui';
                     </template>
                 </el-popconfirm>
 
-            </el-col>
-            <el-col :span="10">
-                发送到：
-                <el-switch v-model="value" class="ml-2" inline-prompt
-                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="执行人员"
-                    inactive-text="抄送人员" />
             </el-col>
         </el-row>
         <div style="height: 14vh;display: flex;justify-content: start;flex-wrap: wrap;align-items: center;gap: 6px;">
@@ -45,7 +38,7 @@ import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
 const scheduleStore = useScheduleStore()
-const { curReceivers, curReceiverIDs, curSelectUser, curSelectUserInfo, userPool, userPoolIds, curUserTasksRef, curUserTasksWorkloadsRef, curSelectDateStat, schduleTableData } = storeToRefs(scheduleStore)
+const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds } = storeToRefs(scheduleStore)
 
 //人员池逻辑
 //===================================================================================================
@@ -86,3 +79,29 @@ const handleSelectUser = (id) => {
 }
 
 </script>
+
+<style scoped>
+.flat-tag {
+  border: none !important;
+  background: #F2F2F7 !important;
+  color: rgba(0,0,0,0.8) !important;
+  border-radius: 6px !important;
+  font-size: 13px !important;
+  
+  &.active {
+    background: rgba(52,199,89,0.15) !important;
+    color: #34C759 !important;
+  }
+  
+  &.selected {
+    background: rgba(255,204,0,0.15) !important;
+    color: #FFCC00 !important;
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+}
+
+</style>
