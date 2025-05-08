@@ -1,5 +1,5 @@
 <template>
-    <div ref="schedulerContainer" style="width: 100%; height: 100vh" @mousedown="handleMouseDown"
+    <div ref="schedulerContainer" style="width: 100%; height: 100vh" @mousedown="handleMouseDown" @click="handleClick"
         @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"></div>
 </template>
 
@@ -8,7 +8,7 @@ import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
 import { ref, watch, onMounted, reactive } from 'vue'
 
-import { isWorkday, formatDate, getDayTotalWorkHours,getCurMonthStartAndEndStr } from '@/utils/public'
+import { isWorkday, formatDate, getDayTotalWorkHours,getCurMonthStartAndEndStr,getWeekBoundaries } from '@/utils/public'
 // 获取容器引用
 const schedulerContainer = ref()
 
@@ -87,6 +87,21 @@ const handleMouseDown = (event) => {
     event.preventDefault();
 };
 
+const handleClick = (event) =>{
+    console.log('in handle click')
+    if (event.button !== 0) return;
+
+    const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
+    if (!cell) return;
+
+    const dateStr = cell.dataset.date;
+    if (!isWorkday(new Date(dateStr))) return;
+
+    if(dragSelectState.isSelecting) return;
+    handleDateClick(new Date(dateStr))
+
+    event.preventDefault();
+}
 // 日历div中处理鼠标松开事件
 const handleMouseUp = () => {
     if (dragSelectState.isSelecting) {
@@ -134,10 +149,11 @@ const updateDragSelection = (endDateStr) => {
 }
 // 处理日期点击事件
 const handleDateClick = (date) => {
-    const dateStr = formatDate(date);
-    selectedDates.value.clear();
-    selectedDates.value.add(dateStr);
-    clearHighlightedDates();
+    console.log('in data check date')
+    const weekBoundaries = getWeekBoundaries(date);
+    dragSelectState.startDate = weekBoundaries.monday
+    updateDragSelection(formatDate(weekBoundaries.friday))
+    
 };
 const getDateRange = (startDate, endDate) => {
     const range = [];
@@ -173,39 +189,35 @@ watch(curUserScheduleTasksRef, () => {
 })
 // 设置日历初始渲染方式
 const getInitViewTemplate = (date) => {
-    const currentMonth = scheduler.getState().date.getMonth();
-    if (date.getMonth() !== currentMonth) {
-        return `<div style="height:100%; background:#f9f9f9"></div>`;
-    }
+  const currentMonth = scheduler.getState().date.getMonth();
+  if (date.getMonth() !== currentMonth) {
+    return `<div class="other-month-cell"></div>`;
+  }
 
-    // 如果不是有效工作日，仅显示日期
-    if (!isWorkday(date)) {
-        return `
-            <div style="height: 100%; width: 100%; position: relative;">
-                <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
-                    ${date.getDate()}
-                </div>
-            </div>
-        `;
-    }
-
-    // 计算有效工作日的任务数量以及任务饱和度
-    const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
-    const totalHours = getDayTotalWorkHours(events);
-    // 单元框背景色
-    const bgColor = totalHours > 8 ? "#ff0000" :
-        totalHours === 8 ? "#00ff00" : "#FFEE58";
-
+  if (!isWorkday(date)) {
     return `
-        <div class="month_day_total" data-date="${formatDate(date)}" style="height: 100%; width: 100%; position: relative; cursor: pointer;background-color: ${bgColor}">
-          <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
-            ${date.getDate()}
-          </div>
-          <div class="month_day_events" title="当天任务数量-当天任务需要的总工时">
-            ${events.length || '0'}-${totalHours}
-          </div>
-        </div>
+      <div class="non-workday-cell">
+        <div class="day-number">${date.getDate()}</div>
+      </div>
     `;
+  }
+
+  const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+  const totalHours = getDayTotalWorkHours(events);
+  
+  // 根据工时范围确定样式类
+  const workloadClass = 
+    totalHours < 4 ? "workload-low" :
+    totalHours <= 8 ? "workload-medium" : "workload-high";
+
+  return `
+    <div class="month_day_total ${workloadClass}" data-date="${formatDate(date)}">
+      <div class="day-number">${date.getDate()}</div>
+      <div class="month_day_events" title="当天任务数量-当天任务需要的总工时">
+        ${events.length || '0'}-${totalHours}
+      </div>
+    </div>
+  `;
 };
 
 onMounted(() => {
@@ -218,24 +230,6 @@ onMounted(() => {
         scheduler.parse(curUserScheduleTasksRef.value)
         scheduler.templates.month_day = getInitViewTemplate;
         // scheduler.parse(myEvents0, "json");
-        scheduler.attachEvent("onEmptyClick", function (date, event) {
-            // 如果是拖拽结束时的点击，忽略这次事件
-            if (dragSelectState.justEndedSelection) {
-                dragSelectState.justEndedSelection = false;
-                return;
-            }
-            // 如果正在拖拽选择中，忽略点击
-            if (dragSelectState.isSelecting) return;
-            const currentMonth = scheduler.getState().date.getMonth();
-            if (date.getMonth() !== currentMonth) return;
-            if (!isWorkday(date)) return;
-            handleDateClick(date);
-
-            const cell = event.target.closest('.dhx_cal_month_cell');
-            if (cell) {
-                cell.classList.add('highlighted');
-            }
-        });
     } else {
         console.error('Scheduler is not properly imported.');
     }
@@ -261,16 +255,12 @@ onMounted(() => {
     background-color: red;
 }
 
-/* .dhx_cal_month_cell {
-    background-color: azure;
-} */
-
 .dhx_month_head {
     height: 100% !important;
 }
 
 .month_day_events {
-    position: absolute;
+  position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -279,9 +269,110 @@ onMounted(() => {
     width: max-content;
 }
 
+
+/* 选中状态 */
 .highlighted {
-    border: 2px solid #409EFF !important;
+  /* 基础样式 */
+  border: 1px solid rgba(12, 14, 15, 0.6) !important; /* 浅蓝色半透明边框 */
+  background: rgba(144, 202, 249, 0.1); /* 极浅背景 */
+  border-radius: 6px; /* 匹配现代UI圆角 */
+  /* transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); */
+
+  /* 激活状态 */
+  &.active {
+    border-color: #64B5F6; /* 中等浅蓝 */
+    background: rgba(100, 181, 246, 0.15);
+    /* box-shadow: 0 1px 3px rgba(100, 181, 246, 0.2); */
+  }
+
+  /* 悬停交互 */
+  &:hover {
+    border-color: #42A5F5; /* 标准浅蓝 */
+    background: rgba(66, 165, 245, 0.12);
+  }
+
+  /* 点击反馈 */
+  &:active {
+    /* transform: scale(0.97); */
+    background: rgba(66, 165, 245, 0.18);
+  }
 }
 
-/* the background color for the whole container and its border*/
+/* 月视图的单元格显示 */
+
+/* 基础单元格 */
+.month_day_total {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: #F8F9FA; /* iOS系统背景色 */
+  border-radius: 8px; /* iOS圆角规范 */
+  /* transition: all 0.25s cubic-bezier(0.4,0,0.2,1); */
+}
+
+/* 工时区间重构配色方案 */
+.workload-low { 
+  background: #B3E5FC;  /* 强化后的浅蓝 */
+}
+
+.workload-medium {
+  background: #E1BEE7;  /* 提亮后的浅紫 */
+}
+
+.workload-high {
+  background: #FFCDD2;  /* 加深后的浅红 */
+}
+
+/* 日期数字 (iOS时间组件风格) */
+.day-number {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font: 500 15px/-apple-system; /* SF Pro字体 */
+  color: rgba(28,28,30,0.5); /* 50%透明 */
+  padding: 2px 6px;
+  transition: color 0.2s ease;
+}
+
+/* 任务信息 (iOS通知标记风格) */
+.month_day_events {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  /* transform: translateX(-50%); */
+  font: 500 13px/-apple-system;
+  color: rgba(28,28,30,1); /* 70%透明 */
+  white-space: nowrap;
+}
+
+/* 状态交互 */
+.month_day_total:focus-within, 
+.month_day_total.active {
+  background: rgba(255,255,255,0.9); /* 毛玻璃效果 */
+  backdrop-filter: blur(4px);
+  
+  .day-number { color: rgba(28,28,30,0.9) } /* 文字高对比 */
+  .month_day_events { color: rgba(28,28,30,0.9) }
+}
+
+/* 非工作日样式 */
+.non-workday-cell {
+  background: rgba(242,242,247,0.5) !important; /* iOS系统灰色 */
+  .day-number { color: rgba(142,142,147,0.7) } /* 系统灰 */
+}
+
+/* 其他月份单元格 */
+.other-month-cell {
+  background: rgba(242,242,247,0.3); /* 更浅灰 */
+  opacity: 0.5;
+}
+
+/* 悬停反馈 (参考网页7的微交互) */
+@media (hover: hover) {
+  .month_day_total:hover {
+    /* transform: translateY(-2px); */
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  }
+}
+
 </style>

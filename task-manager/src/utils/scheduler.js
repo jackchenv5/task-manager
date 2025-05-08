@@ -101,26 +101,26 @@ scheduler.attachEvent("onDragEnd", function(id, mode, e){
 scheduler.config.dblclick_create = false;
 scheduler.config.max_month_events = 0;
 
-scheduler.attachEvent("onBeforeEventCreated", function (e){
-  //any custom logic here
-  console.log(e='before create',e)
-  return false;
-});
+// scheduler.attachEvent("onBeforeEventCreated", function (e){
+//   //any custom logic here
+//   console.log(e='before create',e)
+//   return false;
+// });
 
-scheduler.attachEvent("onMouseDown", function(className){
-  //any custom logic here
-  console.log(className,'mouse down')
-});
+// scheduler.attachEvent("onMouseDown", function(className){
+//   //any custom logic here
+//   console.log(className,'mouse down')
+// });
 
-scheduler.attachEvent("onClick", function (id, e){
-  //any custom logic here
-  console.log('event click')
-  return false;
-});
-scheduler.attachEvent("onDblClick", function (id, e){
-  //any custom logic here
-  console.log('double click')
-  return false;
-})
+// scheduler.attachEvent("onClick", function (id, e){
+//   //any custom logic here
+//   console.log('event click')
+//   return false;
+// });
+// scheduler.attachEvent("onDblClick", function (id, e){
+//   //any custom logic here
+//   console.log('double click')
+//   return false;
+// })
 return scheduler
 }

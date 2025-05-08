@@ -162,7 +162,33 @@ export function percentToDecimal(percentStr) {
     return number / 100;
 }
 
+export  function getWeekBoundaries(date) {
+    // 创建日期对象的副本以避免修改原对象
+    const d = new Date(date);
+    
+    // 获取当前是星期几（0表示周日，1表示周一，...，6表示周六）
+    const day = d.getDay();
+    
+    // 计算到周一的天数差（如果是周日，需要减去6天）
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    
+    // 计算到周五的天数差（如果是周日，需要减去2天）
+    const diffToFriday = day === 0 ? -2 : 5 - day;
+    
+    // 计算周一的日期
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+    monday.setHours(0, 0, 0, 0); // 重置时间为00:00:00
+    
+    // 计算周五的日期
+    const friday = new Date(d);
+    friday.setDate(d.getDate() + diffToFriday);
+    friday.setHours(23, 59, 59, 999); // 设置为周五的最后一刻
+    
+    return { monday, friday };
+  }
 
+  
 export const TaskStatus = {
     PEND: 1,
     PROGRESS: 4,
