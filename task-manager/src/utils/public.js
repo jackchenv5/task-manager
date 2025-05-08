@@ -44,6 +44,8 @@ const FormatVxeDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 
+
+
 // 获取日历中每一天的工时总数
 // const GetDayTotalWorkHours = (events) => {
 //     let totalHours = 0;
@@ -119,14 +121,51 @@ function ParseDateString(dateStr) {
 export const isWorkday = (date) => IsWorkday(date)
 export const formatDate = (date) => FormatDate(date)
 export const formatVxeDate = (date) => FormatVxeDate(date)
-export const getDayTotalWorkHours = (events,transStr) => GetDayTotalWorkHours(events,transStr)
+export const getDayTotalWorkHours = (events, transStr) => GetDayTotalWorkHours(events, transStr)
 export const getProgressStatus = (process) => GetProgressStatus(process)
 export const getCurMonthStartAndEndStr = (date) => GetCurMonthStartAndEndStr(date)
 export const parseDateString = (dateStr) => ParseDateString(dateStr)
 
+
+
+// 辅助函数：格式化日期为 YYYY-MM-DD day-month-year
+export function reverseDateStr(dateString) {
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+}
+
+export function percentToDecimal(percentStr) {
+    // 1. 检查输入是否为字符串或数字
+    if (typeof percentStr !== "string" && typeof percentStr !== "number") {
+        console.warn("Invalid input: expected a string or number");
+        return 0; // 默认返回 0 或抛出错误
+    }
+
+    // 2. 如果是数字，直接除以 100（兼容数字输入）
+    if (typeof percentStr === "number") {
+        return percentStr / 100;
+    }
+
+    // 3. 移除可能的百分号（如 "50%" -> "50"）
+    const cleanedStr = percentStr.replace("%", "");
+
+    // 4. 转换为数字并除以 100
+    const number = parseFloat(cleanedStr);
+    if (isNaN(number)) {
+        console.warn("Invalid input: could not parse to number");
+        return 0; // 默认返回 0 或抛出错误
+    }
+
+    return number / 100;
+}
+
+
 export const TaskStatus = {
-    PEND:1,
-    PROGRESS:4,
-    DRAFT:3,
-    FINISH:2
+    PEND: 1,
+    PROGRESS: 4,
+    DRAFT: 3,
+    FINISH: 2
 }

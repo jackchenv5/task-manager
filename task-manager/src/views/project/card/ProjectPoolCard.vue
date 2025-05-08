@@ -1,0 +1,53 @@
+<template>
+    <div style="height: 4vh;">
+        <el-row>
+            <el-col :span="12">
+                <div style="margin-top: 5px;color:white;background-color: black;border-radius: 5px;">关注项目</div>
+            </el-col>
+            <el-col :span="8" :offset="3">
+                <el-button>添加</el-button>
+                <el-button>清空</el-button>
+            </el-col>
+        </el-row>
+        <el-scrollbar style="height: 14vh;">
+            <el-tag v-for="item in projectFocusRef" :key="item" :type="curSelectProjectRef === item ? 'success' : '' " class="my-tag" closable @click="handleProjectClick(item)">
+                <el-text truncated style="width:400px ;" >{{ item }}</el-text>
+            </el-tag>
+        </el-scrollbar>
+    </div>
+</template>
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useProjectStore } from '@/stores/project'
+import { storeToRefs } from 'pinia'
+import project from '@/router/modules/project';
+
+const projectStore = useProjectStore()
+const { projectFocusRef,curSelectProjectRef,selectUser } = storeToRefs(projectStore)
+
+const handleProjectClick = (project)=>{
+    curSelectProjectRef.value = project
+    selectUser.value = ''
+}
+
+</script>
+
+<style scoped>
+.my-tag {
+    margin: 3px;
+    cursor: pointer;
+    
+}
+
+.tag-content {
+    max-width: 100%;
+    /* /* vertical-align: middle; */
+}
+
+/* .el-tag .el-tag__close {
+    margin-left: 8px;
+    border: 1px solid;
+    border-radius: 3px;
+
+} */
+</style>

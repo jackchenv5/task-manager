@@ -20,7 +20,7 @@
           <div style="display: flex;flex-direction: column;justify-content: space-around;height: 70%;margin-left: 15px;">
             <div>时间：{{ curSelectDateStat.startDate }}~{{ curSelectDateStat.endDate }}</div>
             <div>任务数：{{ curSelectDateStat.workNum }}</div>
-            <div>任务工时：{{ curSelectDateStat.workloads }}H</div>
+            <div>任务工时：{{ curSelectDateStat.workloads.toFixed(1) }}H</div>
           </div>
 
         </div>

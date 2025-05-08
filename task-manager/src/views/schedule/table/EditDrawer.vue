@@ -4,6 +4,7 @@
     :direction="direction" 
     :title="title"
     :size="size"
+    :disabled="disabled"
     :before-close="handleBeforeClose"
   >
 <slot></slot>

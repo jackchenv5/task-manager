@@ -2,12 +2,13 @@
     <div ref="schedulerContainer" style="width: 100%; height: 100vh" @mousedown="handleMouseDown"
         @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"></div>
 </template>
+
 <script setup>
 import "dhtmlx-scheduler";
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { ref, watch, onMounted, reactive, nextTick } from 'vue'
+import { ref, watch, onMounted, reactive } from 'vue'
 
-import { isWorkday, formatDate, formatVxeDate, getDayTotalWorkHours, getProgressStatus,getCurMonthStartAndEndStr } from '@/utils/public'
+import { isWorkday, formatDate, getDayTotalWorkHours,getCurMonthStartAndEndStr } from '@/utils/public'
 // 获取容器引用
 const schedulerContainer = ref()
 
@@ -15,7 +16,7 @@ import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
 const scheduleStore = useScheduleStore()
-const { curUserScheduleTasksRef, curSelectUser,curSelectDateStat } = storeToRefs(scheduleStore)
+const { curUserScheduleTasksRef, curSelectUser } = storeToRefs(scheduleStore)
 
 // 拖拽选择相关状态
 const dragSelectState = reactive({
