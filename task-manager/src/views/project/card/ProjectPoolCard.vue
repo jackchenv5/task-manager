@@ -1,21 +1,28 @@
 <template>
-    <div style="height: 4vh;">
-        <el-row>
-            <el-col :span="12">
-                <div style="margin-top: 5px;color:white;background-color: black;border-radius: 5px;">关注项目</div>
-            </el-col>
-            <el-col :span="8" :offset="3">
-                <el-button>添加</el-button>
-                <el-button>清空</el-button>
-            </el-col>
-        </el-row>
-        <el-scrollbar style="height: 14vh;">
-            <el-tag v-for="item in projectFocusRef" :key="item" :type="curSelectProjectRef === item ? 'success' : '' " class="my-tag" closable @click="handleProjectClick(item)">
-                <el-text truncated style="width:400px ;" >{{ item }}</el-text>
-            </el-tag>
-        </el-scrollbar>
+    <div class="project-panel">
+      <el-row class="panel-header">
+        <el-col :span="8">
+          <div class="panel-title">关注项目</div>
+        </el-col>
+        <el-col :span="8" :offset="8">
+          <el-button class="action-btn">添加</el-button>
+          <el-button class="action-btn">清空</el-button>
+        </el-col>
+      </el-row>
+      <el-scrollbar class="project-scrollbar">
+        <div class="project-tags">
+          <el-tag 
+            v-for="item in projectFocusRef"
+            :key="item"
+            :class="['project-tag', { 'active': curSelectProjectRef === item }]"
+            closable
+            @click="handleProjectClick(item)">
+            <span class="project-name">{{ item }}</span>
+          </el-tag>
+        </div>
+      </el-scrollbar>
     </div>
-</template>
+  </template>
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project'
@@ -33,21 +40,79 @@ const handleProjectClick = (project)=>{
 </script>
 
 <style scoped>
-.my-tag {
-    margin: 3px;
-    cursor: pointer;
-    
+.project-panel {
+  height: 18vh;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 12px;
+  transition: all 0.3s ease;
 }
 
-.tag-content {
-    max-width: 100%;
-    /* /* vertical-align: middle; */
+.project-panel:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* .el-tag .el-tag__close {
-    margin-left: 8px;
-    border: 1px solid;
-    border-radius: 3px;
+.panel-header {
+  margin-bottom: 8px;
+}
 
-} */
+.panel-title {
+  padding: 6px 12px;
+  color: white;
+  background: linear-gradient(135deg, #2c3e50 0%, #1e293b 100%);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  background: #f5f7fa;
+  border: none;
+  color: #606266;
+  float: right;
+  margin-left: 8px;
+}
+
+.project-scrollbar {
+  height: calc(18vh - 60px);
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px;
+}
+
+.project-tag {
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 6px 12px;
+  transition: all 0.3s ease;
+  background: #f5f7fa;
+  color: #606266;
+  border: 1px solid #e4e7ed;
+}
+
+.project-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.project-tag.active {
+  background: linear-gradient(135deg, #4269E0 0%, #3b5bdb 100%);
+  color: white;
+  border: none;
+}
+
+.project-name {
+  display: inline-block;
+  width: 22vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 </style>

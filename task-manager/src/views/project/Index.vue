@@ -1,18 +1,23 @@
 <template>
-  <div style="height: 94vh;width: 100%;overflow: hidden;">
+  <div style="height: 94vh;width: 100%;overflow: hidden;background-color: #ddd;">
     <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
       <div
-        style="height:18vh;width: 50%;background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
+        style="height:18vh;width: 27%; background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;margin: 0px 5px; display: flex;flex-direction: column;">
         <ProjectPoolCard></ProjectPoolCard>
       </div>
 
       <div
-        style="height:18vh;width: 45%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
+        style="height:18vh;width: 23%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
         <UserPoolCard></UserPoolCard>
       </div>
-      <StaticsCard></StaticsCard>
+
+      <div
+        style="height:18vh;width: 50%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        <StaticsCard></StaticsCard>
+      </div>
+      
     </div>
-    <div style="border:1px solid red;height: 70vh;">
+    <div style="height: 70vh;">
       <TaskGantt></TaskGantt>
     </div>
   </div>

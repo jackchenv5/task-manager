@@ -3,7 +3,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
-import { reverseDateStr, percentToDecimal } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus } from '@/utils/public'
 
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
@@ -73,7 +73,71 @@ const joinUsers = computed(() => {
       return new Date(a.start_time) - new Date(b.start_time);
     });
   }
+  // 时间范围：
+  const dateRange = computed(() => {
+    if (!curSelectProjectTasksRef.value?.length) return { start_date: null, end_date: null };
+    
+    // 获取所有有效日期
+    const validTasks = curSelectProjectTasksRef.value.filter(
+      task => task.start_time && task.deadline_time
+    );
+    
+    // 计算时间范围
+    const startDates = validTasks.map(task => new Date(task.start_time));
+    const endDates = validTasks.map(task => new Date(task.deadline_time));
+    
+    return {
+      start_date: validTasks.length 
+        ? new Date(Math.min(...startDates)).toISOString().split('T')[0]
+        : null,
+      end_date: validTasks.length 
+        ? new Date(Math.max(...endDates)).toISOString().split('T')[0]
+        : null
+    };
+  });
+
+  const workLoadSta = computed(() => {
+    const initial = { total: 0, completed: 0, progress: 0 };
+    
+    if (!curSelectProjectTasksRef.value?.length) return initial;
+  
+    return curSelectProjectTasksRef.value.reduce((acc, task) => {
+      const workload = Number(task.workload) || 0;
+      
+      // 总工作量累加
+      acc.total += workload;
+      
+      // 已完成工作量累加
+      if (task.status === TaskStatus.FINISH) { acc.completed += workload;}
+      
+      // 计算完成进度（保留1位小数）
+      acc.progress = acc.total > 0 ? Number((acc.completed / acc.total * 100).toFixed(1)): 0;
+  
+      return acc;
+    }, { ...initial });
+  });
+  
+  const totalTasks = computed(() => { return curSelectProjectTasksRef.value?.length || 0; });
+  
+  const completedTasks = computed(() => { return curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.FINISH ).length || 0;});
+
+  const workloadIntensity = computed(() => {
+    // 获取已完成任务（假设status=5为已完成状态）
+    const completedTasks = curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.FINISH) || [];
+    
+    // 没有已完成任务时返回0
+    if (completedTasks.length === 0) return 0;
+  
+    // 计算每项任务的实际/预计工作量比值并累加
+    const totalRatio = completedTasks.reduce((acc, task) => {
+      const workload = Number(task.workload) || 0;
+      const actWorkload = Number(task.act_workload) || 0;
+      return workload !== 0 ? acc + (actWorkload / workload): acc;}, 0);
+    // 计算平均值并保留两位小数
+    return Number(100 * (totalRatio / completedTasks.length).toFixed(2));
+  });
+  
   return {
-    projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers
+    projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers,workLoadSta,totalTasks,completedTasks,workloadIntensity,dateRange
   }
 })
