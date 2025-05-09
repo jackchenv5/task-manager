@@ -673,7 +673,7 @@ const onSubmit = async () => {
 
 onMounted(async () => {
   // 初始化加载数据
-  await myUserStore.initUser(1001); // 测试用
+  await myUserStore.initUser(608); // 测试用
   await myPersonStore.getPersonTasks();
   personCfg.value = myUserStore.loginUser.config["person"] ? myUserStore.loginUser.config["person"] : {};
   console.log(personCfg.value);

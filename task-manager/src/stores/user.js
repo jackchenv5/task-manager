@@ -7,16 +7,11 @@ import { saveConfig,getUserDetailApi } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    "id": 343,
-    "username": "钟丽",
-    "emp_num": "004090",
-    "role": 143,
-    "email": "zhongli@rd.maipu.com",
-    "config": {},
-    "role_name": "编排人员",
-    "group": 6,
-    "group_name": "业务测试处-协议测试组",
-    "group_leader": "李粉妮",
+    "id": 608,
+    "username": "陈成F",
+    "emp_num": "007101",
+    "role": 141,
+    "email": "chenchengf@rd.maipu.com",
     config: {}
     // config: {"group": {"selectedGroup": "武汉测试处-产品组",
     //                    "radio": "pending", 

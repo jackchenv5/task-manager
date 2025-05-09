@@ -500,7 +500,7 @@ const schedulerContainer = ref(null);
 onMounted(async () => {
   // 根据userStores中存储的数据确定加载哪个组的数据
   // 初始化加载数据
-  await myUserStore.initUser(427)
+  await myUserStore.initUser(608)
   await myGroupStore.getAllTask(myGroupStore.groupId)
   await myGroupStore.getAllGroup()
   await myGroupStore.getGroupCfg()

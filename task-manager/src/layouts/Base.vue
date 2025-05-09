@@ -16,8 +16,8 @@
             <div class="user-info">
               <el-avatar :size="36" :src="user.avatar" />
               <div class="user-details">
-                <span class="username">{{ user.name }}</span>
-                <span class="role">{{ user.role }}</span>
+                <span class="username">{{ loginUser.username }}</span>
+                <span class="role">{{ loginUser.role_name }} | {{ loginUser.group_name }}</span>
               </div>
             </div>
             <template #dropdown>

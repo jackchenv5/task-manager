@@ -25,9 +25,6 @@ export const useScheduleStore = defineStore('schedule', () => {
   const initScheduleConfig = () => {
     console.log('load config',myUserStore.getUserConfig('schedule_user_pool',[]))
     userPool.value = myUserStore.getUserConfig('schedule_user_pool',[])
-    // curReceivers.value = myUserStore.getUserConfig('schedule_receiver',[])
-    // curSelectUser.value = myUserStore.getUserConfig('schedule_select_user',null)
-    // projectPool.value = myUserStore.getUserConfig('schedule_project_pool',[])
   }
 
   // watch([userPool,curReceivers,curSelectUser,projectPool],()=>{
@@ -134,11 +131,9 @@ const schduleTableData = ref([])
 // 2.最近100条数据
 
 const getTableData = async () =>{
-    console.log(loginUser.value,'======>')
     const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id})
-    getCurUserTasks(loginUser.value.id)
+    if(curSelectUser.value) getCurUserTasks(curSelectUser.value)
     schduleTableData.value = curCreatorTasks.result?.items
-    console.log(schduleTableData.value)
 }
 
 // table 数据END
