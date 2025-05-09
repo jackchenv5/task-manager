@@ -32,8 +32,9 @@ const initGantt = () => {
   gantt.config.columns = [
     { name: "text",       label: "任务名",  width: 120, tree: true },
     { name: "start_date", label: "开始时间", width: 100,align: "center" },
-    { name: "duration",   label: "持续时间", width: 50,  align: "center" },
-    { name: "receiver_name",   label: "执行者", width: 50,  align: "center" },
+    { name: "duration",   label: "持续时间", width: 60,  align: "center" },
+    { name: "workload",   label: "工时(天)", width: 60,  align: "center" },
+    { name: "receiver_name",   label: "执行者", width: 60,  align: "center" },
 ];
 
   gantt.config.drag_progress = false;
