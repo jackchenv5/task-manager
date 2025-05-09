@@ -1,17 +1,20 @@
 <template>
     <div style="height: 4vh;">
         <el-row>
-            <el-col :span="12">
+            <el-col :span="4" >
                 <div style="margin-top: 5px;color:white;background-color: black;border-radius: 5px;">项目池</div>
             </el-col>
-            <el-col :span="8" :offset="3">
+            <el-col :span="8" :offset="12">
                 <el-button>添加</el-button>
                 <el-button>清空</el-button>
             </el-col>
         </el-row>
         <el-scrollbar style="height: 14vh;">
-            <el-tag v-for="item in projectPool" :key="item" :type="curSelectProjectRef === item ? 'success' : '' " class="my-tag" closable @click="handleProjectClick(item)">
-                <el-text truncated style="width:400px ;" >{{ item }}</el-text>
+            <el-tag v-for="item in projectPool" :key="item" 
+            :type="curSelectProjectRef === item ? 'success' : '' " 
+            :color="curSelectProjectRef === item ? '#4269E0' : '' " 
+            class="my-tag" closable @click="handleProjectClick(item)">
+                <el-text truncated :style='{width:"400px",color: curSelectProjectRef === item ?  "white" : "black" }' >{{ item }}</el-text>
             </el-tag>
         </el-scrollbar>
     </div>

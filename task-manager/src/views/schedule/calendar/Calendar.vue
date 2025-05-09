@@ -25,18 +25,17 @@ const dragSelectState = reactive({
     startDate: null
 });
 
-const selectedDates = ref(new Set());
+// 修改为响应式数组
+const selectedDates = ref([]);
 
-watch(()=>selectedDates.value.size,(newValue)=>{
+watch(() => [...selectedDates.value], (newDates) => {
+    const dateSize = newDates.length;
+    if (dateSize === 0) return;
+    
+    const [startDateStr] = newDates;
+    const endDateStr = newDates[dateSize - 1];
     console.log('change...',selectedDates.value)
 
-    const dateSize = selectedDates.value.size
-    console.log('dateSize',dateSize)
-    if(dateSize === 0) return
-
-    const selectedDatesList = [...selectedDates.value]
-    const startDateStr = selectedDatesList[0]
-    const endDateStr = selectedDatesList[dateSize-1]
     console.log(startDateStr,endDateStr)
     const startDate = new Date(startDateStr)
     const endDate = new Date(endDateStr)
@@ -49,7 +48,7 @@ watch(()=>selectedDates.value.size,(newValue)=>{
 
     let totalHours = 0
 
-    selectedDatesList.forEach(x=>{
+    newDates.forEach(x=>{
         const date = new Date(x)
         const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
         totalHours += getDayTotalWorkHours(events,false)
@@ -60,7 +59,7 @@ watch(()=>selectedDates.value.size,(newValue)=>{
     console.log(workLoadPer)
     scheduleStore.updateSelectDateStat(startDateStr,endDateStr,totalHours,eventCount,workLoadPer)
 
-})
+},{ deep: true })
 
 const clearHighlightedDates = () => {
     document.querySelectorAll('.highlighted').forEach(el => {
@@ -78,11 +77,13 @@ const handleMouseDown = (event) => {
 
     dragSelectState.isSelecting = true;
     dragSelectState.startDate = new Date(dateStr);
-    selectedDates.value.clear();
+    selectedDates.value = [];
     clearHighlightedDates();
-    selectedDates.value.add(dateStr);
+    // if (!selectedDates.value.includes(dateStr)) {
+    // selectedDates.value.push(dateStr);
+// }
 
-    cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
+    // cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
 
     event.preventDefault();
 };
@@ -98,6 +99,7 @@ const handleClick = (event) =>{
     if (!isWorkday(new Date(dateStr))) return;
 
     if(dragSelectState.isSelecting) return;
+    
     handleDateClick(new Date(dateStr))
 
     event.preventDefault();
@@ -136,13 +138,16 @@ const updateDragSelection = (endDateStr) => {
     const dateRange = getDateRange(startDate, endDate);
 
     clearHighlightedDates();
-
+    selectedDates.value = [];
+    
     dateRange.forEach(dateStr => {
         if (isWorkday(new Date(dateStr))) {
             const cell = document.querySelector(`[data-date="${dateStr}"]`);
             if (cell) {
                 cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
-                selectedDates.value.add(dateStr);
+                if (!selectedDates.value.includes(dateStr)) {
+    selectedDates.value.push(dateStr);
+}
             }
         }
     });
@@ -184,7 +189,7 @@ watch(curUserScheduleTasksRef, () => {
         scheduler.clearAll();
         scheduler.parse(curUserScheduleTasksRef.value);
         scheduler.updateView();
-        selectedDates.value.clear();
+        selectedDates.value = [];
     }
 })
 // 设置日历初始渲染方式
@@ -271,10 +276,10 @@ onMounted(() => {
 /* 选中状态 */
 .highlighted {
   /* 基础样式 */
-  border: 1px solid rgba(12, 14, 15, 0.6) !important; /* 浅蓝色半透明边框 */
-  background: rgba(144, 202, 249, 0.1); /* 极浅背景 */
+  border: 1px solid rgb(136, 27, 27) !important;
+  opacity: 0.5;
   border-radius: 6px; /* 匹配现代UI圆角 */
-  /* transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* 激活状态 */
   &.active {

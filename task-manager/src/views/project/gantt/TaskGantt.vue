@@ -24,15 +24,16 @@ const initGantt = () => {
   gantt.config.scale_unit = "day";
   gantt.i18n.setLocale("cn");
   gantt.config.date_format = "%Y-%m-%d";
+  gantt.templates.progress_text=function(start, end, task){return `${task.progress*100}%`;};
 
   gantt.config.empty_text = "暂无任务数据";  // [4](@ref)空数据提示
   gantt.config.auto_types = true;  // [1](@ref)自动推断任务类型
 
   gantt.config.columns = [
-    { name: "text",       label: "任务名",  width: "*", tree: true },
-    { name: "start_date", label: "开始时间", align: "center" },
-    { name: "duration",   label: "持续时间",   align: "center" },
-    { name: "receiver_name",   label: "执行者",   align: "center" },
+    { name: "text",       label: "任务名",  width: 120, tree: true },
+    { name: "start_date", label: "开始时间", width: 100,align: "center" },
+    { name: "duration",   label: "持续时间", width: 50,  align: "center" },
+    { name: "receiver_name",   label: "执行者", width: 50,  align: "center" },
 ];
 
   gantt.config.drag_progress = false;
@@ -54,15 +55,14 @@ watch(curGanttData, (newVal) => {
   if (newVal?.length && !selectUser.value) {
     loadSampleData(newVal);
   }
-}, { deep: true });  // [6](@ref)深度监听嵌套数据变化
+}, { deep: true,immediate: true });  // [6](@ref)深度监听嵌套数据变化
 
 
 // 用户切换时强制更新
 watch(selectUser, (newVal) => {
   const validData = newVal ? curProjectReceiverMap.value[newVal] : curGanttData.value;
   loadSampleData(validData || []);
-}, { immediate: true });  // [4](@ref)初始化时立即执行
-
+});
 const isGanttInitialized = ref(false);
 
 onMounted(() => {
@@ -91,5 +91,13 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100%;
   margin: 0 auto;
+}
+
+.gantt_task_progress {
+    text-align: start;
+    color: white;
+    z-index: 0;
+    background: #0c192e;
+
 }
 </style>

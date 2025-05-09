@@ -64,7 +64,7 @@
       </el-form-item>
     </el-scrollbar>
     <el-form-item>
-      <el-button type="primary" @click="onSubmit">提交</el-button>
+      <el-button type="primary" @click="onSubmit(formRef)">提交</el-button>
       <el-button @click="resetForm">清空</el-button>
     </el-form-item>
   </el-form>
@@ -85,7 +85,7 @@ const scheduleStore = useScheduleStore()
 
 const { loginUser } = storeToRefs(userStore)
 
-const { curReceivers, curSelectProjectRef } = storeToRefs(scheduleStore)
+const { curReceivers, curSelectProjectRef, curSelectDateStat } = storeToRefs(scheduleStore)
 
 
 // 提交form 表单功能
@@ -100,15 +100,27 @@ const initFormData = ref({
   deadline_time: null,
   description: null,
   sender: null,
-  workload: null,
+  workload: 1,
   status: TaskStatus.PEND,
   project: curSelectProjectRef.value,
   related_task: null,
 })
 const formData = reactive({ ...initFormData.value, receiver: curReceivers.value })
+
+watch(curSelectDateStat, (newVal) => {
+  // console.log('curSelectDateStat====================================================>')
+  // console(curSelectDateStat)
+  formData.start_time = curSelectDateStat.value.startDate
+  formData.deadline_time = curSelectDateStat.value.endDate
+}, { deep: true })
+
+
 watch(formData, (newVal) => {
   curReceivers.value = formData.receiver
+  console.log('newValue formData', newVal)
 })
+
+
 
 watch(curSelectProjectRef, (newVal) => {
   formData.project = curSelectProjectRef.value
@@ -165,23 +177,30 @@ const formRules = reactive({
 
 
 import { VxeUI } from 'vxe-pc-ui'
-const onSubmit = async () => {
+import { notificationEmits } from 'element-plus';
+const onSubmit = async (formRef) => {
   //TODO 提交前验证！
   // 准备所有请求的Promise数组
+  const isValid = await formRef.validate((valid, fields) => {
+    if (!valid) return false
+    return true
+  })
+  if (!isValid) return
   const addTaskPromises = formData.receiver.map(receiver => {
     const tmpFormData = {
       ...formData,
       receiver: receiver.id,
-      start_time: formatDate(formData.start_time),
-      deadline_time: formatDate(formData.deadline_time),
+      start_time: formData.start_time instanceof Date ? formatDate(formData.start_time) : formData.start_time,
+      deadline_time: formData.deadline_time instanceof Date ? formatDate(formData.deadline_time) : formData.deadline_time,
       sender: formData.sender ? formData.sender.join(",") : ""
     };
+    console.log('tmpFormData=======================>', tmpFormData)
     return taskAddApi(tmpFormData); // 假设taskAddApi返回的是axios Promise
   });
   // 等待所有任务添加完成
   await Promise.all(addTaskPromises);
   VxeUI.modal.message({
-    content: `任务：${formData.name},执行者：${formData.receiver.map(x=>x.username).join(',')} 已添加！`,
+    content: `任务：${formData.name},执行者：${formData.receiver.map(x => x.username).join(',')} 已添加！`,
     status: 'success'
   })
   scheduleStore.getTableData()

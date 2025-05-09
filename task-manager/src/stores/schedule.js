@@ -115,7 +115,7 @@ const updateSelectDateStat = (startDate,endDate,workloads,workNum,per) =>{
  // 基于原始数据的任务渲染数据
   const curUserScheduleTasksRef = computed(() => {
     return curUserTasksRef.value.map(x => {
-      return { start_date: x.start_time, end_date: x.deadline_time, text: x.name, ...x }
+      return { start_date: x.start_time, end_date: `${x.deadline_time} 23:59:59`, text: x.name, ...x }
     })
   })
 
@@ -136,6 +136,7 @@ const schduleTableData = ref([])
 const getTableData = async () =>{
     console.log(loginUser.value,'======>')
     const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id})
+    getCurUserTasks(loginUser.value.id)
     schduleTableData.value = curCreatorTasks.result?.items
     console.log(schduleTableData.value)
 }

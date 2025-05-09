@@ -2,7 +2,7 @@
   <div class="user-panel">
     <el-row class="panel-header">
       <el-col :span="8">
-        <h3 class="card-title">工作强度</h3>
+        <h3 class="card-title">参与人员</h3>
       </el-col>
       <el-col :span="4" :offset="10">
         <el-button class="clear-btn" @click="selectUser = ''">清空</el-button>

@@ -29,26 +29,15 @@ import ProjectPoolCard from './card/ProjectPoolCard.vue'
 import StaticsCard from './card/StaticsCard.vue'
 import TaskGantt from './gantt/TaskGantt.vue'
 
-import { onUnmounted, onMounted } from 'vue';
+import {onMounted } from 'vue';
 
-import { useScheduleStore } from '@/stores/schedule'
-const scheduleStore = useScheduleStore()
+import { useProjectStore } from '@/stores/project'
 
-import { useUserStore } from '@/stores/user'
-const myUserStore = useUserStore()
+const projectStore = useProjectStore()
+
 onMounted(() => {
-  myUserStore.initUser(608).then(() => {
-    scheduleStore.initScheduleConfig()
-  })
+  projectStore.updateCurSelectProjectTasks()
 });
-
-onUnmounted(() => {
-  scheduleStore.saveScheduleConfig()
-});
-
-// 处理页面关闭/刷新
-window.addEventListener('beforeunload', scheduleStore.saveScheduleConfig);
-
 </script>
 
 <style>
