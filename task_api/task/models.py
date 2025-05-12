@@ -260,7 +260,10 @@ class Task(AbstractTask):
         if self.sender:
             users = list(set(self.sender.split(",")))
             for username in users:
-                u = User.objects.get(username=username)
+                try:
+                    u = User.objects.get(username=username)
+                except User.DoesNotExist:
+                    continue
                 if u.email not in cc:
                     cc.append(u.email)
         return cc

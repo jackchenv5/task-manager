@@ -200,8 +200,11 @@ class TaskViewSet(viewsets.ModelViewSet):
             user = tmp['receiver']
             if not tmp['status_name'] in ["进行中", "待下发"]:
                 continue
-            start_time = datetime.strptime(tmp['start_time'], '%Y-%m-%d')
-            end_time = datetime.strptime(tmp['deadline_time'], '%Y-%m-%d')
+            try:
+                start_time = datetime.strptime(tmp['start_time'], '%Y-%m-%d')
+                end_time = datetime.strptime(tmp['deadline_time'], '%Y-%m-%d')
+            except TypeError:
+                continue
             if not start_min or start_time < start_min:
                 start_min = start_time
             if not end_max or end_time > end_max:
