@@ -255,7 +255,7 @@ onMounted(() => {
 }
 
 .dhx_month_head {
-    padding: unset;
+    padding: 5px;
 }
 
 .hide_event {
@@ -350,7 +350,7 @@ onMounted(() => {
   /* top: 8px;
   right: 8px; */
   font: 500 15px/-apple-system; /* SF Pro字体 */
-  color: rgba(28,28,30,0.5); /* 50%透明 */
+  color: black; /* 50%透明 */
   padding: 2px 6px;
   transition: color 0.2s ease;
 }
@@ -362,20 +362,8 @@ onMounted(() => {
   background: rgba(255,255,255,0.9); /* 毛玻璃效果 */
   backdrop-filter: blur(4px);
   
-  .day-number { color: rgba(28,28,30,0.9) } /* 文字高对比 */
+  .day-number { color: white} /* 文字高对比 */
   .month_day_events { color: rgba(28,28,30,0.9) }
-}
-
-/* 非工作日样式 */
-.non-workday-cell {
-  /* background: rgba(242,242,247,0.5) !important;  */
-  .day-number { color: rgba(142,142,147,0.7) }
-}
-
-/* 其他月份单元格 */
-.other-month-cell {
-  /* background: red; */
-  /* opacity: 0.5; */
 }
 
 /* 悬停反馈 (参考网页7的微交互) */
