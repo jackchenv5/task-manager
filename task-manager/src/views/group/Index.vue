@@ -9,7 +9,7 @@
       </div>
       <!-- 组基础信息，组  组员人数  本月总工时 完成/已完成  本月繁忙度 END  -->
 
-      <!-- 功能区域，一组按键 导出当前任务列表 -->
+      <!-- 功能区域，一组按键 导出当前任务列表等等 -->
       <div style="width: 100%; height: 8vh; border: 1px solid">
        <GroupFunc></GroupFunc>    
       </div>
@@ -24,9 +24,11 @@
     </div>
     <!-- 组员信息 END -->
 
+    <!-- 选中组员的gantt图 -->
     <div style="width: 60%; border: 2px solid blue; height: 93vh; min-width: 400px">
      <MemberGantt></MemberGantt>
     </div>
+    <!-- 选中组员的gantt图 END -->
   </div>
 </template>
 
