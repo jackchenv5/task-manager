@@ -7,8 +7,6 @@
         :data="filteredTasks"
         :row-config="{ isHover: true }"
         :row-class-name="tableRowClassName"
-        @cell-click="handleCellClick"
-        @cell-dblclick="handleCellDblClick"
       >
         <vxe-column field="name" title="任务名" width="120" show-overflow></vxe-column>
         <vxe-column field="status_name" title="状态" width="110"></vxe-column>
@@ -17,22 +15,24 @@
         <vxe-column field="workload" title="工作量(天)" width="100"></vxe-column>
         <vxe-column field="project" title="项目" width="130" show-overflow></vxe-column>
         <vxe-column field="creator_name" title="创建人" width="110"></vxe-column>
-        <vxe-column title="操作" width="100" fixed="right">
+        <vxe-column title="操作" width="130" fixed="right">
           <template #default="{ row }">
-            <el-button link size="small" @click.stop="handleFeedbackClick(row)">反馈</el-button>
-            <el-button link size="small" @click.stop="handleDetailClick(row)">详情</el-button>
+            <el-button type="primary" size="small" @click="handleFeedbackClick(row)">反馈</el-button>
+            <el-button type="primary" size="small" @click="handleCheckDetail(row)">详情</el-button>
           </template>
         </vxe-column>
       </vxe-table>
     </div>
     
-    <div v-if="selectedRow" style="width:100%;">
-      <el-form label-width="auto" style="width: 100%; margin-top: 10px;">
-        <el-form-item label="任务反馈:" style="margin-bottom: 10px;">
-          <el-text type="primary" style="margin-left: 10px;">{{ selectedRow.name }}</el-text>
-        </el-form-item>
+    <el-drawer
+      v-model="isOpen"
+      :title="`任务反馈 - 任务名：${ selectedRow.name }`"
+      direction="btt"
+      size="50%"
+    >
+      <el-form label-width="auto" style="width: 100%;">
         
-        <el-form-item style="margin-bottom: 22px;">
+        <el-form-item>
           <div style="display: flex; align-items: center;">
             <div style="display: flex; align-items: center; margin-right: 40px; margin-left: 20px;">
               <el-text style="margin-right: 10px;">实际工作量:</el-text>
@@ -45,7 +45,7 @@
           </div>
         </el-form-item>
         
-        <el-form-item>
+        <el-form-item style="margin-bottom: 10px">
           <el-input
             v-model="feedbackData.info" 
             type="textarea" 
@@ -54,16 +54,16 @@
           />
         </el-form-item>
         
-        <el-form-item style="margin-left: 40%">
+        <el-form-item style="margin-bottom: 0">
           <el-button type="primary" @click="handleSubmit" style="width: 120px;">提交</el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
@@ -75,7 +75,8 @@ const props = defineProps({
 
 const emit = defineEmits(['row-click', 'row-dblclick', 'feedback-submit'])
 
-const selectedRow = ref(null)
+const isOpen = ref(false)
+const selectedRow = ref([])
 const feedbackData = ref({
   actWorkload: 1,
   progress: 0,
@@ -86,22 +87,23 @@ const tableRowClassName = ({ row }) => {
   return selectedRow.value?.id === row.id ? 'highlight-row' : ''
 }
 
-const handleCellClick = ({ row }) => {
-  selectedRow.value = row
-  emit('row-click', row)
-}
-
-const handleCellDblClick = ({ row }) => {
-  emit('row-dblclick', row)
-}
-
 const handleFeedbackClick = (row) => {
+  console.log(row)
+  if (row.status_name != '进行中') {
+    ElMessage.warning(`当前任务状态：{${row.status_name}} 无法反馈`)
+    return
+  }
   selectedRow.value = row
-  emit('row-click', row)
+  isOpen.value = true
+  console.log(isOpen.value)
+}
+
+const handleCheckDetail = (row) => {
+  emit('checkDetail', row)
 }
 
 const handleDetailClick = (row) => {
-  emit('row-dblclick', row)
+
 }
 
 const handleSubmit = () => {
@@ -119,13 +121,7 @@ const handleSubmit = () => {
     ...feedbackData.value
   })
   
-  // 重置表单
-  feedbackData.value = {
-    actWorkload: 1,
-    progress: 0,
-    info: ''
-  }
-  selectedRow.value = null
+  isOpen.value = false
 }
 
 </script>

@@ -16,8 +16,7 @@
       <Summary :stats="stats" />
       <Tasks 
         :filtered-tasks="filteredTasks"
-        @row-click="handleRowClick"
-        @row-dblclick="handleRowDblClick"
+        @checkDetail="handleCheckDetail"
         @feedback-submit="handleFeedbackSubmit"
       />
     </div>
@@ -26,6 +25,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { usePersonStore } from '@/stores/person'
 import { useUserStore } from '@/stores/user'
 import { formatVxeDate } from '@/utils/public'
@@ -88,14 +88,7 @@ const stats = computed(() => {
   }
 })
 
-const handleRowClick = (row) => {
-  if (row.status_name !== "进行中") {
-    ElMessage.warning(`无法反馈该状态（${row.status_name}）的任务`)
-    return
-  }
-}
-
-const handleRowDblClick = (row) => {
+const handleCheckDetail = (row) => {
   currentTask.value = row
   showDetailPanel.value = true
 }
@@ -135,51 +128,7 @@ onMounted(async () => {
 </script>
 
 <style>
-@import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
-.dhx_cal_data .dhx_month_body, 
-.dhx_cal_data .dhx_month_head {
-    height: 100% !important;
-}
-
-.dhx_cal_month_row {
-  height: 100px !important;
-}
-
-.month_day_events {
-  position: absolute; 
-  top: 50%; 
-  left: 50%; 
-  transform: translate(-50%, -50%); 
-  font-size: 1.4em; 
-  font-weight: bold;
-  width: max-content;
-}
-
-.dhx_cal_event_line {
-  display: none !important;
-}
-
-.highlighted {
-    border: 2px solid #409EFF !important;
-}
-
-.highlight-row {
-  background-color: #f0f7ff !important;
-}
-
-.highlight-row:hover > td {
-  background-color: #e1f0ff !important;
-}
-
-.dhx_cal_month_cell {
-  user-select: none;
-}
-
-.left, .right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #ccc;
-  background-color: white;
-}
+.el-drawer__header {
+    margin-bottom: 0
+  }
 </style>

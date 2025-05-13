@@ -22,42 +22,47 @@ const emit = defineEmits(['date-selected'])
 const schedulerContainer = ref(null)
 
 const getInitViewTemplate = (date) => {
-  const currentMonth = scheduler.getState().date.getMonth()
+  const currentMonth = scheduler.getState().date.getMonth();
   if (date.getMonth() !== currentMonth) {
-    return `<div style="height:100%; background:#f9f9f9"></div>`
+    return `<div class="month_day_total">
+      <div class="day-number">${date.getDate()}</div>
+      </div>
+    `;
   }
 
   if (!isWorkday(date)) {
     return `
-      <div style="height: 100%; width: 100%; position: relative;">
-        <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
-          ${date.getDate()}
-        </div>
+      <div class="month_day_total">
+        <div class="day-number">${date.getDate()}</div>
       </div>
-    `
+    `;
   }
 
-  const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"))
-  const totalHours = getDayTotalWorkHours(events)
-  const bgColor = 
-    totalHours < 0 ? "#ffffff" :
-    totalHours < 8 ? "#add8e6" : // 蓝色
-    totalHours < 8.8 ? "#90ee90" : // 绿色
-    totalHours < 9.6 ? "#ffa500" : // 橙色
-    "#ff0000"; // 红色
+  const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+  const totalHours = getDayTotalWorkHours(events);
+  let workloadClass = "workload-0"
+  // 根据工时范围确定样式类
+  if(totalHours > 0  && totalHours <= 8){
+    workloadClass =  "workload-low"
+  }else if( totalHours > 8 && totalHours <= 8.8 ){
+    workloadClass =  "workload-medium"
+  }else if ( totalHours > 8.8 && totalHours <= 9.6){
+    workloadClass =  "workload-high"
+  }else if (totalHours >9.6){
+    workloadClass =  "workload-extra-high"
+  }else{
+    workloadClass = "workload-0"
+  }
 
   return `
-    <div class="month_day_total" data-date="${formatDate(date)}" 
-         style="height: 100%; width: 100%; position: relative; cursor: pointer; background-color: ${bgColor}">
-      <div style="position: absolute; top: 5px; right: 5px; font-weight: bold;">
-        ${date.getDate()}
-      </div>
+    <div class="month_day_total ${workloadClass}" data-date="${formatDate(date)}">
+      <div class="day-number">${date.getDate()}</div>
       <div class="month_day_events" title="当天任务数量-当天任务需要的总工时">
         ${events.length || '0'}-${totalHours}
       </div>
     </div>
-  `
-}
+  `;
+};
 
 // 日历多选拖拽效果
 let dragSelectState = false
@@ -202,3 +207,132 @@ defineExpose({
   parse: (data) => scheduler?.parse(data)
 })
 </script>
+
+<style>
+@import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
+
+.dhx_month_link {
+    display: none !important;
+}
+
+.dhx_month_head {
+    padding: 5px;
+}
+
+.hide_event {
+    display: none !important;
+}
+
+.my-month-day-red {
+    background-color: red;
+}
+
+.dhx_month_head {
+    height: 100% !important;
+}
+
+.month_day_events {
+  position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.4em;
+    font-weight: bold;
+    color: white;
+    width: max-content;
+}
+
+
+/* 选中状态 */
+.highlighted {
+  /* 基础样式 */
+  border: 1px solid rgb(136, 27, 27) !important;
+  opacity: 0.6;
+  border-radius: 10px; /* 匹配现代UI圆角 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 激活状态 */
+  &.active {
+    border-color: #64B5F6; /* 中等浅蓝 */
+    background: rgba(100, 181, 246, 0.15);
+    /* box-shadow: 0 1px 3px rgba(100, 181, 246, 0.2); */
+  }
+
+  /* 悬停交互 */
+  &:hover {
+    border-color: #42A5F5; /* 标准浅蓝 */
+    background: rgba(66, 165, 245, 0.12);
+  }
+
+  /* 点击反馈 */
+  &:active {
+    /* transform: scale(0.97); */
+    background: rgba(66, 165, 245, 0.18);
+  }
+}
+
+/* 月视图的单元格显示 */
+
+/* 基础单元格 */
+.month_day_total {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: #F8F9FA; /* iOS系统背景色 */
+  border-radius: 10px; /* iOS圆角规范 */
+  /* transition: all 0.25s cubic-bezier(0.4,0,0.2,1); */
+}
+
+/* 工时区间重构配色方案 */
+.workload-0 { 
+  background: #eee;  /* 强化后的浅蓝 */
+}
+
+/* 工时区间重构配色方案 */
+.workload-low { 
+  background: rgb(94, 94, 214);  /* 强化后的浅蓝 */
+}
+
+.workload-medium {
+  background: green;  /* 提亮后的浅紫 */
+}
+
+.workload-high {
+  background: orange!important;  /* 加深后的浅红 */
+}
+
+.workload-extra-high {
+  background: rgb(129, 9, 9)!important;  /* 加深后的浅红 */
+}
+
+/* 日期数字 (iOS时间组件风格) */
+.day-number {
+  position: absolute;
+  /* top: 8px;
+  right: 8px; */
+  font: 500 15px/-apple-system; /* SF Pro字体 */
+  color: black; /* 50%透明 */
+  padding: 2px 6px;
+  transition: color 0.2s ease;
+}
+
+
+/* 状态交互 */
+.month_day_total:focus-within, 
+.month_day_total.active {
+  background: rgba(255,255,255,0.9); /* 毛玻璃效果 */
+  backdrop-filter: blur(4px);
+  
+  .day-number { color: white} /* 文字高对比 */
+  .month_day_events { color: rgba(28,28,30,0.9) }
+}
+
+/* 悬停反馈 (参考网页7的微交互) */
+@media (hover: hover) {
+  .month_day_total:hover {
+    /* transform: translateY(-2px); */
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  }
+}
+
+</style>
