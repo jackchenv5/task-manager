@@ -4,10 +4,11 @@
     <el-row>
       <el-col :span="20">
         <el-header class="head">
-          <el-link v-for="item in navStore.navItems" :key="item.path" :href="item.path"
-            :class="{ active: $route.path.startsWith(item.path) }">
+          <router-link v-for="item in navStore.navItems" :key="item.path" :to="item.path" 
+            class="router-link"
+            :class="{ active: $route.path.startsWith(item.path)}">
             {{ item.title }}
-          </el-link>
+          </router-link>
         </el-header>
       </el-col>
       <el-col :span="4">
@@ -41,7 +42,8 @@
 
     <!-- 动态内容区域 -->
     <div class="content-container">
-      <router-view />
+      <router-view v-slot="{ Component }">
+      </router-view>
     </div>
   </div>
 </template>
@@ -96,12 +98,19 @@ const handleLogout = () => {
   height: 6vh;
 }
 
-.el-link {
+/* router link 相关 */
+.router-link{
   font-size: 18px;
   margin-right: 20px;
   font-weight: bold;
   color: black;
   padding: 10px;
+  text-decoration:none;
+}
+
+.router-link:hover{
+  border-bottom: 2px solid #162c5e;
+  color: #176b6b;   
 }
 
 .active {

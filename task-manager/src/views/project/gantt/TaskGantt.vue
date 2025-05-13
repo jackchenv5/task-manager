@@ -24,26 +24,29 @@ const initGantt = () => {
   gantt.config.scale_unit = "day";
   gantt.i18n.setLocale("cn");
   gantt.config.date_format = "%Y-%m-%d";
-  gantt.templates.progress_text=function(start, end, task){return `${task.progress*100}%`;};
+  gantt.templates.progress_text = function (start, end, task) { return `${task.progress * 100}%`; };
+
 
   gantt.config.empty_text = "暂无任务数据";  // [4](@ref)空数据提示
   gantt.config.auto_types = true;  // [1](@ref)自动推断任务类型
 
   gantt.config.columns = [
-    { name: "text",       label: "任务名",  width: 120, tree: true },
-    { name: "start_date", label: "开始时间", width: 100,align: "center" },
-    { name: "duration",   label: "持续时间", width: 60,  align: "center" },
-    { name: "workload",   label: "工时(天)", width: 60,  align: "center" },
-    { name: "receiver_name",   label: "执行者", width: 60,  align: "center" },
-];
+    { name: "text", label: "任务名", width: 120, tree: true },
+    { name: "start_date", label: "开始时间", width: 100, align: "center" },
+    { name: "duration", label: "持续时间", width: 60, align: "center" },
+    { name: "workload", label: "工时(天)", width: 60, align: "center" },
+    { name: "receiver_name", label: "执行者", width: 60, align: "center" },
+  ];
 
   gantt.config.drag_progress = false;
 };
 
 const loadSampleData = (data) => {
   try {
+      // 检查服务是否就绪
     gantt.clearAll();  // [4,1](@ref)切换数据前先清空
     const tasks = { data: Array.isArray(data) ? data : [] };
+    if(!gantt) return
     gantt.parse(tasks);
     nextTick(() => gantt.render());  // [7](@ref)确保DOM更新后渲染
   } catch (error) {
@@ -52,11 +55,17 @@ const loadSampleData = (data) => {
 };
 
 // 深度监听数据结构变化
+// watch(curGanttData, (newVal) => {
+//   if (newVal?.length && !selectUser.value) {
+//     loadSampleData(newVal);
+//   }
+// }, { deep: true, immediate: true });  // [6](@ref)深度监听嵌套数据变化
+
 watch(curGanttData, (newVal) => {
   if (newVal?.length && !selectUser.value) {
     loadSampleData(newVal);
   }
-}, { deep: true,immediate: true });  // [6](@ref)深度监听嵌套数据变化
+}, {});  // [6](@ref)深度监听嵌套数据变化
 
 
 // 用户切换时强制更新
@@ -68,22 +77,24 @@ const isGanttInitialized = ref(false);
 
 onMounted(() => {
   if (!ganttContainer.value) return;
-  
+  if(!gantt) return
   gantt.init(ganttContainer.value);
   initGantt();
   isGanttInitialized.value = true;
-  
+
   // [2](@ref)延迟加载初始数据
-  setTimeout(() => loadSampleData(curGanttData.value), 100);
+  // 移除 setTimeout，改用 nextTick 保证时序
+  setTimeout(() => loadSampleData(curGanttData.value), 1000);
+  // nextTick(() => loadSampleData(curGanttData.value));
 });
 
 // [4](@ref)确保销毁时释放资源
-onBeforeUnmount(() => {
-  if (isGanttInitialized.value) {
-    gantt.destructor();
-    isGanttInitialized.value = false;
-  }
-});
+// onBeforeUnmount(() => {
+//   if (isGanttInitialized.value) {
+//     gantt.destructor();
+//     isGanttInitialized.value = false;
+//   }
+// });
 
 </script>
 
@@ -95,10 +106,10 @@ onBeforeUnmount(() => {
 }
 
 .gantt_task_progress {
-    text-align: start;
-    color: white;
-    z-index: 0;
-    background: #0c192e;
+  text-align: start;
+  color: white;
+  z-index: 0;
+  background: #0c192e;
 
 }
 </style>
