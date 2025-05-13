@@ -79,11 +79,6 @@ const handleMouseDown = (event) => {
     dragSelectState.startDate = new Date(dateStr);
     selectedDates.value = [];
     clearHighlightedDates();
-    // if (!selectedDates.value.includes(dateStr)) {
-    // selectedDates.value.push(dateStr);
-// }
-
-    // cell.closest('.dhx_cal_month_cell').classList.add('highlighted');
 
     event.preventDefault();
 };
@@ -196,12 +191,15 @@ watch(curUserScheduleTasksRef, () => {
 const getInitViewTemplate = (date) => {
   const currentMonth = scheduler.getState().date.getMonth();
   if (date.getMonth() !== currentMonth) {
-    return `<div class="other-month-cell"></div>`;
+    return `<div class="month_day_total">
+      <div class="day-number">${date.getDate()}</div>
+      </div>
+    `;
   }
 
   if (!isWorkday(date)) {
     return `
-      <div class="non-workday-cell">
+      <div class="month_day_total">
         <div class="day-number">${date.getDate()}</div>
       </div>
     `;
@@ -211,7 +209,17 @@ const getInitViewTemplate = (date) => {
   const totalHours = getDayTotalWorkHours(events);
   let workloadClass = "workload-0"
   // 根据工时范围确定样式类
-  if(totalHours > 0 ) workloadClass =  totalHours < 4 ? "workload-low" : totalHours <= 8 ? "workload-medium" : "workload-high";
+  if(totalHours > 0  && totalHours <= 8){
+    workloadClass =  "workload-low"
+  }else if( totalHours > 8 && totalHours <= 8.8 ){
+    workloadClass =  "workload-medium"
+  }else if ( totalHours > 8.8 && totalHours <= 9.6){
+    workloadClass =  "workload-high"
+  }else if (totalHours >9.6){
+    workloadClass =  "workload-extra-high"
+  }else{
+    workloadClass = "workload-0"
+  }
 
   return `
     <div class="month_day_total ${workloadClass}" data-date="${formatDate(date)}">
@@ -269,6 +277,7 @@ onMounted(() => {
     transform: translate(-50%, -50%);
     font-size: 1.4em;
     font-weight: bold;
+    color: white;
     width: max-content;
 }
 
@@ -277,8 +286,8 @@ onMounted(() => {
 .highlighted {
   /* 基础样式 */
   border: 1px solid rgb(136, 27, 27) !important;
-  opacity: 0.5;
-  border-radius: 6px; /* 匹配现代UI圆角 */
+  opacity: 0.6;
+  border-radius: 10px; /* 匹配现代UI圆角 */
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* 激活状态 */
@@ -309,7 +318,7 @@ onMounted(() => {
   width: 100%;
   position: relative;
   background: #F8F9FA; /* iOS系统背景色 */
-  border-radius: 8px; /* iOS圆角规范 */
+  border-radius: 10px; /* iOS圆角规范 */
   /* transition: all 0.25s cubic-bezier(0.4,0,0.2,1); */
 }
 
@@ -318,42 +327,34 @@ onMounted(() => {
   background: #eee;  /* 强化后的浅蓝 */
 }
 
-
-
 /* 工时区间重构配色方案 */
 .workload-low { 
-  background: #B3E5FC;  /* 强化后的浅蓝 */
+  background: rgb(94, 94, 214);  /* 强化后的浅蓝 */
 }
 
 .workload-medium {
-  background: #75adf7;  /* 提亮后的浅紫 */
+  background: green;  /* 提亮后的浅紫 */
 }
 
 .workload-high {
-  background: #bd545e;  /* 加深后的浅红 */
+  background: orange!important;  /* 加深后的浅红 */
+}
+
+.workload-extra-high {
+  background: rgb(129, 9, 9)!important;  /* 加深后的浅红 */
 }
 
 /* 日期数字 (iOS时间组件风格) */
 .day-number {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  /* top: 8px;
+  right: 8px; */
   font: 500 15px/-apple-system; /* SF Pro字体 */
   color: rgba(28,28,30,0.5); /* 50%透明 */
   padding: 2px 6px;
   transition: color 0.2s ease;
 }
 
-/* 任务信息 (iOS通知标记风格) */
-.month_day_events {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  /* transform: translateX(-50%); */
-  font: 500 13px/-apple-system;
-  color: rgba(28,28,30,1); /* 70%透明 */
-  white-space: nowrap;
-}
 
 /* 状态交互 */
 .month_day_total:focus-within, 
@@ -367,14 +368,14 @@ onMounted(() => {
 
 /* 非工作日样式 */
 .non-workday-cell {
-  background: rgba(242,242,247,0.5) !important; /* iOS系统灰色 */
-  .day-number { color: rgba(142,142,147,0.7) } /* 系统灰 */
+  /* background: rgba(242,242,247,0.5) !important;  */
+  .day-number { color: rgba(142,142,147,0.7) }
 }
 
 /* 其他月份单元格 */
 .other-month-cell {
-  background: rgba(242,242,247,0.3); /* 更浅灰 */
-  opacity: 0.5;
+  /* background: red; */
+  /* opacity: 0.5; */
 }
 
 /* 悬停反馈 (参考网页7的微交互) */

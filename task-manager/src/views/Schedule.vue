@@ -555,25 +555,6 @@ const handleCheckedCitiesChange = (value) => {
 
 <style>
   @import "dhtmlx-scheduler/codebase/dhtmlxscheduler.css";
-  .el-link {
-    font-size: 18px;
-    margin-right: 20px;
-    font-weight: bold;
-    color:black;
-    padding:10px;
-  }
-
-  .head {
-    display: flex;
-    justify-content: start;
-    border-bottom: 2px solid #d6dfdf;
-    border-top: 1px solid #f5f9f9;
-    background: #ffffff;
-  }
-  .active{
-    color: white;
-    background: black;
-  }
 
 /* 左侧和右侧 div 的样式 */
 .left, .right {

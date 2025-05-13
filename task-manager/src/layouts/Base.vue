@@ -110,12 +110,13 @@ const handleLogout = () => {
 
 .router-link:hover{
   border-bottom: 2px solid #162c5e;
-  color: #176b6b;   
+  color: rgb(124, 177, 238);   
 }
 
 .active {
   color: white;
-  background: black;
+  background: black!important;
+  border-bottom: 2px solid aliceblue;
 }
 
 .dhx_month_link {

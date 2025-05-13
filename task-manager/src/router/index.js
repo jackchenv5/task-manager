@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { checkLogin } from '@/api/login/login'
-// import { getDataApi } from '@/api/data/data'
 
 import BaseLayout from '@/layouts/Base.vue'
 // 使用Vite的glob特性动态加载模块
@@ -11,7 +10,6 @@ Object.values(modules).forEach(mod => {
   baseRoutes.push(...mod.default)
 })
 
-console.log(baseRoutes)
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -33,6 +31,7 @@ const router = createRouter({
 // 注册路由守卫，作为权限验证使用
 router.beforeEach(async (to, from, next) => {
   const  isAuthenticated = true
+  
   const perm = {}
 
   console.log('进入路由守卫,来自|访问',from.path,to.path)
