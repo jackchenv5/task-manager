@@ -4,7 +4,6 @@
       <Status v-model="typeRadio" :personCfg="personCfg" />
       <Calendar 
         ref="calendarRef"
-        :tasks="myTotalTasks"
         @date-selected="handleDateSelected"
       />
       <TaskDetail 
@@ -103,7 +102,15 @@ const handleRowDblClick = (row) => {
 
 const handleDateSelected = (dates) => {
   // 处理日期选择逻辑
-  console.log(dates)
+  console.log(dates, dates.value)
+  const allEvents = [];
+  dates.value.forEach(dateStr => {
+    const date = new Date(dateStr);
+    const events = scheduler.getEvents(date, scheduler.date.add(date, 1, "day"));
+    allEvents.push(...events);
+  });
+  
+  myPersonStore.allTask = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
 }
 
 const handleFeedbackSubmit = async (feedbackData) => {

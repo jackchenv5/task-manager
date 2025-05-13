@@ -15,13 +15,6 @@ import "dhtmlx-scheduler"
 import { initSchedulerConfig } from '@/utils/scheduler'
 import { formatDate, isWorkday, getDayTotalWorkHours } from '@/utils/public'
 
-const props = defineProps({
-  tasks: {
-    type: Array,
-    required: true
-  }
-})
-
 const myPersonStore = usePersonStore()
 
 const emit = defineEmits(['date-selected'])
@@ -119,7 +112,7 @@ const handleMouseMove = (event) => {
 // 日历div中处理鼠标松开事件
 const handleMouseUp = () => {
     dragSelectState = false
-    console.log(selectedDates.value)
+    emit('date-selected', selectedDates)
 }
 
 // 更新拖拽选区
@@ -145,19 +138,25 @@ const updateDragSelection = (endDateStr) => {
 }
 
 const getDateRange = (startDate, endDate) => {
-    const range = []
-    const current = new Date(startDate)
-    const end = new Date(endDate)
-
-    while (current <= end) {
-        range.push(formatDate(new Date(current)))
-        current.setDate(current.getDate() + 1)
+    const range = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    // 判断是递增还是递减
+    const step = start <= end ? 1 : -1;
+    
+    let current = new Date(start);
+    
+    while (step === 1 ? current <= end : current >= end) {
+        range.push(formatDate(new Date(current)));
+        current.setDate(current.getDate() + step);
     }
-
-    return range
+    
+    return range;
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await myPersonStore.getPersonTasks();
   scheduler = initSchedulerConfig(scheduler)
   scheduler.config.dblclick_create = false
 
@@ -169,8 +168,13 @@ onMounted(() => {
   scheduler.config.row_height = 80
   scheduler.init(schedulerContainer.value, new Date(), 'month')
   scheduler.templates.month_day = getInitViewTemplate
+  scheduler.parse(myPersonStore.allTask);
+  scheduler.updateView();
 
-  scheduler.attachEvent('onViewChange', async (view, date) => {
+})
+
+
+scheduler.attachEvent('onViewChange', async (view, date) => {
       // 计算这一天的第一天和最后一天
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
@@ -182,78 +186,10 @@ onMounted(() => {
       const endDate = formatDate(lastDay);
       
       await myPersonStore.getPersonTasks(startDate, endDate);
+      scheduler.clearAll();
+      scheduler.parse(myPersonStore.allTask);
+      scheduler.updateView();
   })
-
-  // scheduler.attachEvent("onEmptyClick", (date, event) => {
-  //   console.log('on empty click', date)
-  //   // const currentMonth = scheduler.getState().date.getMonth()
-  //   // if (date.getMonth() !== currentMonth) return
-  //   // if (!isWorkday(date)) return
-    
-  //   // emit('date-selected', [formatDate(date)])
-  // })
-
-  // 初始化scheduler
-
-
-// 存储选中日期
-var selectedDates = [];
-
-scheduler.attachEvent("onBeforeDrag", function() {
-    selectedDates = []; // 清空之前的选择
-    return true;
-});
-
-scheduler.attachEvent("onDrag", function(start, end, is_dragging) {
-    if (is_dragging) {
-        selectedDates = getDatesBetween(start, end);
-        highlightSelectedDates(selectedDates);
-    }
-});
-
-scheduler.attachEvent("onAfterDrag", function(start, end) {
-    console.log("最终选中的日期:", selectedDates);
-    // 在这里处理你的业务逻辑
-});
-})
-
-// 辅助函数
-function getDatesBetween(startDate, endDate) {
-    var dates = [];
-    var current = new Date(startDate);
-    
-    while (current <= endDate) {
-        dates.push(new Date(current));
-        current.setDate(current.getDate() + 1);
-    }
-    return dates;
-}
-
-function highlightSelectedDates(dates) {
-    // 清除所有高亮
-    var cells = document.querySelectorAll(".dhx_month_body .dhx_month_cell");
-    cells.forEach(function(cell) {
-        cell.style.backgroundColor = "";
-    });
-    
-    // 高亮选中日期
-    dates.forEach(function(date) {
-        var dateStr = scheduler.templates.xml_format(date);
-        var cell = document.querySelector(`.dhx_month_body .dhx_month_cell[data-date="${dateStr}"]`);
-        if (cell) {
-            cell.style.backgroundColor = "rgba(0, 120, 215, 0.2)";
-        }
-    });
-}
-
-// 监听 tasks 变化
-watch(() => props.tasks, (newTasks) => {
-  if (scheduler) {
-    scheduler.clearAll()
-    scheduler.parse(newTasks)
-    scheduler.updateView()
-  }
-})
 
 onUnmounted(() => {
   if (scheduler) {
