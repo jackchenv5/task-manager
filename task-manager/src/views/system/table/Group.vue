@@ -1,8 +1,12 @@
 <template>
   <div>
-    <p>
-      <vxe-input v-model="filterName" type="search" placeholder="试试全表搜索" clearable @change="searchEvent"></vxe-input>
+    <div style="display: flex;justify-content: space-between;">
+      <p>
+      <vxe-input v-model="filterName" type="search" placeholder="试试全表搜索" clearable @change="searchEvent" style="width: 500px;margin-left:10px"></vxe-input>
     </p>
+    <vxe-toolbar :tools="toolbarTools" @tool-click="toolClickEvent" style="margin-right: 20px;"></vxe-toolbar>
+    </div>
+
     <vxe-table ref=tableRef class="mylist-table" border
       :edit-config="{ mode: 'cell', trigger: 'dblclick', showStatus: true }" keep-source :data="list"
       @edit-closed="editClosedEvent">
@@ -165,7 +169,20 @@ const btnGroupCellRender = reactive({
   }
 })
 
+const toolbarTools = ref([
+  { name: '新增', code: 'add', status: 'primary' },
+])
+const toolClickEvent = ({ code }) => {
+  if(code === 'add'){
+    systemStore.addGroup({name:'新增组-'}).then(() => {
+          VxeUI.modal.message({
+            content: `新增组成功,请直接编辑新增的组！`,
+            status: 'success'
+          })
+        })
+  }
 
+}
 
 onMounted(async () => {
   await systemStore.updateGroupTableData({})

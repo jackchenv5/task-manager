@@ -1,5 +1,8 @@
 <template>
     <el-menu default-active="1" class="el-menu-vertical-demo"
+    background-color="black"
+    text-color="#fff"
+    active-text-color="#ffd04b"
      @select="handleSelect"
      >
         <el-menu-item index="1">
@@ -21,6 +24,7 @@
             <span>角色</span>
         </el-menu-item>
     </el-menu>
+
 </template>
 
 <script setup>
@@ -41,3 +45,9 @@ const props = defineProps({
     },
 })
 </script>
+
+<style scoped>
+.el-menu-item.is-active {
+    background: #a8abb2;
+}
+</style>
