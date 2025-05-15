@@ -4,13 +4,15 @@
 </template>
 
 <script setup>
-import "dhtmlx-scheduler";
+// import "dhtmlx-scheduler";
+import  'dhtmlx-scheduler';
 import { initSchedulerConfig } from '@/utils/scheduler'
-import { ref, watch, onMounted, reactive } from 'vue'
+import { ref, watch, onMounted, reactive,nextTick,onBeforeUnmount } from 'vue'
 
 import { isWorkday, formatDate, getDayTotalWorkHours, getCurMonthStartAndEndStr, getWeekBoundaries } from '@/utils/public'
 // 获取容器引用
 const schedulerContainer = ref()
+const schedulerInstance = ref(null); // 新增响应式实例控制
 
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
@@ -165,22 +167,23 @@ const getDateRange = (startDate, endDate) => {
 
 
 scheduler.attachEvent('onViewChange', async (view, date) => {
-  if (view === 'month') {
+  if (view === 'month' && scheduler && scheduler.getState()) {
+    await nextTick(); // 等待视图切换完成
     const [startDate, endDate] = getCurMonthStartAndEndStr(date);
-    if (!curSelectUser.value) return
-    scheduleStore.getCurUserTasks(curSelectUser.value, startDate, endDate)
-
+    if (curSelectUser.value) {
+      await scheduleStore.getCurUserTasks(curSelectUser.value, startDate, endDate);
+    }
   }
 });
-watch(curUserScheduleTasksRef, () => {
-  if (scheduler) {
-    console.log(curUserScheduleTasksRef.value)
+
+watch(curUserScheduleTasksRef, (newTasks) => {
+  if (scheduler && scheduler.getState() && newTasks) {
     scheduler.clearAll();
-    scheduler.parse(curUserScheduleTasksRef.value);
-    scheduler.updateView();
+    scheduler.parse(newTasks);
+    scheduler.updateView(); // 强制更新视图
     selectedDates.value = [];
   }
-})
+}, { deep: true });
 // 设置日历初始渲染方式
 const getInitViewTemplate = (date) => {
   const currentMonth = scheduler.getState().date.getMonth();
@@ -225,19 +228,38 @@ const getInitViewTemplate = (date) => {
   `;
 };
 
-onMounted(() => {
-  // 确保 scheduler 对象存在
+onMounted(async () => {
+  if (!schedulerContainer.value || !scheduler) {
+    console.error('Scheduler container or library not ready.');
+    return;
+  }
+  // scheduler = new Scheduler();
+  // 初始化 Scheduler
+  scheduler.init(schedulerContainer.value, new Date(), 'month');
+  
+  // 确保视图渲染完成后再加载数据
+  await nextTick(); // Vue 的 nextTick 确保 DOM 更新完成
+
+
+  if (curUserScheduleTasksRef.value) {
+    initSchedulerConfig(scheduler);
+    scheduler.parse(curUserScheduleTasksRef.value);
+    scheduler.templates.month_day = getInitViewTemplate;
+  try{
+    scheduler.updateView(); // 强制更新视图
+  } catch(e){
+    location.reload(); // ✨ 触发安全重载
+  }
+    
+  }
+});
+
+onBeforeUnmount(() => {
   if (scheduler) {
-    // 初始化 Scheduler
-    if (curUserScheduleTasksRef.value) {
-      initSchedulerConfig(scheduler)
-      // 将数据加载到调度器
-      scheduler.init(schedulerContainer.value, new Date(), 'month');
-      scheduler.parse(curUserScheduleTasksRef.value)
-      scheduler.templates.month_day = getInitViewTemplate;
-    }
-  } else {
-    console.error('Scheduler is not properly imported.');
+    scheduler.detachAllEvents();
+    scheduler.clearAll();
+    scheduler.destructor();
+    // scheduler = null;
   }
 });
 
