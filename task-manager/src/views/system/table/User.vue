@@ -80,7 +80,8 @@
   const roleEditRender = reactive({
     name: 'VxeSelect',
     props: {
-      filterable: true
+      filterable: true,
+      multiple: true
     },
     options: []
   })

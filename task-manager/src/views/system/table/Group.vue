@@ -3,68 +3,184 @@
     <p>
       <vxe-input v-model="filterName" type="search" placeholder="试试全表搜索" clearable @change="searchEvent"></vxe-input>
     </p>
-
-    <vxe-table
-      border
-      class="mylist-table"
-      height="400"
-      :column-config="{useKey: true}"
-      :row-config="{useKey: true}"
-      :data="list">
-      <vxe-column type="seq" width="80"></vxe-column>
-      <vxe-column field="name" title="Name" type="html"></vxe-column>
-      <vxe-column field="role" title="Role" type="html"></vxe-column>
-      <vxe-column field="age" title="Age" type="html"></vxe-column>
-      <vxe-column field="address" title="Address" type="html"></vxe-column>
+    <vxe-table ref=tableRef class="mylist-table" border
+      :edit-config="{ mode: 'cell', trigger: 'dblclick', showStatus: true }" keep-source :data="list"
+      @edit-closed="editClosedEvent">
+      <vxe-column field="id" title="ID" min-width="60"></vxe-column>
+      <!-- <vxe-column field="name" title="组名" width="300" type="html" :edit-render="{ name: 'VxeInput' }"></vxe-column> -->
+      <vxe-column field="name" title="组名" width="300" :edit-render="{ name: 'VxeInput' }"></vxe-column>
+      <vxe-column field="users" title="组员" min-width="600" :edit-render="userEditRender"></vxe-column>
+      <vxe-column field="group_leader" title="组长" width="200" :edit-render="groupLeaderEditRender"></vxe-column>
+      <vxe-column field="depart_leader" title="处长" width="200" :edit-render="departLeaderRender"> </vxe-column>
+      <vxe-column title="操作" width="200" :cell-render="btnGroupCellRender"></vxe-column>
     </vxe-table>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref, reactive,watch } from 'vue'
+import { useSystemStore } from '@/stores/system'
+
+import { VxeUI } from 'vxe-table'
+
+const systemStore = useSystemStore()
+
+import { storeToRefs } from 'pinia'
+
+const { groupTableDataRef, userListData } = storeToRefs(systemStore)
+
+const tableRef = ref(null)
 const filterName = ref('')
 const list = ref([])
-const tableData = ref([
-  { id: 10001, name: 'Test1', role: 'Develop', sex: '0', age: 28, amount: 888, address: 'test abc' },
-  { id: 10002, name: 'Test2', role: 'Test', sex: '1', age: 22, amount: 666, address: 'Guangzhou' },
-  { id: 10003, name: 'Test3', role: 'PM', sex: '1', age: 32, amount: 89, address: 'Shanghai' },
-  { id: 10004, name: 'Test4', role: 'Designer', sex: '0', age: 23, amount: 1000, address: 'test abc' },
-  { id: 10005, name: 'Test5', role: 'Develop', sex: '0', age: 30, amount: 999, address: 'Shanghai' },
-  { id: 10006, name: 'Test6', role: 'Designer', sex: '0', age: 21, amount: 998, address: 'test abc' },
-  { id: 10007, name: 'Test7', role: 'Test', sex: '1', age: 29, amount: 2000, address: 'test abc' },
-  { id: 10008, name: 'Test8', role: 'Develop', sex: '1', age: 35, amount: 999, address: 'test abc' },
-  { id: 10009, name: 'Test9', role: 'Test', sex: '1', age: 26, amount: 2000, address: 'test abc' },
-  { id: 100010, name: 'Test10', role: 'Develop', sex: '1', age: 21, amount: 666, address: 'test abc' }
-])
+
+watch(groupTableDataRef,(newVal)=>{
+  filterName.value = ''
+  list.value = newVal
+})
+
+
+
 const handleSearch = () => {
   const filterVal = String(filterName.value).trim().toLowerCase()
   if (filterVal) {
     const filterRE = new RegExp(filterVal, 'gi')
-    const searchProps = ['name', 'role', 'age', 'address']
-    const rest = tableData.value.filter(item => searchProps.some(key => String(item[key]).toLowerCase().indexOf(filterVal) > -1))
+    const searchProps = ['id', 'name', 'users', 'group_leader', 'depart_leader']
+    const rest = groupTableDataRef.value.filter(item => searchProps.some(key => String(item[key]).toLowerCase().indexOf(filterVal) > -1))
     list.value = rest.map(row => {
       // 搜索为克隆数据，不会污染源数据
-      const item = {...row}
+      const item = { ...row }
       searchProps.forEach(key => {
-        item[key] = String(item[key]).replace(filterRE, match => `<span class="keyword-highlight">${match}</span>`)
+        item[key] = String(item[key]).replace(filterRE, match => match)
       })
       return item
     })
   } else {
-    list.value = tableData.value
+    list.value = groupTableDataRef.value
   }
 }
 // 节流函数,间隔500毫秒触发搜索
 const searchEvent = function () {
   handleSearch()
 }
-handleSearch()
+
+const userEditRender = reactive({
+  name: 'VxeSelect',
+  props: {
+    filterable: true,
+    multiple: true
+  },
+  optionProps: {
+    label: 'username',
+    value: 'username'
+  },
+  options: []
+})
+
+const groupLeaderEditRender = reactive({
+  name: 'VxeSelect',
+  props: {
+    filterable: true,
+  },
+  optionProps: {
+    label: 'username',
+    value: 'username'
+  },
+  options: []
+})
+
+const departLeaderRender = reactive({
+  name: 'VxeSelect',
+  props: {
+    filterable: true,
+  },
+  optionProps: {
+    label: 'username',
+    value: 'username'
+  },
+  options: []
+})
+
+const editClosedEvent = ({ row, column }) => {
+  console.log(row, column)
+  const $table = tableRef.value
+  if ($table) {
+    const field = column.field
+    const cellValue = row[field]
+    // 判断单元格值是否被修改
+    if ($table.isUpdateByRow(row, field)) {
+      systemStore.modifyGroup(row.id, { [field]: cellValue }).then(() => {
+        VxeUI.modal.message({
+          content: `局部保存成功！ ${column.title} ==> ${cellValue}`,
+          status: 'success'
+        }).then(() => {
+          // 局部更新单元格为已保存状态
+          $table.reloadRow(row, null, field)
+        })
+      })
+    }
+  }
+}
+
+const btnGroupCellRender = reactive({
+  name: 'VxeButtonGroup',
+  props: {
+    mode: 'text'
+  },
+  options: [
+    { content: '复制', status: 'warning', name: 'copy' },
+    { content: '删除', status: 'error', name: 'del' }
+  ],
+  events: {
+    click(cellParams, params) {
+      console.log('cellParams', cellParams)
+      const { id, ...postData } = cellParams.row; // 提取 id 并保留其他属性
+      if (params.name === 'copy') {
+        systemStore.addGroup({
+          ...postData,
+          name: `复制组-${postData.name}`,
+          user_list: postData.users.reduce((acc, name) => {
+            const user = userListData.value.find(u => u.username === name);
+            if (user) acc.push(user.id);
+            return acc;
+          }, [])
+
+        }).then(() => {
+          VxeUI.modal.message({
+            content: `复制组:${postData.name}成功,请直接编辑新增的组！`,
+            status: 'success'
+          })
+        })
+      } else if (params.name === 'del') {
+        systemStore.deleteGroup(id).then(() => {
+          VxeUI.modal.message({
+            content: `删除组:${postData.name}成功！`,
+            status: 'success'
+          })
+        })
+      } else {
+        console.log('not support operator！')
+      }
+
+    }
+  }
+})
+
+
+
+onMounted(async () => {
+  await systemStore.updateGroupTableData({})
+  await systemStore.updateUserData()
+  list.value = groupTableDataRef.value
+  groupLeaderEditRender.options = userListData
+  userEditRender.options = userListData
+  departLeaderRender.options = userListData
+})
 
 </script>
 
 <style  scoped>
 .mylist-table {
-  ::v-deep(.keyword-highlight)  {
+  ::v-deep(.keyword-highlight) {
     background-color: #FFFF00;
   }
 }

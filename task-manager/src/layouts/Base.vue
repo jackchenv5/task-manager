@@ -1,43 +1,51 @@
 <template>
   <div class="main-layout">
     <!-- 固定头部 -->
-    <el-row>
-      <el-col :span="20">
-        <el-header class="head">
-          <router-link v-for="item in navStore.navItems" :key="item.path" :to="item.path" 
-            class="router-link"
-            :class="{ active: $route.path.startsWith(item.path)}">
-            {{ item.title }}
-          </router-link>
-        </el-header>
-      </el-col>
-      <el-col :span="4">
-        <div class="user-info-container">
-          <el-dropdown trigger="click" placement="bottom-end">
-            <div class="user-info">
-              <el-avatar :size="36" :src="user.avatar" />
-              <div class="user-details">
-                <span class="username">{{ loginUser.username }}</span>
-                <span class="role">{{ loginUser.role_name }} | {{ loginUser.group_name }}</span>
+    <div class="head">
+      <el-row>
+        <el-col :span="20">
+          <el-header class="nav-container">
+            <router-link v-for="item in navStore.navItems" :key="item.path" :to="item.path" class="router-link"
+              :class="{ active: $route.path.startsWith(item.path) }">
+              {{ item.title }}
+            </router-link>
+          </el-header>
+        </el-col>
+        <el-col :span="4">
+          <div class="user-info-container">
+            <el-dropdown trigger="click" placement="bottom-end">
+              <div class="user-info">
+                <el-avatar :size="36" :src="user.avatar" />
+                <div class="user-details">
+                  <span class="username">{{ loginUser.username }}</span>
+                  <span class="role">{{ loginUser.role_name }} | {{ loginUser.group_name }}</span>
+                </div>
               </div>
-            </div>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item @click="handleProfile">
-                  <el-icon><User /></el-icon> 个人中心
-                </el-dropdown-item>
-                <el-dropdown-item @click="handleSettings">
-                  <el-icon><Setting /></el-icon> 设置
-                </el-dropdown-item>
-                <el-dropdown-item divided @click="handleLogout">
-                  <el-icon><SwitchButton /></el-icon> 退出登录
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </div>
-      </el-col>
-    </el-row>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="handleProfile">
+                    <el-icon>
+                      <User />
+                    </el-icon> 个人中心
+                  </el-dropdown-item>
+                  <el-dropdown-item @click="handleSettings">
+                    <el-icon>
+                      <Setting />
+                    </el-icon> 设置
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click="handleLogout">
+                    <el-icon>
+                      <SwitchButton />
+                    </el-icon> 退出登录
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
+
 
 
     <!-- 动态内容区域 -->
@@ -49,11 +57,11 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import { ref } from 'vue'
 import { useNavStore } from '@/stores/nav'
 const navStore = useNavStore()
 import { useUserStore } from '@/stores/user'
-import {storeToRefs} from 'pinia'
+import { storeToRefs } from 'pinia'
 const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 // 登陆信息
@@ -90,32 +98,40 @@ const handleLogout = () => {
 </script>
 <style>
 .head {
-  display: flex;
-  justify-content: start;
+  /* display: flex;
+  justify-content: start; */
   border-bottom: 2px solid #d6dfdf;
   border-top: 1px solid #f5f9f9;
   background: #ffffff;
+  width: 100vw;
+  height: 6vh;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: start;
+  width: 100vw;
   height: 6vh;
 }
 
 /* router link 相关 */
-.router-link{
+.router-link {
   font-size: 18px;
   margin-right: 20px;
   font-weight: bold;
   color: black;
   padding: 10px;
-  text-decoration:none;
+  text-decoration: none;
 }
 
-.router-link:hover{
+.router-link:hover {
   border-bottom: 2px solid #162c5e;
-  color: rgb(124, 177, 238);   
+  color: rgb(124, 177, 238);
 }
 
 .active {
   color: white;
-  background: black!important;
+  background: black !important;
   border-bottom: 2px solid aliceblue;
 }
 
@@ -173,5 +189,4 @@ const handleLogout = () => {
 .el-icon {
   margin-right: 8px;
 }
-
 </style>

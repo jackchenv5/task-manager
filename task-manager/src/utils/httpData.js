@@ -24,7 +24,7 @@ service.interceptors.response.use(
       403: '没有权限',
       500: '服务器错误'
     }
-    ElMessage.error(statusMessages[error.response?.status] || '网络异常')
+    ElMessage.error(Object.keys(error.response.data).map(key => key + ":" + error.response.data[key]).join(",") || '网络异常')
     return Promise.reject(error)
   }
 )

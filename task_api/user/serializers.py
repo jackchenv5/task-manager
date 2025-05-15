@@ -90,3 +90,16 @@ class GroupSerializer(serializers.ModelSerializer):
   
         # 调用父类的update方法来更新Group的其他字段（如果有的话）  
         return super().update(instance, validated_data)
+    
+    def create(self, validated_data):
+        # 1. 提取 user_list 数据
+        user_list = validated_data.pop('user_list', [])
+        
+        # 2. 创建 Group 实例（不包含 user_list）
+        group = Group.objects.create(**validated_data)
+        
+        # 3. 处理多对多关系
+        if user_list:
+            group.users.set(user_list)  # 使用 set() 批量添加用户
+        
+        return group
