@@ -62,6 +62,9 @@ export const userDeleteApi =  (pk) =>del(`/users/${pk}`);
 
 export const userModifyApi =  (pk,data) =>patch(`/users/${pk}/`,data);
 
+export const roleListApi = (params) =>get('/roles/',params);
+
+
 // 获取项目信息
 // export const getProjectApi = (params) => get('/projects', params)
 export const getProjectApi = (params) => {

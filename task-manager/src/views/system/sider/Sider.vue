@@ -17,12 +17,6 @@
             <el-icon><User /></el-icon>
             <span>用户权限</span>
         </el-menu-item>
-        <el-menu-item index="3">
-            <el-icon>
-                <setting />
-            </el-icon>
-            <span>角色</span>
-        </el-menu-item>
     </el-menu>
 
 </template>

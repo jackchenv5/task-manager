@@ -1,113 +1,115 @@
-
 <template>
-    <div>
-      <vxe-table
-        border
-        :edit-config="{mode: 'row', trigger: 'click'}"
-        :data="tableData">
-        <vxe-column type="seq" width="60"></vxe-column>
-        <vxe-column field="name" title="用户" min-width="200" :edit-render="{ name: 'VxeInput' }"></vxe-column>
-        <vxe-column field="sex" title="下拉框单选" width="200" :edit-render="sexEditRender"></vxe-column>
-        <vxe-column field="sexList" title="下拉多选" width="200" :edit-render="sexListEditRender"></vxe-column>
-        <vxe-column field="type" title="下拉分组单选" width="200" :edit-render="typeEditRender"> </vxe-column>
-        <vxe-column field="typeList" title="下拉分组多选" width="200" :edit-render="typeListEditRender"></vxe-column>
-        <vxe-column field="role" title="大数据量选项" min-width="200" :edit-render="roleEditRender"></vxe-column>
-      </vxe-table>
+  <div>
+    <div style="display: flex;justify-content: space-between;">
+      <p>
+      <vxe-input v-model="filterName" type="search" placeholder="试试全表搜索" clearable @change="searchEvent" style="width: 500px;margin-left:10px"></vxe-input>
+    </p>
     </div>
-  </template>
-  
-  <script setup>
-  import { ref, reactive } from 'vue'
-  const sexEditRender = reactive({
-    name: 'VxeSelect',
-    options: [
-      { label: '女', value: 'Women' },
-      { label: '男', value: 'Man' }
-    ]
-  })
-  const sexListEditRender = reactive({
-    name: 'VxeSelect',
-    props: {
-      multiple: true
-    },
-    options: [],
-    optionProps: {
-      label: 'name',
-      value: 'code'
-    }
-  })
-  const typeEditRender = reactive({
-    name: 'VxeSelect',
-    optionGroups: [
-      {
-        label: '分类1',
-        options: [
-          { label: '苹果', value: '1-1' },
-          { label: '雪梨', value: '1-2' }
-        ]
-      },
-      {
-        label: '分类2',
-        options: [
-          { label: '草莓', value: '2-1' },
-          { label: '猕猴桃', value: '2-2' }
-        ]
-      }
-    ]
-  })
-  const typeListEditRender = reactive({
-    name: 'VxeSelect',
-    props: {
-      multiple: true
-    },
-    optionGroups: [
-      {
-        label: '分类1',
-        options: [
-          { label: '苹果', value: '1-1' },
-          { label: '雪梨', value: '1-2' }
-        ]
-      },
-      {
-        label: '分类2',
-        options: [
-          { label: '草莓', value: '2-1' },
-          { label: '猕猴桃', value: '2-2' }
-        ]
-      }
-    ]
-  })
-  const roleEditRender = reactive({
-    name: 'VxeSelect',
-    props: {
-      filterable: true,
-      multiple: true
-    },
-    options: []
-  })
-  const tableData = ref([
-    { id: 10001, name: 'Test1', role: 'role2', sex: '', sexList: [], type: '', typeList: [] },
-    { id: 10002, name: 'Test2', role: 'role10', sex: 'Women', sexList: ['Man', 'Women'], type: '2-1', typeList: ['1-2', '2-1'] },
-    { id: 10003, name: 'Test3', role: 'role200', sex: 'Man', sexList: [], type: '', typeList: [] }
-  ])
-  // 模拟后端接口
-  setTimeout(() => {
-    sexListEditRender.options = [
-      { name: '女', code: 'Women' },
-      { name: '男', code: 'Man' }
-    ]
-  }, 300)
-  // 模拟后端接口
-  setTimeout(() => {
-    const list = []
-    for (let i = 0; i < 10000; i++) {
-      list.push({
-        value: `role${i}`,
-        label: `角色${i}`
+
+    <vxe-table ref=tableRef class="mylist-table" border max-height="100%" height="500"
+      :edit-config="{ mode: 'cell', trigger: 'dblclick', showStatus: true }" keep-source :data="list"
+      @edit-closed="editClosedEvent">
+      <vxe-column field="id" title="ID" min-width="60"></vxe-column>
+      <vxe-column field="username" title="用户名" width="300" ></vxe-column>
+      <vxe-column field="emp_num" title="工号" min-width="300"></vxe-column>
+      <vxe-column field="role" title="角色" min-width="400" :edit-render="roleEditRender" :formatter="formatterRole"></vxe-column>
+    </vxe-table>
+  </div>
+</template>
+<script setup>
+import { onMounted, ref, reactive,watch } from 'vue'
+import { useSystemStore } from '@/stores/system'
+
+import { VxeUI } from 'vxe-table'
+
+const systemStore = useSystemStore()
+
+import { storeToRefs } from 'pinia'
+
+const { userListData,roleListRef } = storeToRefs(systemStore)
+
+const tableRef = ref(null)
+const filterName = ref('')
+const list = ref([])
+
+watch(userListData,(newVal)=>{
+  filterName.value = ''
+  list.value = newVal
+})
+
+
+const formatterRole = ({ cellValue }) => {
+  const item = roleListRef.value.find(item => item.id === cellValue)
+  return item ? item.name : cellValue
+}
+
+
+const handleSearch = () => {
+  const filterVal = String(filterName.value).trim().toLowerCase()
+  if (filterVal) {
+    const filterRE = new RegExp(filterVal, 'gi')
+    const searchProps = ['id', 'username', 'emp_num']
+    const rest = userListData.value.filter(item => searchProps.some(key => String(item[key]).toLowerCase().indexOf(filterVal) > -1))
+    list.value = rest.map(row => {
+      // 搜索为克隆数据，不会污染源数据
+      const item = { ...row }
+      searchProps.forEach(key => {
+        item[key] = String(item[key]).replace(filterRE, match => match)
+      })
+      return item
+    })
+  } else {
+    list.value = userListData.value
+  }
+}
+// 节流函数,间隔500毫秒触发搜索
+const searchEvent = function () {
+  handleSearch()
+}
+
+const roleEditRender = reactive({
+  name: 'VxeSelect',
+  props: {
+    filterable: true,
+  },
+  optionProps: {
+    label: 'name',
+    value: 'id'
+  },
+  options: roleListRef.value
+})
+
+const editClosedEvent = ({ row, column }) => {
+  console.log(row, column)
+  const $table = tableRef.value
+  if ($table) {
+    const field = column.field
+    const cellValue = row[field]
+    // 判断单元格值是否被修改
+    if ($table.isUpdateByRow(row, field)) {
+      systemStore.modifyUser(row.id, { [field]: cellValue }).then(() => {
+        VxeUI.modal.message({
+          content: `局部保存成功！ ${column.title} ==> ${cellValue}`,
+          status: 'success'
+        }).then(() => {
+          // 局部更新单元格为已保存状态
+          $table.reloadRow(row, null, field)
+        })
       })
     }
-    roleEditRender.options = list
-  }, 100)
-  
-  </script>
-  
+  }
+}
+
+onMounted(async () => {
+  list.value = userListData.value
+})
+
+</script>
+
+<style  scoped>
+.mylist-table {
+  ::v-deep(.keyword-highlight) {
+    background-color: #FFFF00;
+  }
+}
+</style>

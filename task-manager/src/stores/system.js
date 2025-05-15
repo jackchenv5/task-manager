@@ -4,7 +4,8 @@ import { ref } from 'vue'
 
 import {
     groupListApi, groupModifyApi, groupAddApi, groupDeleteApi,
-    getUserApi
+    getUserApi,userModifyApi,
+    roleListApi
 } from '@/api/data/data'
 
 
@@ -55,13 +56,28 @@ export const useSystemStore = defineStore('system', () => {
     // 用户数据 END
 
     // 角色数据
+
+    const roleListRef = ref([])
+    const updateRoleList = async () => {
+        const tmpData = await roleListApi()
+        roleListRef.value = tmpData.result?.items.length > 0 ? tmpData.result.items : []
+    }
+
+    const modifyUser = async (id, data) => {
+        const ret = await userModifyApi(id, data)
+        console.log('返回组修改结果：', id, ret)
+        updateUserData()
+    }
+
     // 角色数据 END
 
     //group数据
     return {
         groupTableDataRef, groupSearchTextRef, updateSearchText, updateGroupTableData, modifyGroup, addGroup, deleteGroup,
         // 用户数据
-        userListData, updateUserData
+        userListData, updateUserData,modifyUser,
+        //角色数据
+        roleListRef,updateRoleList
     }
 
 })
