@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',  # 注册app corsheaders'
     'user',
     'task',
+    'project'
 ]
 
 MIDDLEWARE = [
