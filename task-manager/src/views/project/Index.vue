@@ -7,13 +7,12 @@
       </div>
 
       <div
-        style="height:18vh;width: 23%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
-        <UserPoolCard></UserPoolCard>
-      </div>
-
-      <div
         style="height:18vh;width: 49%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
         <StaticsCard></StaticsCard>
+      </div>
+      <div
+        style="height:18vh;width: 23%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        <UserPoolCard></UserPoolCard>
       </div>
       
     </div>

@@ -3,61 +3,77 @@
     <!-- 项目进度卡片 -->
     <div class="metric-card progress-card">
       <div class="card-title">
-        <h3  class="card-name">项目进度</h3>
+        <h3 class="card-name">项目进度</h3>
       </div>
       <div class="card-content">
-        <div class="ratio-label">{{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天</div>
-        <el-progress 
-          type="dashboard" 
-          :percentage="workLoadSta.progress.toFixed(0)" 
-          :stroke-width="12" 
-          :width="70"
-          class="clean-progress"
-        />
+        <div class="ratio-label">
+          {{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天
+        </div>
+        <el-progress type="dashboard" :percentage="workLoadSta.progress.toFixed(0)" :stroke-width="12" :width="70"
+          class="clean-progress" />
       </div>
     </div>
 
     <!-- 工作强度卡片 -->
     <div class="metric-card intensity-card">
       <div class="card-title">
-        <h3  class="card-name">项目调度</h3>
+        <h3 class="card-name">项目调度</h3>
         <el-button size="small">提醒</el-button>
       </div>
-      
+
       <div class="card-content">
-        <div class="card-item" >
-          <div style="color: #ca1a1a;  font-size: 16px;">{{ pendTasks }}个</div>
-          <div style="font-size: 12px;">待下发</div>
+        <div class="card-item">
+          <div style="color: #ca1a1a; font-size: 16px">{{ pendTasks }}个</div>
+          <div style="font-size: 12px">待下发</div>
         </div>
         <div class="card-item">
-          <div style="color: #160ac0;  font-size: 16px;">{{ runTasks }}个</div>
-          <div style="font-size: 12px;">进行中</div>
-          </div>
+          <div style="color: #160ac0; font-size: 16px">{{ runTasks }}个</div>
+          <div style="font-size: 12px">进行中</div>
+        </div>
       </div>
     </div>
 
     <!-- 统计数据卡片 -->
     <div class="stats-card">
       <div class="card-title">
-        <h3  class="card-name">项目级统计数据</h3>
+        <h3 class="card-name">项目级统计数据</h3>
       </div>
       <div class="stats-list">
-        <div class="stat-item">项目周期：{{ dateRange.start_date }}~{{ dateRange.end_date }}</div>
+        <div class="stat-item">
+          项目周期：{{ dateRange.start_date }}~{{ dateRange.end_date }}
+        </div>
         <div class="stat-item">参与人数：{{ joinUsers.length }}人</div>
-        <div class="stat-item">任务数(草稿|进行中|待下发|已完成|所有任务)：{{draftTasks}}|{{ runTasks }} | {{ pendTasks }} | {{completedTasks}} | {{ totalTasks }}</div>
-        <div class="stat-item">总工时：{{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天({{ workLoadSta.progress.toFixed(0) }}%)</div>
+        <div class="stat-item">
+          <el-tooltip :content="`进行中:${runTasks} 待下发${pendTasks} 已完成:${completedTasks}`" placement="right"
+            effect="light">
+            <span> 任务数：{{ totalTasks }}</span>
+          </el-tooltip>
+        </div>
+        <div class="stat-item">
+          总工时：{{ workLoadSta.completed.toFixed(0) }}天/{{
+            workLoadSta.total.toFixed(0)
+          }}天({{ workLoadSta.progress.toFixed(0) }}%)
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script setup>
+import { useProjectStore } from "@/stores/project";
+import { storeToRefs } from "pinia";
 
-import { useProjectStore } from '@/stores/project'
-import { storeToRefs } from 'pinia'
-
-const projectStore = useProjectStore()
-const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,runTasks,draftTasks, workloadIntensity } = storeToRefs(projectStore)
-
+const projectStore = useProjectStore();
+const {
+  joinUsers,
+  dateRange,
+  workLoadSta,
+  totalTasks,
+  completedTasks,
+  pendTasks,
+  runTasks,
+  draftTasks,
+  workloadIntensity,
+} = storeToRefs(projectStore);
 </script>
 
 <style scoped>
@@ -77,12 +93,12 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   border: 1px solid #e4e7ed;
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s ease;
 }
 
 .metric-card:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* 标题样式优化 [6](@ref) */
@@ -91,7 +107,8 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   display: flex;
   justify-content: space-between;
 }
-.card-name{
+
+.card-name {
   font-size: 16px;
   color: #303133;
   margin: 0 0 8px 8px;
@@ -99,6 +116,7 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   border-left: 3px solid #409eff;
   padding-left: 8px;
 }
+
 /* 内容区域布局 */
 .card-content {
   display: flex;
@@ -129,7 +147,7 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
 
 /* 统计数据卡片 [7](@ref) */
 .stats-card {
-  flex: 0 0 45%;
+  /* flex: 0 0 45%; */
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
@@ -160,7 +178,6 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   background-color: rgba(144, 147, 153, 0.5);
 }
 
-
 .stat-item {
   /* 基础样式 */
   font-size: 12px;
@@ -172,16 +189,16 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  
+
   /* 焦点边框效果 */
   border: 1px solid transparent;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 /* 悬停效果 */
 .stat-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
   background: #f1f3f5;
 }
 
@@ -189,7 +206,7 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
 .stat-item:focus {
   outline: none;
   border-color: #409eff;
-  box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
 }
 
 /* 激活状态微动效 */
@@ -203,6 +220,7 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
     opacity: 0;
     transform: translateY(10px);
   }
+
   100% {
     opacity: 1;
     transform: translateY(0);
@@ -215,7 +233,7 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
 
 /* 添加右侧状态指示条 */
 .stat-item::after {
-  content: '';
+  content: "";
   position: absolute;
   right: 0;
   top: 0;

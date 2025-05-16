@@ -3,12 +3,12 @@
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
         <div
-          style="height:18vh;width: 45%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
-          <UserPoolCard></UserPoolCard>
-        </div>
-        <div
           style="height:18vh;width: 50%;background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
           <ProjectPoolCard></ProjectPoolCard>
+        </div>
+        <div
+          style="height:18vh;width: 45%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
+          <UserPoolCard></UserPoolCard>
         </div>
       </div>
       <ReceiverCard></ReceiverCard>
