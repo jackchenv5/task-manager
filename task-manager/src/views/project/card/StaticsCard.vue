@@ -2,7 +2,9 @@
   <div class="dashboard-container">
     <!-- 项目进度卡片 -->
     <div class="metric-card progress-card">
-      <h3 class="card-title">项目进度</h3>
+      <div class="card-title">
+        <h3  class="card-name">项目进度</h3>
+      </div>
       <div class="card-content">
         <div class="ratio-label">{{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天</div>
         <el-progress 
@@ -17,7 +19,11 @@
 
     <!-- 工作强度卡片 -->
     <div class="metric-card intensity-card">
-      <h3 class="card-title">项目调度</h3>
+      <div class="card-title">
+        <h3  class="card-name">项目调度</h3>
+        <el-button size="small">提醒</el-button>
+      </div>
+      
       <div class="card-content">
         <div class="card-item" >
           <div style="color: #ca1a1a;  font-size: 16px;">{{ pendTasks }}个</div>
@@ -32,9 +38,11 @@
 
     <!-- 统计数据卡片 -->
     <div class="stats-card">
-      <h3 class="card-title">项目级统计数据</h3>
+      <div class="card-title">
+        <h3  class="card-name">项目级统计数据</h3>
+      </div>
       <div class="stats-list">
-        <div class="stat-item">项目时间：{{ dateRange.start_date }}~{{ dateRange.end_date }}</div>
+        <div class="stat-item">项目周期：{{ dateRange.start_date }}~{{ dateRange.end_date }}</div>
         <div class="stat-item">参与人数：{{ joinUsers.length }}人</div>
         <div class="stat-item">任务数(草稿|进行中|待下发|已完成|所有任务)：{{draftTasks}}|{{ runTasks }} | {{ pendTasks }} | {{completedTasks}} | {{ totalTasks }}</div>
         <div class="stat-item">总工时：{{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天({{ workLoadSta.progress.toFixed(0) }}%)</div>
@@ -79,6 +87,11 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
 
 /* 标题样式优化 [6](@ref) */
 .card-title {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+.card-name{
   font-size: 16px;
   color: #303133;
   margin: 0 0 8px 8px;
@@ -86,7 +99,6 @@ const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,ru
   border-left: 3px solid #409eff;
   padding-left: 8px;
 }
-
 /* 内容区域布局 */
 .card-content {
   display: flex;
