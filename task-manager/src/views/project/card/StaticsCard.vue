@@ -17,26 +17,26 @@
 
     <!-- 工作强度卡片 -->
     <div class="metric-card intensity-card">
-      <h3 class="card-title">工作强度</h3>
+      <h3 class="card-title">项目调度</h3>
       <div class="card-content">
-        <div class="ratio-label">实际/计划</div>
-        <el-progress 
-          type="dashboard" 
-          :percentage="workloadIntensity" 
-          :stroke-width="12" 
-          :width="70"
-          class="clean-progress"
-        />
+        <div class="card-item" >
+          <div style="color: #ca1a1a;  font-size: 16px;">{{ pendTasks }}个</div>
+          <div style="font-size: 12px;">待下发</div>
+        </div>
+        <div class="card-item">
+          <div style="color: #160ac0;  font-size: 16px;">{{ runTasks }}个</div>
+          <div style="font-size: 12px;">进行中</div>
+          </div>
       </div>
     </div>
 
     <!-- 统计数据卡片 -->
     <div class="stats-card">
-      <h3 class="card-title">统计数据</h3>
+      <h3 class="card-title">项目级统计数据</h3>
       <div class="stats-list">
         <div class="stat-item">项目时间：{{ dateRange.start_date }}~{{ dateRange.end_date }}</div>
         <div class="stat-item">参与人数：{{ joinUsers.length }}人</div>
-        <div class="stat-item">任务数：{{ completedTasks }}/{{ totalTasks }}</div>
+        <div class="stat-item">任务数(草稿|进行中|待下发|已完成|所有任务)：{{draftTasks}}|{{ runTasks }} | {{ pendTasks }} | {{completedTasks}} | {{ totalTasks }}</div>
         <div class="stat-item">总工时：{{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天({{ workLoadSta.progress.toFixed(0) }}%)</div>
       </div>
     </div>
@@ -46,10 +46,9 @@
 
 import { useProjectStore } from '@/stores/project'
 import { storeToRefs } from 'pinia'
-import project from '@/router/modules/project';
 
 const projectStore = useProjectStore()
-const { projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers, dateRange, workLoadSta, totalTasks, completedTasks, workloadIntensity } = storeToRefs(projectStore)
+const {joinUsers, dateRange, workLoadSta, totalTasks,completedTasks,pendTasks,runTasks,draftTasks, workloadIntensity } = storeToRefs(projectStore)
 
 </script>
 
@@ -110,6 +109,12 @@ const { projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMa
   color: #909399;
 }
 
+.card-item {
+  display: flex;
+  flex-direction: column;
+  color: #909399;
+}
+
 /* 统计数据卡片 [7](@ref) */
 .stats-card {
   flex: 0 0 45%;
@@ -146,7 +151,7 @@ const { projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMa
 
 .stat-item {
   /* 基础样式 */
-  font-size: 15px;
+  font-size: 12px;
   color: #2c3e50;
   margin: 2px 0;
   background: white;

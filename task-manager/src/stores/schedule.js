@@ -1,4 +1,4 @@
-import { ref, computed,watch } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore,storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
@@ -23,18 +23,12 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 首次加载，同步loginUser配置
   // 一次加载所有关于schedule 的config
   const initScheduleConfig = () => {
-    console.log('load config',myUserStore.getUserConfig('schedule_user_pool',[]))
     userPool.value = myUserStore.getUserConfig('schedule_user_pool',[])
   }
 
-  // watch([userPool,curReceivers,curSelectUser,projectPool],()=>{
-  //   saveScheduleConfig()
-  // })
   const saveScheduleConfig = () => {
       console.log('save config')
       myUserStore.setUserConfig('schedule_user_pool',userPool.value)
-      // myUserStore.setUserConfig('schedule_receiver',curReceivers.value)
-      // myUserStore.setUserConfig('schedule_select_user',curSelectUser.value)
       myUserStore.setUserConfig('schedule_project_pool',projectPool.value)
 }
 

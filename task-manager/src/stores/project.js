@@ -121,6 +121,12 @@ export const useProjectStore = defineStore('project', () => {
 
   const completedTasks = computed(() => { return curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.FINISH).length || 0; });
 
+  const pendTasks = computed(() => { return curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.PEND).length || 0; });
+
+  const runTasks = computed(() => { return curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.PROGRESS).length || 0; });
+
+  const draftTasks = computed(() => { return curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.DRAFT).length || 0; });
+
   const workloadIntensity = computed(() => {
     // 获取已完成任务（假设status=5为已完成状态）
     const completedTasks = curSelectProjectTasksRef.value?.filter(task => task.status === TaskStatus.FINISH) || [];
@@ -139,7 +145,7 @@ export const useProjectStore = defineStore('project', () => {
   });
 
   return {
-    projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers, workLoadSta, totalTasks, completedTasks, workloadIntensity, dateRange,
+    projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers, workLoadSta, totalTasks, completedTasks,pendTasks,draftTasks,runTasks, workloadIntensity, dateRange,
     updateCurSelectProjectTasks
   }
 })

@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 94vh;width: 100%;overflow: hidden;background-color: #ddd;">
+  <div style="height: 92vh;width: 100%;overflow: hidden;background-color: #ddd;">
     <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
       <div
         style="height:18vh;width: 27%; background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;margin: 0px 5px; display: flex;flex-direction: column;">
@@ -12,12 +12,16 @@
       </div>
 
       <div
-        style="height:18vh;width: 50%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        style="height:18vh;width: 49%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
         <StaticsCard></StaticsCard>
       </div>
       
     </div>
-    <div style="height: 70vh;">
+    <div style="height: 6vh;display: flex;justify-content: space-around;">
+      <UserBar style="width: 49.5%;border-radius: 5px;"></UserBar>
+      <ToolBar style="width: 49%;border-radius: 5px;"></ToolBar>
+    </div>
+    <div style="height: 65vh;margin-top: 10px;">
       <TaskGantt></TaskGantt>
     </div>
   </div>
@@ -28,6 +32,8 @@ import UserPoolCard from './card/UserPoolCard.vue'
 import ProjectPoolCard from './card/ProjectPoolCard.vue'
 import StaticsCard from './card/StaticsCard.vue'
 import TaskGantt from './gantt/TaskGantt.vue'
+import UserBar from './userBar/UserBar.vue'
+import ToolBar from './toolBar/ToolBar.vue'
 
 import {onMounted } from 'vue';
 
