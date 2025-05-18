@@ -5,10 +5,34 @@ from .serializers import ProjectSerializer, ProjectEvaluationSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from django_filters import rest_framework as filters
+
+class ProjectFilter(filters.FilterSet):
+    name = filters.CharFilter(lookup_expr='icontains')  # 支持模糊查询
+    project_type = filters.CharFilter()  # 精确匹配
+    
+    class Meta:
+        model = Project
+        fields = ['name', 'project_type']
+
+
 class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
+    queryset = Project.objects.all().order_by('-create_time')
     serializer_class = ProjectSerializer
     lookup_field = 'name'  # 使用name作为主键查找字段
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = ProjectFilter  # 新增过滤器类
+
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, 
+            data=request.data, 
+            partial=True  # 关键参数，启用部分更新
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @action(detail=True, methods=['get'])
     def evaluations(self, request, name=None):

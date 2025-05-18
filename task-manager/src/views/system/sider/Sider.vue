@@ -17,6 +17,10 @@
             <el-icon><User /></el-icon>
             <span>用户权限</span>
         </el-menu-item>
+        <el-menu-item index="3">
+            <el-icon><User /></el-icon>
+            <span>项目</span>
+        </el-menu-item>
     </el-menu>
 
 </template>

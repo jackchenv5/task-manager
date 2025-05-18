@@ -92,3 +92,9 @@ export const getProjectApi = (params) => {
     }
 }
 
+// 真实project api
+
+export const getProjectList = (params) => get('/projects/',params)
+export const addProject = (params) => post('/projects/',params)
+export const modifyProject = (name,params) => patch(`/projects/${name}/`,params)
+export const deleteProject = (name) => del(`/projects/${name}`)

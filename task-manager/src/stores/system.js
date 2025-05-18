@@ -4,7 +4,7 @@ import { ref } from 'vue'
 
 import {
     groupListApi, groupModifyApi, groupAddApi, groupDeleteApi,
-    getUserApi,userModifyApi,
+    getUserApi,userModifyApi,getProjectList,modifyProject,deleteProject,addProject,
     roleListApi
 } from '@/api/data/data'
 
@@ -20,8 +20,8 @@ export const useSystemStore = defineStore('system', () => {
         groupSearchTextRef.value = searchText
     }
 
-    const addGroup = async (id, data) => {
-        const ret = await groupAddApi(id, data)
+    const addGroup = async (data) => {
+        const ret = await groupAddApi(data)
         console.log('返回组修改结果：', id, ret)
         updateGroupTableData()
     }
@@ -71,13 +71,36 @@ export const useSystemStore = defineStore('system', () => {
 
     // 角色数据 END
 
-    //group数据
+    // 项目数据
+    const projectListRef = ref()
+    const updateProjectList = async () => {
+        const tmpData = await getProjectList()
+        projectListRef.value = tmpData?.length > 0 ? tmpData : []
+        console.log(projectListRef.value)
+    }
+    const modifyP = async (name,data) => {
+        const ret = await modifyProject(name,data)
+        updateProjectList()
+    }
+
+    const delProject = async (name) => {
+        const ret = await deleteProject(name)
+        updateProjectList()
+    }
+
+    const addP = async (data) => {
+        const ret = await addProject(data)
+        updateProjectList()
+    }
+    // 项目数据 END
     return {
         groupTableDataRef, groupSearchTextRef, updateSearchText, updateGroupTableData, modifyGroup, addGroup, deleteGroup,
         // 用户数据
         userListData, updateUserData,modifyUser,
         //角色数据
-        roleListRef,updateRoleList
+        roleListRef,updateRoleList,
+        //项目数据
+        projectListRef,updateProjectList,modifyP,delProject,addP
     }
 
 })

@@ -7,7 +7,6 @@ User = get_user_model()
 
 
 class Project(models.Model):
-    PROJECT_TYPE_CHOICES = ((0, "项目"), (1, "非项目"))
     name = models.CharField(
         max_length=255, unique=True, primary_key=True, verbose_name="项目名"
     )
