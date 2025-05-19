@@ -2,7 +2,7 @@
   <el-form ref="formRef" :rules="formRules" style="padding: 10px;" label-position="top" :model="formData">
     <el-row>
       <el-col :span="12">
-        <el-form-item label="名称:" prop="name" required>
+        <el-form-item label="名称:" prop="name">
           <el-input v-model="formData.name"></el-input>
         </el-form-item>
       </el-col>
@@ -42,17 +42,17 @@
         </el-form-item>
       </el-col>
     </el-row>
-    <el-scrollbar style="height: 26vh;">
+    <el-scrollbar style="height: 45vh;">
 
       <el-row>
         <el-col :span="12">
           <el-form-item label="任务内容:" prop="content">
-            <el-input type="textarea" :rows="4" v-model="formData.content"></el-input>
+            <el-input type="textarea" :rows="6" v-model="formData.content"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="11">
           <el-form-item label="挑战目标:">
-            <el-input type="textarea" :rows="4" v-model="formData.challenge"></el-input>
+            <el-input type="textarea" :rows="6" v-model="formData.challenge"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, reactive, watch } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { storeToRefs } from 'pinia'
 import { getUserApi, taskAddApi } from '@/api/data/data'
 import { formatDate, TaskStatus } from '@/utils/public'
@@ -135,23 +135,11 @@ const formRules = reactive({
     {
       required: true,
       message: '请输入任务名',
-      // validator: (rule, value, callback) => {
-      //   console.log(rule)
-      //   console.log(value)
-      //   //TODO 实现真正的验证
-      //   callback()
-      // }
     }],
   receiver: [
     {
       required: true,
       message: '请输入执行者',
-      // validator: (rule, value, callback) => {
-      //   console.log(rule)
-      //   console.log(value)
-      //   //TODO 实现真正的验证
-      //   callback()
-      // }
     }],
   content: [
     {
@@ -194,7 +182,6 @@ const onSubmit = async (formRef) => {
       deadline_time: formData.deadline_time instanceof Date ? formatDate(formData.deadline_time) : formData.deadline_time,
       sender: formData.sender ? formData.sender.join(",") : ""
     };
-    console.log('tmpFormData=======================>', tmpFormData)
     return taskAddApi(tmpFormData); // 假设taskAddApi返回的是axios Promise
   });
   // 等待所有任务添加完成

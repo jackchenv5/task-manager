@@ -1,14 +1,15 @@
 <template>
-  <div style="display: flex;height: 94vh;width: 100%;overflow: hidden;">
+  <div style="display: flex;height: 92vh;width: 100%;overflow: hidden;">
     <div class="left">
       <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
         <div
-          style="height:18vh;width: 50%;background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
-          <ProjectPoolCard></ProjectPoolCard>
-        </div>
-        <div
           style="height:18vh;width: 45%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
           <UserPoolCard></UserPoolCard>
+        </div>
+
+        <div
+          style="height:18vh;width: 50%;background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;display: flex;flex-direction: column;">
+          <ProjectPoolCard></ProjectPoolCard>
         </div>
       </div>
       <ReceiverCard></ReceiverCard>
@@ -16,12 +17,15 @@
       <Calendar style="width: 100%;height:70vh;"></Calendar>
     </div>
     <div class="right">
-      <div style="width: 100%;height:64vh;background-color: white;border:1px solid #aaa;">
+      <div style="width: 100%;height:8vh;background-color: white;border: 1px solid black;display: flex;align-items: center;">
+        <ToolBar></ToolBar>
+      </div>
+      <div style="width: 100%;min-height:82vh;background-color: white;border:1px solid #aaa;flex-grow: 1;">
         <AddForm></AddForm>
       </div>
-      <div style="width: 49.8vw;height:30vh;border: 1px solid white;">
+      <!-- <div style="width: 49.8vw;height:30vh;border: 1px solid white;">
         <AddTable></AddTable>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -34,6 +38,7 @@ import UserPoolCard from './card/UserPoolCard.vue'
 import ProjectPoolCard from './card/ProjectPoolCard.vue'
 import ReceiverCard from './card/ReceiverCard.vue'
 import StaticsCard from './card/StaticsCard.vue'
+import ToolBar from './toolBar/ToolBar.vue'
 
 import { onUnmounted, onMounted } from 'vue';
 

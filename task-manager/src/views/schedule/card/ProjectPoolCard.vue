@@ -25,8 +25,12 @@
         </div>
       </el-col>
       <el-col :span="8" :offset="12">
-        <el-button @click="isShowSelectProjectDialog = true">添加</el-button>
-        <el-button>清空</el-button>
+        <el-button @click="isShowSelectProjectDialog = true"  size="small">添加</el-button>
+        <el-popconfirm title="确认清空项目池？" @confirm="scheduleStore.cleanProjectPool" placement="right">
+                    <template #reference>
+                        <el-button size="small">清空</el-button>
+                    </template>
+                </el-popconfirm>
       </el-col>
     </el-row>
     <el-scrollbar style="height: 14vh">
@@ -38,11 +42,12 @@
         class="my-tag"
         closable
         @click="handleProjectClick(item)"
+        @close="handleDeleteProject(item)"
       >
         <el-text
           truncated
           :style="{
-            width: '400px',
+            width: '22vw',
             color: curSelectProjectRef === item ? 'white' : 'black',
           }"
           >{{ item }}</el-text
@@ -65,6 +70,11 @@ const { projectPool, curSelectProjectRef } = storeToRefs(scheduleStore);
 const handleProjectClick = (project) => {
   curSelectProjectRef.value = project;
 };
+
+
+const handleDeleteProject = (proejct) =>{
+  scheduleStore.deleteProjectInPool(proejct)
+}
 
 const updateVisible = (newValue) => {
   isShowSelectProjectDialog.value = newValue

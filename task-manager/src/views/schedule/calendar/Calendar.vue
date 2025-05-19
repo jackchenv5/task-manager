@@ -242,10 +242,10 @@ onMounted(async () => {
 
 
   if (curUserScheduleTasksRef.value) {
+  try{
     initSchedulerConfig(scheduler);
     scheduler.parse(curUserScheduleTasksRef.value);
     scheduler.templates.month_day = getInitViewTemplate;
-  try{
     scheduler.updateView(); // 强制更新视图
   } catch(e){
     location.reload(); // ✨ 触发安全重载

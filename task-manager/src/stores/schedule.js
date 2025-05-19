@@ -2,7 +2,6 @@ import { ref, computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
-import Project from '@/views/system/table/Project.vue'
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
@@ -22,6 +21,19 @@ export const useScheduleStore = defineStore('schedule', () => {
     projectPool.value.push(project)
     saveScheduleConfig()
   }
+
+  
+  const deleteProjectInPool = (project) => {
+      const index = projectPool.value.indexOf(project);
+      projectPool.value.splice(index,1);
+      saveScheduleConfig()
+  }
+
+  const cleanProjectPool = () => {
+     projectPool.value = []
+     saveScheduleConfig()
+  }
+
   // 一次加载所有关于schedule 的config
   const initScheduleConfig = () => {
     userPool.value = myUserStore.getUserConfig('schedule_user_pool', [])
@@ -45,6 +57,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const deleteUserofPool = (id) => {
     const idIndex = userPoolIds.value.indexOf(id)
     userPool.value.splice(idIndex, 1)
+    saveScheduleConfig()
   }
 
   const clearUserPool = () => {
@@ -118,7 +131,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
 
-  // table 数据
+  // table 数据 ==> gantt 图数据
   const schduleTableData = ref([])
 
   // 获取schedule 表格数据
@@ -130,6 +143,10 @@ export const useScheduleStore = defineStore('schedule', () => {
     if (curSelectUser.value) getCurUserTasks(curSelectUser.value)
     schduleTableData.value = curCreatorTasks.result?.items
   }
+
+
+
+
 
   // table 数据END
 
@@ -155,7 +172,7 @@ export const useScheduleStore = defineStore('schedule', () => {
     curUserScheduleTasksRef, updateSelectDateStat,
     curSelectDateStat, schduleTableData, getTableData,
     //项目池
-    projectPool, curSelectProjectRef,addToProjectPool,
+    projectPool, curSelectProjectRef,addToProjectPool,deleteProjectInPool,cleanProjectPool,
     // 任务详情
     curTaskDetailRef, updateCurTaskDetail,
     //

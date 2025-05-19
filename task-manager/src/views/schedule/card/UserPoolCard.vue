@@ -11,10 +11,10 @@
                 <div style="margin-top:5px;color:white;background-color: black;border-radius: 5px;">人员池</div>
             </el-col>
             <el-col :span="8" :offset="12">
-                <el-button @click="addUserPool">添加</el-button>
+                <el-button @click="addUserPool"  size="small">添加</el-button>
                 <el-popconfirm title="确认清空用户池？" @confirm="scheduleStore.clearUserPool" placement="right">
                     <template #reference>
-                        <el-button>清空</el-button>
+                        <el-button  size="small">清空</el-button>
                     </template>
                 </el-popconfirm>
 

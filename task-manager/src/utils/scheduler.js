@@ -83,7 +83,7 @@ export const initSchedulerConfig = (scheduler) => {
     'today',
     'next',
   ];
-  scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
+  // scheduler.xy.scale_height = 10; //sets the height of the X-Axis  
   //
   // 日历单击事件处理
   //定制弹出框
