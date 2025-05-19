@@ -1,7 +1,8 @@
 import { ref, computed } from 'vue'
-import { defineStore,storeToRefs } from 'pinia'
+import { defineStore, storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
+import Project from '@/views/system/table/Project.vue'
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
@@ -9,30 +10,30 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 需要加载的配置
   const userPool = ref([])
   const curReceivers = ref([])
-  const curSelectUser =  ref()
-  const projectPool = ref([
-    'CP-V003R016C000_嵌入式软件平台智算网络快速收敛及设备健康度检查等关键技术研发',
-    'RT-TT-2024-004_2025年路由器滚动版本项目',
-    'SW-V010R002C002(PB069)_4U及1U高端数据中心交换机项目',
-    'SW-V010R001C238_2024数据中心专项-重大入围支撑项目',
-    'SW-V010R001C238_2024数据中心专项-重大入围支撑项目'
-  ])
+  const curSelectUser = ref()
+  const projectPool = ref([])
 
   const curSelectProjectRef = ref('')
 
   // 首次加载，同步loginUser配置
+  // project 更新
+  const addToProjectPool = (project) => {
+    if (projectPool.value.includes(project)) return
+    projectPool.value.push(project)
+    saveScheduleConfig()
+  }
   // 一次加载所有关于schedule 的config
   const initScheduleConfig = () => {
-    userPool.value = myUserStore.getUserConfig('schedule_user_pool',[])
+    userPool.value = myUserStore.getUserConfig('schedule_user_pool', [])
+    projectPool.value = myUserStore.getUserConfig('schedule_project_pool', [])
   }
 
   const saveScheduleConfig = () => {
-      console.log('save config')
-      myUserStore.setUserConfig('schedule_user_pool',userPool.value)
-      myUserStore.setUserConfig('schedule_project_pool',projectPool.value)
-}
+    myUserStore.setUserConfig('schedule_user_pool', userPool.value)
+    myUserStore.setUserConfig('schedule_project_pool', projectPool.value)
+  }
 
-// 人员池
+  // 人员池
   const userPoolIds = computed(() => userPool.value.length === 0 ? [] : userPool.value.map(x => x.id))
 
   const addToUserPool = (user) => {
@@ -74,9 +75,9 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 当前执行人员 END
 
   // 当前选择人员
- 
-  const curSelectUserInfo = computed( ()=>{
-     return curSelectUser.value ? curReceivers.value.filter(x=>x.id === curSelectUser.value)[0] : {}
+
+  const curSelectUserInfo = computed(() => {
+    return curSelectUser.value ? curReceivers.value.filter(x => x.id === curSelectUser.value)[0] : {}
   })
   const curUserTasksRef = ref([])
 
@@ -87,23 +88,23 @@ export const useScheduleStore = defineStore('schedule', () => {
   })
 
   //当前选中日期的统计数据
-const curSelectDateStat = ref({
-  startDate:'',
-  endDate:'',
-  workloads:0,
-  workNum:0,
-  per:0,
-})
-// 跟新选中日期的统计数据
-const updateSelectDateStat = (startDate,endDate,workloads,workNum,per) =>{
-  curSelectDateStat.value.startDate = startDate
-  curSelectDateStat.value.endDate = endDate
-  curSelectDateStat.value.workloads = workloads
-  curSelectDateStat.value.workNum = workNum
-  curSelectDateStat.value.per = per
+  const curSelectDateStat = ref({
+    startDate: '',
+    endDate: '',
+    workloads: 0,
+    workNum: 0,
+    per: 0,
+  })
+  // 跟新选中日期的统计数据
+  const updateSelectDateStat = (startDate, endDate, workloads, workNum, per) => {
+    curSelectDateStat.value.startDate = startDate
+    curSelectDateStat.value.endDate = endDate
+    curSelectDateStat.value.workloads = workloads
+    curSelectDateStat.value.workNum = workNum
+    curSelectDateStat.value.per = per
 
-}
- // 基于原始数据的任务渲染数据
+  }
+  // 基于原始数据的任务渲染数据
   const curUserScheduleTasksRef = computed(() => {
     return curUserTasksRef.value.map(x => {
       return { start_date: x.start_time, end_date: `${x.deadline_time} 23:59:59`, text: x.name, ...x }
@@ -117,20 +118,20 @@ const updateSelectDateStat = (startDate,endDate,workloads,workNum,per) =>{
   }
 
 
-// table 数据
-const schduleTableData = ref([])
+  // table 数据
+  const schduleTableData = ref([])
 
-// 获取schedule 表格数据
-// 过滤项，1.自己创建的
-// 2.最近100条数据
+  // 获取schedule 表格数据
+  // 过滤项，1.自己创建的
+  // 2.最近100条数据
 
-const getTableData = async () =>{
-    const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id})
-    if(curSelectUser.value) getCurUserTasks(curSelectUser.value)
+  const getTableData = async () => {
+    const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id })
+    if (curSelectUser.value) getCurUserTasks(curSelectUser.value)
     schduleTableData.value = curCreatorTasks.result?.items
-}
+  }
 
-// table 数据END
+  // table 数据END
 
   // 当前选中人员任务 END
 
@@ -140,24 +141,24 @@ const getTableData = async () =>{
   // 当前要展示的任务数据
 
   const curTaskDetailRef = ref({})
-  
-  const updateCurTaskDetail = (taskObj) =>{
+
+  const updateCurTaskDetail = (taskObj) => {
     curTaskDetailRef.value = taskObj
   }
-  
+
   // 当前要展示的任务数据END
 
   return {
-    curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser,curSelectUserInfo,
+    curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser, curSelectUserInfo,
     userPool, userPoolIds, addToUserPool, deleteUserofPool, clearUserPool, getCurUserTasks,
     curUserTasksRef, curUserTasksWorkloadsRef,
-    curUserScheduleTasksRef,updateSelectDateStat,
-    curSelectDateStat,schduleTableData,getTableData,
+    curUserScheduleTasksRef, updateSelectDateStat,
+    curSelectDateStat, schduleTableData, getTableData,
     //项目池
-    projectPool,curSelectProjectRef,
+    projectPool, curSelectProjectRef,addToProjectPool,
     // 任务详情
-    curTaskDetailRef,updateCurTaskDetail,
+    curTaskDetailRef, updateCurTaskDetail,
     //
-    initScheduleConfig,saveScheduleConfig,
+    initScheduleConfig, saveScheduleConfig,
   }
 })

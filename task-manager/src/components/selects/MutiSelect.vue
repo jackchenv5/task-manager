@@ -93,6 +93,12 @@ const loadOptions = async () => {
     try {
         const response = await props.api()
         // 处理API返回数据
+        if(Array.isArray(response)){
+        originData.value = response
+        orginOptions.value = response
+        options.value = orginOptions.value
+        return
+        }
         if (!response.hasOwnProperty(props.dataFiled)) {
             console.log(`response:${response} 不存在指定的data字段:${props.dataFiled}`)
             loading.value = false

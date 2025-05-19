@@ -2,14 +2,14 @@
     <el-dialog v-model="dialogFormVisible" title="项目选择器" width="60%">
         <el-form :model="form">
             <el-form-item label="项目选择：" :label-width="formLabelWidth">
-                <Select style="width: 95%;" v-model="selectedOption" :api="getUserApi" label-field="username"
-                    value-field="id" filterable multiple :filter-field="['username', 'emp_num', 'email']"></Select>
+                <Select style="width: 95%;" v-model="selectedOption" :api="getProjectList" label-field="name"
+                    value-field="name" filterable multiple :filter-field="['name']"></Select>
             </el-form-item>
         </el-form>
         <template #footer>
             <div class="dialog-footer">
-                <el-button @click="cancelAddUser">取消</el-button>
-                <el-button type="primary" @click="addUserOk">确认</el-button>
+                <el-button @click="cancelAddProject">取消</el-button>
+                <el-button type="primary" @click="addProjectOk">确认</el-button>
             </div>
         </template>
     </el-dialog>
@@ -29,17 +29,13 @@ const props = defineProps({
 })
 
 import Select from '@/components/selects/MutiSelect.vue'
-import { getUserApi } from '@/api/data/data'
+import { getProjectList } from '@/api/data/data'
 import { reactive, ref, watch } from 'vue'
 const emit = defineEmits(['update:modelValue', 'update:visible', 'change','comfirm'])
 const dialogFormVisible = ref(props.visible)
 const selectedOption = ref(props.modelValue)
 
 const isConfirm = ref(false)
-
-// const handleSelectChange = (value) => {
-//     console.log('Selected value:', value)
-// }
 
 //监听父组件visable的变化
 watch(() => props.visible, (newVal) => {
@@ -74,7 +70,7 @@ const formLabelWidth = '140px'
 // 1. 清空当前用户选择框
 // 2. 将confirm 设置为false
 // 3. 触发comfirm事件给父组件处理
-const cancelAddUser = () => {
+const cancelAddProject = () => {
     dialogFormVisible.value = false
     isConfirm.value = false
     selectedOption.value = []
@@ -85,7 +81,7 @@ const cancelAddUser = () => {
 // 1. 清空当前用户选择框
 // 2. 将confirm 设置为true
 // 3. 触发comfirm事件给父组件处理，并传递当前选择用户
-const addUserOk = () => {
+const addProjectOk = () => {
     dialogFormVisible.value = false
     isConfirm.value = true
     emit('comfirm',true,selectedOption.value)
