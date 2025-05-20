@@ -2,6 +2,9 @@ import { ref, computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
 import { getTaskDataApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
+
+import { reverseDateStr, percentToDecimal, TaskStatus } from '@/utils/public'
+
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 export const useScheduleStore = defineStore('schedule', () => {
@@ -11,9 +14,13 @@ export const useScheduleStore = defineStore('schedule', () => {
   const curReceivers = ref([])
   const curSelectUser = ref()
   const projectPool = ref([])
-
+  const lastAddTasksRef = ref([])
   const curSelectProjectRef = ref('')
 
+  const updateLastAddTaks = (tasks) =>{
+    lastAddTasksRef.value = tasks
+  }
+  //
   // 首次加载，同步loginUser配置
   // project 更新
   const addToProjectPool = (project) => {
@@ -141,12 +148,25 @@ export const useScheduleStore = defineStore('schedule', () => {
   const getTableData = async () => {
     const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id })
     if (curSelectUser.value) getCurUserTasks(curSelectUser.value)
-    schduleTableData.value = curCreatorTasks.result?.items
+    schduleTableData.value = curCreatorTasks.result?.items.sort((a, b) => {
+      return new Date(a.start_time) - new Date(b.start_time);
+    });
   }
 
 
+  // 当前执行中的任务
+  const curPendGanttData = computed(() => {
+    if (!schduleTableData.value?.length) return [];
 
-
+    return schduleTableData.value.filter(x=> x.status == TaskStatus.PEND).map(x => ({
+      ...x,
+      text: x.name,
+      start_date: reverseDateStr(x.start_time),
+      duration: x.diff_days,
+      progress: percentToDecimal(x.progress)
+    }));
+  });
+  
 
   // table 数据END
 
@@ -164,6 +184,9 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   // 当前要展示的任务数据END
+  const curPendTasksLength = computed(()=>curPendGanttData.value.length)
+  const lastPendTasksLength = computed(() => lastAddTasksRef.value.length);
+
 
   return {
     curReceivers, curReceiverIDs, addToReceivers, deleteReceiverUser, clearReceivers, curSelectUser, curSelectUserInfo,
@@ -177,5 +200,9 @@ export const useScheduleStore = defineStore('schedule', () => {
     curTaskDetailRef, updateCurTaskDetail,
     //
     initScheduleConfig, saveScheduleConfig,
+    // 甘特数据
+    curPendGanttData,curPendTasksLength,
+    // 最近添加的任务
+    updateLastAddTaks,lastAddTasksRef,lastPendTasksLength
   }
 })

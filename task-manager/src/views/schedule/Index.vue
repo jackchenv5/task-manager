@@ -33,7 +33,7 @@
 <script setup>
 import Calendar from './calendar/Calendar.vue'
 import AddForm from './form/AddForm.vue'
-import AddTable from './table/Table.vue'
+// import AddTable from './table/Table.vue'
 import UserPoolCard from './card/UserPoolCard.vue'
 import ProjectPoolCard from './card/ProjectPoolCard.vue'
 import ReceiverCard from './card/ReceiverCard.vue'
@@ -48,6 +48,7 @@ const scheduleStore = useScheduleStore()
 import { useUserStore } from '@/stores/user'
 const myUserStore = useUserStore()
 onMounted(() => {
+  scheduleStore.getTableData()
   myUserStore.initUser(608).then(()=>{
     scheduleStore.initScheduleConfig()
   })
@@ -55,6 +56,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   scheduleStore.saveScheduleConfig()
+  
 });
 
 // 处理页面关闭/刷新

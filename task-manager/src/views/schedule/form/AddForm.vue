@@ -185,7 +185,8 @@ const onSubmit = async (formRef) => {
     return taskAddApi(tmpFormData); // 假设taskAddApi返回的是axios Promise
   });
   // 等待所有任务添加完成
-  await Promise.all(addTaskPromises);
+  const data = await Promise.all(addTaskPromises);
+  scheduleStore.updateLastAddTaks(data)
   VxeUI.modal.message({
     content: `任务：${formData.name},执行者：${formData.receiver.map(x => x.username).join(',')} 已添加！`,
     status: 'success'

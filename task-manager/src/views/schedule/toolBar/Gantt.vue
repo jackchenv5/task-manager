@@ -1,23 +1,89 @@
 <template>
-    <div class="gantt-container" ref="ganttContainer" @click="handleClick" @dblclick.stop="handleDblclick"></div>
-    <el-dialog v-model="dialogFormVisible" title="修改" width="500"></el-dialog>
+    <div class="gantt-container" ref="ganttContainer" @click="handleClick"></div>
+    <el-dialog v-model="dialogFormVisible" title="任务修改" width="800">
+        <EditForm></EditForm>
+        <template #footer>
+            <div class="dialog-footer">
+                <el-button @click="dialogFormVisible = false">取消</el-button>
+                <el-button type="primary" @click="centerDialogVisible = false">
+                    确认
+                </el-button>
+            </div>
+        </template>
+    </el-dialog>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+
+import { ref, onMounted, watch } from 'vue'
 const dialogFormVisible = ref(false)
 
 //  gant
 import { gantt } from 'dhtmlx-gantt';
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
+
+
+import { useScheduleStore } from '@/stores/schedule'
+import { storeToRefs } from 'pinia'
+
+import EditForm from '../form/EditForm.vue'
+const scheduleStore = useScheduleStore()
+const { curPendGanttData, lastAddTasksRef } = storeToRefs(scheduleStore)
+
 const ganttContainer = ref(null);
+
+
+const props = defineProps({
+    modelValue: {
+        type: String
+    },
+    joinType: {
+        type: String
+    },
+})
+
+watch(
+    [() => props.modelValue, () => props.joinType],
+    ([newModelValue, newJoinType]) => {
+        initGanttRender();
+    }
+);
+
+
+
+const initGanttRender = () => {
+    let orginData = [];
+    
+    if (props.modelValue === 'cur') {
+        orginData = curPendGanttData.value
+
+    } else {
+        orginData = lastAddTasksRef.value
+    }
+    // 组织结构
+    console.log('orginData',orginData)
+    if (props.joinType === 'project'){
+        
+    }else if(props.joinType === 'recevier'){
+
+    }else{
+
+    }
+    
+    gantt.init(ganttContainer.value); // 重新绑定DOM容器
+    gantt.clearAll();
+    gantt.render(); // 强制重绘
+    gantt.parse({
+        tasks: orginData,
+    });
+}
 const initGantt = () => {
     // 基本配置
     gantt.i18n.setLocale("cn");
     gantt.config.date_format = "%Y-%m-%d";
-    gantt.showLightbox = function(){
-    // code of the custom form
-    return false
+    gantt.showLightbox = function () {
+        // code of the custom form
+        return false
     }
 
     gantt.config.scale_height = 60;
@@ -27,18 +93,18 @@ const initGantt = () => {
     ]
 
     gantt.attachEvent("onTaskDrag", function (id, mode, task, original, e) {
-        console.log('drag task...',id, mode, task, original)
+        console.log('drag task...', id, mode, task, original)
         console.log("只能调整时间...")
     })
 
     gantt.config.columns = [
         { name: "text", label: "任务名", width: 120, tree: true },
-        { name: "start_date", label: "开始时间", width: 100, align: "center" },
-        { name: "duration", label: "持续时间", width: 60, align: "center" },
-        { name: "workload", label: "工时(天)", width: 60, align: "center" },
+        { name: "start_date", label: "开始时间", width: 140, align: "center" },
+        { name: "duration", label: "持续/天", width: 50, align: "center" },
+        { name: "workload", label: "工时/天", width: 50, align: "center" },
         { name: "receiver_name", label: "执行者", width: 60, align: "center" },
         {
-            name: "btns", label: "操作", width: 200, align: "center",
+            name: "btns", label: "操作", width: 60, align: "center",
             template: function (task) {
                 return ` 
             <span> 
@@ -65,50 +131,28 @@ const handleClick = (event) => {
     if (target.matches('button.edit-task[data-id]')) {
         const taskId = target.dataset.id;
         console.log('动态编辑任务ID:', taskId);
-        dialogFormVisible.value = true
+
         // 执行删除逻辑
+        modifyTask(taskId)
     }
 }
 
-const handleDblclick = (event) => {
-    console.log('db click ...')
-    const target = event.target;
-    console.log(target)
-    const taskBar = target.closest('div.gantt_task_line[data-task-id]')
-    if (taskBar) {
-        const taskId = taskBar.dataset.taskId;
-        console.log('双击任务bar:', taskId);
-        dialogFormVisible.value = true
-        // 执行删除逻辑
-    }
+const modifyTask = async (id) => {
+    const taskObj = gantt.getTask(id);
+    await scheduleStore.updateCurTaskDetail({ ...taskObj, sender: taskObj.sender.split(",") })
+    dialogFormVisible.value = true
 }
-onMounted(() => {
+
+onMounted(async () => {
     if (!ganttContainer.value) return;
     if (!gantt) return
     gantt.init(ganttContainer.value);
     initGantt();
-
-    gantt.parse({
-        tasks: [
-            { id: 11, text: "Project #1", type: "project", progress: 0.6, open: true },
-
-            { id: 12, text: "Task #1", start_date: "03-04-2023", duration: 5, parent: 11, progress: 1, open: true },
-            { id: 13, text: "Task #2", start_date: "03-04-2023", type: "project", parent: 11, progress: 0.5, open: true },
-            { id: 14, text: "Task #3", start_date: "02-04-2023", duration: 6, parent: 11, progress: 0.8, open: true },
-            { id: 15, text: "Task #4", type: "project", parent: 11, progress: 0.2, open: true },
-            { id: 16, text: "Final milestone", start_date: "15-04-2023", type: "milestone", parent: 11, progress: 0, open: true },
-
-            { id: 17, text: "Task #2.1", start_date: "03-04-2023", duration: 2, parent: 13, progress: 1, open: true },
-            { id: 18, text: "Task #2.2", start_date: "06-04-2023", duration: 3, parent: 13, progress: 0.8, open: true },
-            { id: 19, text: "Task #2.3", start_date: "10-04-2023", duration: 4, parent: 13, progress: 0.2, open: true },
-            { id: 20, text: "Task #2.4", start_date: "10-04-2023", duration: 4, parent: 13, progress: 0, open: true },
-            { id: 21, text: "Task #4.1", start_date: "03-04-2023", duration: 4, parent: 15, progress: 0.5, open: true },
-            { id: 22, text: "Task #4.2", start_date: "03-04-2023", duration: 4, parent: 15, progress: 0.1, open: true },
-            { id: 23, text: "Mediate milestone", start_date: "14-04-2023", type: "milestone", parent: 15, progress: 0, open: true }
-        ],
-    });
+    initGanttRender();
 
 });
+
+
 </script>
 
 <style>
