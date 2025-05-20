@@ -3,7 +3,7 @@
     <div style="width: 50vw; overflow: auto; position: relative; border: 1px solid #ebeef5; border-radius: 4px; box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);">
       <vxe-table
         border
-        max-height="600"
+        :max-height="tableMaxHeight"
         :data="filteredTasks"
         :row-config="{ isHover: true }"
         :row-class-name="tableRowClassName"
@@ -17,8 +17,8 @@
         <vxe-column field="creator_name" title="创建人" width="110"></vxe-column>
         <vxe-column title="操作" width="130" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleFeedbackClick(row)">反馈</el-button>
-            <el-button type="primary" size="small" @click="handleCheckDetail(row)">详情</el-button>
+            <el-button class="feedback-el-button" type="primary" size="small" @click="handleFeedbackClick(row)">反馈</el-button>
+            <el-button class="check-el-button" type="primary" size="small" @click="handleCheckDetail(row)">详情</el-button>
           </template>
         </vxe-column>
       </vxe-table>
@@ -63,7 +63,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 
 const props = defineProps({
@@ -74,6 +74,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['row-click', 'row-dblclick', 'feedback-submit'])
+
+const tableMaxHeight = computed(() => window.innerHeight * 0.72)
 
 const isOpen = ref(false)
 const selectedRow = ref([])

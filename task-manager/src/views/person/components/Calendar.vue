@@ -196,12 +196,6 @@ scheduler.attachEvent('onViewChange', async (view, date) => {
       scheduler.updateView();
   })
 
-onUnmounted(() => {
-  if (scheduler) {
-    scheduler.destructor()
-  }
-})
-
 defineExpose({
   updateView: () => scheduler?.updateView(),
   parse: (data) => scheduler?.parse(data)
@@ -280,7 +274,7 @@ defineExpose({
   position: relative;
   background: #F8F9FA; /* iOS系统背景色 */
   border-radius: 10px; /* iOS圆角规范 */
-  /* transition: all 0.25s cubic-bezier(0.4,0,0.2,1); */
+  cursor: pointer;
 }
 
 /* 工时区间重构配色方案 */

@@ -45,7 +45,7 @@ const selectedValue = computed({
 })
 
 const handleRadioChange = (val) => {
-  props.personCfg['typeRadio'] = val;
-  myUserStore.setUserConfig("person", props.personCfg);
+  props.personCfg['typeRadio'] = val
+  myUserStore.setUserConfig("person", props.personCfg)
 }
 </script>

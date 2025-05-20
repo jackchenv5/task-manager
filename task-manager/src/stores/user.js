@@ -7,11 +7,18 @@ import { saveConfig,getUserDetailApi } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
-    "id": 608,
-    "username": "陈成F",
-    "emp_num": "007101",
-    "role": 141,
-    "email": "chenchengf@rd.maipu.com",
+    id: 1001,
+    username: "李芬妮",
+    emp_num: "007101",
+    role:0,
+    role_name:'',
+    group_leader:'',
+    email:'',
+    group:-1,
+    group_name:'',
+    role: "发布者",
+    groupId: 6,
+    groupName: "业务测试处-协议测试组",
     config: {}
     // config: {"group": {"selectedGroup": "武汉测试处-产品组",
     //                    "radio": "pending", 
@@ -49,16 +56,9 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
-  const getUserConfig = (key,defalut='') => {
-    console.log('=============get config',key,loginUser.value.config)
+  const getUserConfig = (key) => {
     if(key){
-      // 有此属性配置，直接返回
-      if(loginUser.value.config.hasOwnProperty(key)){
-        return loginUser.value.config[key]
-      }
-      // 没有此属性，创建属性，并赋值null
-      loginUser.value.config[key] = defalut
-      return defalut
+      return loginUser.value.config[key]
     }else{
       return loginUser.value.config
     }
@@ -67,7 +67,6 @@ export const useUserStore = defineStore('user', () => {
 
   const saveUserConfig = async () => {
     const res = await saveConfig(loginUser.value.id, loginUser.value.config)
-    console.log('save config res: ', res);
   }
 
   return { loginUser, checkAndLogin, getUserConfig, setUserConfig, initUser,  saveUserConfig }
