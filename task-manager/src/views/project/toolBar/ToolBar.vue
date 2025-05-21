@@ -1,7 +1,5 @@
 <template>
     <div class="user-bar">
-        <el-button class="bar-item">导出报表</el-button>
-        <el-button class="bar-item">邮件通知</el-button>
         <el-badge :value="12" class="item">
             <el-button >查看日志</el-button>
         </el-badge>
