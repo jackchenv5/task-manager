@@ -5,15 +5,15 @@
         style="height:18vh;width: 27%; background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;margin: 0px 5px; display: flex;flex-direction: column;">
         <ProjectPoolCard></ProjectPoolCard>
       </div>
-
-      <div
-        style="height:18vh;width: 49%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
-        <StaticsCard></StaticsCard>
-      </div>
       <div
         style="height:18vh;width: 23%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
         <UserPoolCard></UserPoolCard>
       </div>
+      <div
+        style="height:18vh;width: 49%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        <StaticsCard></StaticsCard>
+      </div>
+
       
     </div>
     <div style="height: 6vh;display: flex;justify-content: space-around;">
@@ -37,11 +37,16 @@ import ToolBar from './toolBar/ToolBar.vue'
 import {onMounted } from 'vue';
 
 import { useProjectStore } from '@/stores/project'
+import { useUserStore } from '@/stores/user'
+const myUserStore = useUserStore()
 
 const projectStore = useProjectStore()
 
 onMounted(() => {
-  projectStore.updateCurSelectProjectTasks()
+  myUserStore.initUser(608).then(()=>{
+    projectStore.init()
+  })
+  
 });
 </script>
 

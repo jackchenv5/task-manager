@@ -1,41 +1,69 @@
 <template>
-    <div class="project-panel">
-      <el-row class="panel-header">
-        <el-col :span="8">
-          <div class="panel-title">关注项目</div>
-        </el-col>
-        <el-col :span="8" :offset="8">
-          <el-button class="action-btn">添加</el-button>
-          <el-button class="action-btn">清空</el-button>
-        </el-col>
-      </el-row>
-      <el-scrollbar class="project-scrollbar">
-        <div class="project-tags">
-          <el-tag 
-            v-for="item in projectFocusRef"
-            :key="item"
-            :class="['project-tag', { 'active': curSelectProjectRef === item }]"
-            closable
-            @click="handleProjectClick(item)">
-            <span class="project-name">{{ item }}</span>
-          </el-tag>
-        </div>
-      </el-scrollbar>
-    </div>
-  </template>
+    <SelectProject :visible="isShowSelectProjectDialog" v-model="selectProjects" title="项目池选择"
+    @update:modelValue="updateSelectProjects" @update:visible="updateVisible" @comfirm="SelectProjectConfirm">
+  </SelectProject>
+
+  <div class="project-panel">
+    <el-row class="panel-header">
+      <el-col :span="6">
+        <div class="panel-title">关注项目</div>
+      </el-col>
+      <el-col :span="8" :offset="10">
+        <el-button @click="isShowSelectProjectDialog = true" size="small">添加</el-button>
+        <el-popconfirm title="确认清空项目池？" @confirm="projectStore.cleanFocus" placement="right">
+          <template #reference>
+            <el-button size="small">清空</el-button>
+          </template>
+        </el-popconfirm>
+      </el-col>
+    </el-row>
+    <el-scrollbar class="project-scrollbar">
+      <div class="project-tags">
+        <el-tag v-for="item in projectFocusRef" :key="item"
+          :class="['project-tag', { 'active': curSelectProjectRef === item }]" closable @click="handleProjectClick(item)" @close="handleDeleteProject(item)">
+          <span class="project-name">{{ item }}</span>
+        </el-tag>
+      </div>
+    </el-scrollbar>
+  </div>
+</template>
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useProjectStore } from '@/stores/project'
 import { storeToRefs } from 'pinia'
 import project from '@/router/modules/project';
-
+import SelectProject from "@/components/dialog/SelectProject.vue";
 const projectStore = useProjectStore()
-const { projectFocusRef,curSelectProjectRef,selectUser } = storeToRefs(projectStore)
+const { projectFocusRef, curSelectProjectRef } = storeToRefs(projectStore)
 
-const handleProjectClick = (project)=>{
-    curSelectProjectRef.value = project
-    selectUser.value = ''
+
+const isShowSelectProjectDialog = ref(false);
+
+
+const handleProjectClick = (project) => {
+  curSelectProjectRef.value = project
+  proejctStore.cleanSelectUser()
 }
+
+const handleDeleteProject = (proejct) => {
+  projectStore.deleteProjectInFocus(proejct)
+}
+
+const updateVisible = (newValue) => {
+  isShowSelectProjectDialog.value = newValue
+}
+
+const SelectProjectConfirm = (isConfirm, projects) => {
+  if (!isConfirm) return
+  if (!projects) return
+  // 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
+  projects.forEach(x => {
+    projectStore.addToProjectFocus(x)
+  })
+}
+
+
+
 
 </script>
 
@@ -44,13 +72,13 @@ const handleProjectClick = (project)=>{
   height: 18vh;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   padding: 12px;
   transition: all 0.3s ease;
 }
 
 .project-panel:hover {
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .panel-header {
@@ -99,7 +127,7 @@ const handleProjectClick = (project)=>{
 
 .project-tag:hover {
   transform: translateY(-2px);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .project-tag.active {

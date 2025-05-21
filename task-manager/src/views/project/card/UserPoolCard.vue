@@ -5,14 +5,14 @@
         <h3 class="card-title">参与人员</h3>
       </el-col>
       <el-col :span="4" :offset="10">
-        <el-button class="clear-btn" @click="selectUser = ''">清空</el-button>
+        <el-button class="clear-btn" @click="projectStore.cleanSelectUser">清空</el-button>
       </el-col>
     </el-row>
     <el-scrollbar class="user-scrollbar">
       <div class="user-tags">
-        <el-tag v-for="tag in joinUsers" :key="tag.id" :class="['user-tag', { 'active': tag === selectUser }]"
+        <el-tag v-for="tag in joinUsers" :key="tag.id" :class="['user-tag', { 'active': tag.username === selectUser.username }]"
           @click="handleSelectUser(tag)">
-          {{ tag }}
+          {{ tag.username }}
         </el-tag>
       </div>
     </el-scrollbar>
@@ -30,8 +30,8 @@ const projectStore = useProjectStore()
 const { selectUser, joinUsers } = storeToRefs(projectStore)
 
 
-const handleSelectUser = (username) => {
-  selectUser.value = username
+const handleSelectUser = (userObj) => {
+  selectUser.value = userObj
 
 }
 

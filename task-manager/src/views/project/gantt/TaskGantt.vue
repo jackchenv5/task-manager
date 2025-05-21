@@ -17,57 +17,23 @@ const { curGanttData, selectUser, curProjectReceiverMap } = storeToRefs(projectS
 // 容器引用
 const ganttContainer = ref(null);
 
-// 初始化 Gantt 配置
 const initGantt = () => {
-  // 基本配置
-  // gantt.config.scale_unit = "week";
-
-
-  // gantt.config.grid_width = 400;
-  // gantt.setSkin("material");
-  gantt.i18n.setLocale("cn");
-  gantt.config.date_format = "%Y-%m-%d";
-  gantt.templates.progress_text = function (start, end, task) { return `${task.progress * 100}%`; };
-
-
-  function getWeekOfMonthNumber(date) {
-    let adjustedDate = date.getDate() + date.getDay();
-    let prefixes = ['0', '1', '2', '3', '4', '5'];
-    return (parseInt(prefixes[0 | adjustedDate / 7]) + 1);
-  }
-
-  gantt.config.scale_height = 60;
-  gantt.config.scales = [
-    { unit: "month", step: 1, format: "%Y年 %F" },
-    {
-      unit: "week", step: 1, format: function (date) {
-        return "第" + getWeekOfMonthNumber(date) + "周";
-      }
-    },
-    {
-      unit: "day", step: 1, format: "%j %D"
+    // 基本配置
+    gantt.i18n.setLocale("cn");
+    gantt.config.date_format = "%Y-%m-%d";
+    gantt.plugins({
+        quick_info: true
+    });
+    gantt.showLightbox = function () {
+        // code of the custom form
+        return false
     }
-  ];
 
-
-  gantt.templates.scale_cell_class = function (date) {
-		return "weekend-scale";
-	};
-
-  gantt.templates.timeline_cell_class = function (item, date) {
-		if (date.getDay() == 0 || date.getDay() == 6) {
-			return "weekend-cell"
-		}
-	};
-
-  var weekScaleTemplate = function (date) {
-    var dateToStr = gantt.date.date_to_str("%d %M");
-    var endDate = gantt.date.add(date, 7 - date.getDay(), "day");
-    return dateToStr(date) + " - " + dateToStr(endDate);
-  };
-
-  gantt.config.empty_text = "暂无任务数据";
-  gantt.config.auto_types = true;
+    gantt.config.scale_height = 60;
+    gantt.config.scales = [
+        { unit: "month", format: "%Y年 %F" },
+        { unit: "week", format: "第 %W 周" },
+    ]
 
   gantt.config.columns = [
     { name: "text", label: "任务名", width: 120, tree: true },
@@ -76,8 +42,6 @@ const initGantt = () => {
     { name: "workload", label: "工时(天)", width: 60, align: "center" },
     { name: "receiver_name", label: "执行者", width: 60, align: "center" },
   ];
-
-  gantt.config.drag_progress = false;
 };
 
 const loadSampleData = (data) => {
@@ -95,7 +59,7 @@ const loadSampleData = (data) => {
 
 
 watch(curGanttData, (newVal) => {
-  if (newVal?.length && !selectUser.value) {
+  if (newVal?.length) {
     loadSampleData(newVal);
   }
 });
@@ -103,7 +67,7 @@ watch(curGanttData, (newVal) => {
 
 // 用户切换时强制更新
 watch(selectUser, (newVal) => {
-  const validData = newVal ? curProjectReceiverMap.value[newVal] : curGanttData.value;
+  const validData = newVal ? curProjectReceiverMap.value[newVal.username] : curGanttData.value;
   loadSampleData(validData || []);
 });
 const isGanttInitialized = ref(false);
@@ -145,5 +109,10 @@ onMounted(() => {
   background-color: rgba(223, 229, 231, 0.788) !important;
   ;
 }
+
+.gantt_cal_qi_controls {
+    display: none !important;
+}
+
 
 </style>

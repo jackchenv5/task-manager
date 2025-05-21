@@ -88,7 +88,8 @@ const {
 
 /* 统一卡片样式 [6,7](@ref) */
 .metric-card {
-  flex: 1;
+  width: 25%;
+  min-width: 180px;
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 8px;
@@ -148,6 +149,7 @@ const {
 /* 统计数据卡片 [7](@ref) */
 .stats-card {
   /* flex: 0 0 45%; */
+  flex-grow: 1;
   background: #fff;
   border: 1px solid #e4e7ed;
   border-radius: 8px;

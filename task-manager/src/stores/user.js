@@ -56,9 +56,9 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
-  const getUserConfig = (key) => {
+  const getUserConfig = (key,defaultValue) => {
     if(key){
-      return loginUser.value.config[key]
+      return loginUser.value.config[key] ?  loginUser.value.config[key] : defaultValue
     }else{
       return loginUser.value.config
     }

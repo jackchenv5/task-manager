@@ -1,57 +1,38 @@
 <template>
   <!-- 对话框区 -->
-  <SelectProject
-    :visible="isShowSelectProjectDialog"
-    v-model="selectProjects"
-    title="项目池选择"
-    @update:modelValue="updateSelectProjects"
-    @update:visible="updateVisible"
-    @comfirm="SelectProjectConfirm"
-  >
+  <SelectProject :visible="isShowSelectProjectDialog" v-model="selectProjects" title="项目池选择"
+    @update:modelValue="updateSelectProjects" @update:visible="updateVisible" @comfirm="SelectProjectConfirm">
   </SelectProject>
   <!-- 对话框区 END -->
   <div style="height: 4vh">
     <el-row>
       <el-col :span="4">
-        <div
-          style="
+        <div style="
             margin-top: 5px;
             color: white;
             background-color: black;
             border-radius: 5px;
-          "
-        >
+          ">
           项目池
         </div>
       </el-col>
       <el-col :span="8" :offset="12">
-        <el-button @click="isShowSelectProjectDialog = true"  size="small">添加</el-button>
+        <el-button @click="isShowSelectProjectDialog = true" size="small">添加</el-button>
         <el-popconfirm title="确认清空项目池？" @confirm="scheduleStore.cleanProjectPool" placement="right">
-                    <template #reference>
-                        <el-button size="small">清空</el-button>
-                    </template>
-                </el-popconfirm>
+          <template #reference>
+            <el-button size="small">清空</el-button>
+          </template>
+        </el-popconfirm>
       </el-col>
     </el-row>
     <el-scrollbar style="height: 14vh">
-      <el-tag
-        v-for="item in projectPool"
-        :key="item"
-        :type="curSelectProjectRef === item ? 'success' : ''"
-        :color="curSelectProjectRef === item ? '#4269E0' : ''"
-        class="my-tag"
-        closable
-        @click="handleProjectClick(item)"
-        @close="handleDeleteProject(item)"
-      >
-        <el-text
-          truncated
-          :style="{
-            width: '22vw',
-            color: curSelectProjectRef === item ? 'white' : 'black',
-          }"
-          >{{ item }}</el-text
-        >
+      <el-tag v-for="item in projectPool" :key="item" :type="curSelectProjectRef === item ? 'success' : ''"
+        :color="curSelectProjectRef === item ? '#4269E0' : ''" class="my-tag" closable @click="handleProjectClick(item)"
+        @close="handleDeleteProject(item)">
+        <el-text truncated :style="{
+          width: '22vw',
+          color: curSelectProjectRef === item ? 'white' : 'black',
+        }">{{ item }}</el-text>
       </el-tag>
     </el-scrollbar>
   </div>
@@ -72,7 +53,7 @@ const handleProjectClick = (project) => {
 };
 
 
-const handleDeleteProject = (proejct) =>{
+const handleDeleteProject = (proejct) => {
   scheduleStore.deleteProjectInPool(proejct)
 }
 
@@ -81,13 +62,13 @@ const updateVisible = (newValue) => {
 }
 
 const SelectProjectConfirm = (isConfirm, projects) => {
-console.log('=====',isConfirm,projects)
-if (!isConfirm) return
-if (!projects) return
-// 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
-projects.forEach(x => {
-  scheduleStore.addToProjectPool(x)
-})
+  console.log('=====', isConfirm, projects)
+  if (!isConfirm) return
+  if (!projects) return
+  // 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
+  projects.forEach(x => {
+    scheduleStore.addToProjectPool(x)
+  })
 }
 
 </script>

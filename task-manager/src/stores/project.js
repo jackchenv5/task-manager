@@ -1,29 +1,67 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi } from '@/api/data/data'
+import { getTaskDataApi,commitEvalution } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
-import { reverseDateStr, percentToDecimal, TaskStatus } from '@/utils/public'
+import { workLoadStat } from '@/utils/tasksStat'
+
+import { reverseDateStr, percentToDecimal, TaskStatus, formatDate } from '@/utils/public'
 
 const myUserStore = useUserStore()
+
 const { loginUser } = storeToRefs(myUserStore)
 
+//
 export const useProjectStore = defineStore('project', () => {
 
   // 需要加载的配置
-  const projectFocusRef = ref([
-    'CP-V003R016C000_嵌入式软件平台智算网络快速收敛及设备健康度检查等关键技术研发',
-    'SW-V010R002C004(PB073)_信创智能无损TOR交换机产品研发',
-    'RT-TT-2024-004_2025年路由器滚动版本项目',
-    'SW-V010R002C002(PB069)_4U及1U高端数据中心交换机项目',
-    'SW-V010R001C238_2024数据中心专项-重大入围支撑项目'
-  ])
-
-  const curSelectProjectRef = ref('SW-V010R002C004(PB073)_信创智能无损TOR交换机产品研发')
-
+  const projectFocusRef = ref([])
+  const curSelectProjectRef = ref('')
   const curSelectProjectTasksRef = ref([])
+  const selectUser = ref({})
 
-  const selectUser = ref('')
+  const cleanSelectUser = () => {
+    selectUser.value = {}
+  }
+
+  const selectUserEvaluateRef = ref({
+    comment: '',
+    score: 0
+  })
+
+  const deleteProjectInFocus = (project) => {
+    const projectIndex = projectFocusRef.value.indexOf(project)
+    projectFocusRef.value.splice(projectIndex, 1)
+    saveProjectConfig()
+  }
+  const addToProjectFocus = (project) => {
+    if (projectFocusRef.value.includes(project)) return
+    projectFocusRef.value.push(project)
+    saveProjectConfig()
+  }
+  const cleanFocus = () => {
+    projectFocusRef.value = []
+    saveProjectConfig()
+  }
+  // 一次加载所有关于schedule 的config
+  const initScheduleConfig = () => {
+    projectFocusRef.value = myUserStore.getUserConfig('project_project_pool', [])
+    curSelectProjectRef.value = myUserStore.getUserConfig('project_cur_select_project', '')
+    console.log(projectFocusRef.value);
+  }
+
+  const saveProjectConfig = () => {
+    myUserStore.setUserConfig('project_project_pool', projectFocusRef.value)
+    myUserStore.setUserConfig('project_cur_select_project', curSelectProjectRef.value)
+  }
+
+  //
+
+  const init = () => {
+    initScheduleConfig()
+    updateCurSelectProjectTasks()
+  }
+
 
 
   // 甘特数据格式化
@@ -55,13 +93,74 @@ export const useProjectStore = defineStore('project', () => {
     return retData;
   });
 
-  // 参与人员列表
-  const joinUsers = computed(() => {
-    return Object.keys(curProjectReceiverMap.value);
+ const joinUsers = computed(() => {
+  const users = []  
+  const retData = [];
+    if (!curGanttData.value?.length) return retData;
+
+    curGanttData.value.forEach(x => {
+        if (users.includes(x.receiver_name)) return;
+        users.push(x.receiver_name);
+        retData.push({ id: x.receiver, username:x.receiver_name })
+    });
+    return  retData;
   });
 
+
+  // 参与人员个人数据统计
+  // 1.个人参与此项目总工时
+  // 2.已成为工时+汇报完成
+  // 3.进度
+  // 4.贡献值
+  // 5.参与度
+  // 6.综合评分
+  // 7.组长评分
+  // 8.TL评分
+  // 9.自评
+  const curSelectUserStat = computed(() => {
+    const curUserTasks = curProjectReceiverMap.value[selectUser.value.username];
+    const retData = {
+      username: selectUser.value.username,
+      workLoad: 0,
+      completed: 0,
+      progress: 0,
+      contribution: '',
+      participation: 0,
+      score: 0,
+      leaderScore: 0,
+      tlScore: 0,
+      selfScore: 0,
+    }
+    if (!curUserTasks) return retData;
+    const { total, completed, progress } = workLoadStat(curUserTasks);
+    retData.workLoad = total;
+    retData.completed = completed;
+    retData.progress = progress;
+    retData.participation = (total / workLoadSta.value.total * 100).toFixed(1);
+
+    return retData;
+  });
+
+  const commitCurUserEvalution = async () => {
+    const ret = await commitEvalution({
+      ...selectUserEvaluateRef.value,
+      project: curSelectProjectRef.value,
+      evaluator: loginUser.value.id,
+      evaluated_user: selectUser.value.id,
+      evaluation_type: 'project',
+      evaluation_time: formatDate(new Date()),
+
+    })
+    selectUserEvaluateRef.value = {
+      comment: '',
+      score: 0
+    }
+  }
+
   watch(curSelectProjectRef, (newValue) => {
+    saveProjectConfig()
     updateCurSelectProjectTasks()
+    cleanSelectUser()
   })
 
   const updateCurSelectProjectTasks = async () => {
@@ -97,24 +196,7 @@ export const useProjectStore = defineStore('project', () => {
   });
 
   const workLoadSta = computed(() => {
-    const initial = { total: 0, completed: 0, progress: 0 };
-
-    if (!curSelectProjectTasksRef.value?.length) return initial;
-
-    return curSelectProjectTasksRef.value.reduce((acc, task) => {
-      const workload = Number(task.workload) || 0;
-
-      // 总工作量累加
-      acc.total += workload;
-
-      // 已完成工作量累加
-      if (task.status === TaskStatus.FINISH) { acc.completed += workload; }
-
-      // 计算完成进度（保留1位小数）
-      acc.progress = acc.total > 0 ? Number((acc.completed / acc.total * 100).toFixed(1)) : 0;
-
-      return acc;
-    }, { ...initial });
+    return workLoadStat(curSelectProjectTasksRef.value)
   });
 
   const totalTasks = computed(() => { return curSelectProjectTasksRef.value?.length || 0; });
@@ -145,7 +227,14 @@ export const useProjectStore = defineStore('project', () => {
   });
 
   return {
-    projectFocusRef, curSelectProjectRef, curGanttData, curProjectReceiverMap, selectUser, joinUsers, workLoadSta, totalTasks, completedTasks,pendTasks,draftTasks,runTasks, workloadIntensity, dateRange,
-    updateCurSelectProjectTasks
+    init,
+    // 项目聚焦
+    projectFocusRef, curSelectProjectRef, deleteProjectInFocus, addToProjectFocus, cleanFocus,
+    curGanttData, curProjectReceiverMap, joinUsers, workLoadSta, totalTasks, completedTasks, pendTasks, draftTasks, runTasks, workloadIntensity, dateRange,
+    updateCurSelectProjectTasks,
+    //当前选中的用户
+    selectUser, curSelectUserStat,cleanSelectUser,
+    //评价
+    selectUserEvaluateRef,commitCurUserEvalution
   }
 })
