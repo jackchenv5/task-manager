@@ -42,26 +42,27 @@
         </el-form-item>
       </el-col>
     </el-row>
-    <el-scrollbar style="height: 45vh;">
+    <el-scrollbar style="height: 50vh;">
 
       <el-row>
         <el-col :span="12">
           <el-form-item label="任务内容:" prop="content">
-            <el-input type="textarea" :rows="6" v-model="formData.content"></el-input>
+            <el-input type="textarea" :rows="12" v-model="formData.content"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="11">
           <el-form-item label="挑战目标:">
-            <el-input type="textarea" :rows="6" v-model="formData.challenge"></el-input>
+            <el-input type="textarea" :rows="12" v-model="formData.challenge"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
       <el-form-item label="任务描述:">
-        <el-input type="textarea" :rows="1" v-model="formData.description"></el-input>
+        <el-input type="textarea" :rows="4" v-model="formData.description"></el-input>
       </el-form-item>
-      <el-form-item label="关联任务:">
-        <el-input type="text" v-model="formData.related_task"></el-input>
-      </el-form-item>
+      <!-- <el-form-item label="关联任务:">
+        <Select style="width: 95%;" v-model="formData.related_task" :api="getTaskDataApi({project:formData.project})" label-field="name" data-filed="result"
+            value-field="id" filterable :filter-field="['name']" clearable></Select>
+      </el-form-item> -->
     </el-scrollbar>
     <el-form-item>
       <el-button type="primary" @click="onSubmit(formRef)">提交</el-button>
@@ -73,7 +74,7 @@
 <script setup>
 import { ref, reactive, watch } from 'vue';
 import { storeToRefs } from 'pinia'
-import { getUserApi, taskAddApi } from '@/api/data/data'
+import { getUserApi, taskAddApi,getTaskDataApi } from '@/api/data/data'
 import { formatDate, TaskStatus } from '@/utils/public'
 import Select from '@/components/selects/MutiSelect.vue'
 import { useScheduleStore } from '@/stores/schedule'

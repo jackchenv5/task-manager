@@ -93,6 +93,7 @@ const loadOptions = async () => {
     try {
         const response = await props.api()
         // 处理API返回数据
+        console.log('ret data....',response)
         if(Array.isArray(response)){
         originData.value = response
         orginOptions.value = response
@@ -140,7 +141,6 @@ const remoteMethod = (query) => {
 
 // 处理下拉框出现隐藏事件
 const focus = () =>{
-    console.log('focus...')
     setTimeout(()=>{
         if (selectRef.value) {
         selectRef.value.inputRef.value = ''
