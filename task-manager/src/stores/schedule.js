@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi } from '@/api/data/data'
+import { getTaskDataApi,taskModifyApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
 import { reverseDateStr, percentToDecimal, TaskStatus } from '@/utils/public'
@@ -17,8 +17,14 @@ export const useScheduleStore = defineStore('schedule', () => {
   const lastAddTasksRef = ref([])
   const curSelectProjectRef = ref('')
 
-  const updateLastAddTaks = (tasks) =>{
-    lastAddTasksRef.value = tasks
+  const updateLastAddTaks = (tasks) => {
+    lastAddTasksRef.value = tasks.map(x => ({
+      ...x,
+      text: x.name,
+      start_date: reverseDateStr(x.start_time),
+      duration: x.diff_days,
+      progress: percentToDecimal(x.progress)
+    }));
   }
   //
   // 首次加载，同步loginUser配置
@@ -29,16 +35,16 @@ export const useScheduleStore = defineStore('schedule', () => {
     saveScheduleConfig()
   }
 
-  
+
   const deleteProjectInPool = (project) => {
-      const index = projectPool.value.indexOf(project);
-      projectPool.value.splice(index,1);
-      saveScheduleConfig()
+    const index = projectPool.value.indexOf(project);
+    projectPool.value.splice(index, 1);
+    saveScheduleConfig()
   }
 
   const cleanProjectPool = () => {
-     projectPool.value = []
-     saveScheduleConfig()
+    projectPool.value = []
+    saveScheduleConfig()
   }
 
   // 一次加载所有关于schedule 的config
@@ -158,7 +164,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const curPendGanttData = computed(() => {
     if (!schduleTableData.value?.length) return [];
 
-    return schduleTableData.value.filter(x=> x.status == TaskStatus.PEND).map(x => ({
+    return schduleTableData.value.filter(x => x.status == TaskStatus.PEND).map(x => ({
       ...x,
       text: x.name,
       start_date: reverseDateStr(x.start_time),
@@ -166,7 +172,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       progress: percentToDecimal(x.progress)
     }));
   });
-  
+
 
   // table 数据END
 
@@ -180,11 +186,15 @@ export const useScheduleStore = defineStore('schedule', () => {
   const curTaskDetailRef = ref({})
 
   const updateCurTaskDetail = (taskObj) => {
-    curTaskDetailRef.value = taskObj
+    const {id,name,project,receiver,related_task,sender,start_time,deadline_time,workload,content,challenge} = taskObj
+    curTaskDetailRef.value = {id,name,project,receiver,related_task,sender,start_time,deadline_time,workload,content,challenge}
   }
-
+const modifyCurTask = async ()=>{
+  await taskModifyApi(curTaskDetailRef.value.id, {...curTaskDetailRef.value,sender: curTaskDetailRef.value.sender.join(",")})
+  await getTableData()
+}
   // 当前要展示的任务数据END
-  const curPendTasksLength = computed(()=>curPendGanttData.value.length)
+  const curPendTasksLength = computed(() => curPendGanttData.value.length)
   const lastPendTasksLength = computed(() => lastAddTasksRef.value.length);
 
 
@@ -195,14 +205,14 @@ export const useScheduleStore = defineStore('schedule', () => {
     curUserScheduleTasksRef, updateSelectDateStat,
     curSelectDateStat, schduleTableData, getTableData,
     //项目池
-    projectPool, curSelectProjectRef,addToProjectPool,deleteProjectInPool,cleanProjectPool,
+    projectPool, curSelectProjectRef, addToProjectPool, deleteProjectInPool, cleanProjectPool,
     // 任务详情
-    curTaskDetailRef, updateCurTaskDetail,
+    curTaskDetailRef, updateCurTaskDetail,modifyCurTask,
     //
     initScheduleConfig, saveScheduleConfig,
     // 甘特数据
-    curPendGanttData,curPendTasksLength,
+    curPendGanttData, curPendTasksLength,
     // 最近添加的任务
-    updateLastAddTaks,lastAddTasksRef,lastPendTasksLength
+    updateLastAddTaks, lastAddTasksRef, lastPendTasksLength
   }
 })

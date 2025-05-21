@@ -27,7 +27,7 @@
                     <el-radio-button label="全部任务" value="all" />
                 </el-radio-group>
             </div>
-            <el-button class="material-symbols--close"></el-button>
+            <el-button class="material-symbols--close" @click="drawer = false"></el-button>
 
         </div>
 

@@ -5,7 +5,7 @@
         <template #footer>
             <div class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取消</el-button>
-                <el-button type="primary" @click="centerDialogVisible = false">
+                <el-button type="primary" @click="confirmModifyTask">
                     确认
                 </el-button>
             </div>
@@ -26,9 +26,14 @@ import 'dhtmlx-gantt/codebase/dhtmlxgantt.css';
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
+
 import EditForm from '../form/EditForm.vue'
+
+import { transToProjectGanttData, transToRecevierGanttData } from '@/utils/gantt'
+
+import { taskDeleteApi, taskModifyApi } from '@/api/data/data'
 const scheduleStore = useScheduleStore()
-const { curPendGanttData, lastAddTasksRef } = storeToRefs(scheduleStore)
+const { curPendGanttData, lastAddTasksRef, curTaskDetailRef } = storeToRefs(scheduleStore)
 
 const ganttContainer = ref(null);
 
@@ -53,7 +58,7 @@ watch(
 
 const initGanttRender = () => {
     let orginData = [];
-    
+
     if (props.modelValue === 'cur') {
         orginData = curPendGanttData.value
 
@@ -61,26 +66,30 @@ const initGanttRender = () => {
         orginData = lastAddTasksRef.value
     }
     // 组织结构
-    console.log('orginData',orginData)
-    if (props.joinType === 'project'){
-        
-    }else if(props.joinType === 'recevier'){
-
-    }else{
-
+    let joinData = []
+    console.log('orginData', orginData)
+    if (props.joinType === 'project') {
+        joinData = transToProjectGanttData(orginData)
+    } else if (props.joinType === 'recevier') {
+        joinData = transToRecevierGanttData(orginData)
+    } else {
+        joinData = orginData
     }
-    
-    gantt.init(ganttContainer.value); // 重新绑定DOM容器
+    console.log('.... join data', joinData)
     gantt.clearAll();
+    gantt.init(ganttContainer.value); // 重新绑定DOM容器
     gantt.render(); // 强制重绘
     gantt.parse({
-        tasks: orginData,
+        tasks: joinData,
     });
 }
 const initGantt = () => {
     // 基本配置
     gantt.i18n.setLocale("cn");
     gantt.config.date_format = "%Y-%m-%d";
+    gantt.plugins({
+        quick_info: true
+    });
     gantt.showLightbox = function () {
         // code of the custom form
         return false
@@ -106,6 +115,8 @@ const initGantt = () => {
         {
             name: "btns", label: "操作", width: 60, align: "center",
             template: function (task) {
+                console.log('in template', task)
+                if (task.type === "project") return ''
                 return ` 
             <span> 
                 <button class="material-symbols-light--delete-outline delete-task" data-id="${task.id}"></button>  
@@ -120,12 +131,20 @@ const initGantt = () => {
     gantt.config.drag_progress = false;
 };
 
-const handleClick = (event) => {
+import { VxeUI } from 'vxe-pc-ui'
+const handleClick = async (event) => {
     const target = event.target;
     // 判断点击目标是否为删除按钮
     if (target.matches('button.delete-task[data-id]')) {
         const taskId = target.dataset.id;
-        console.log('动态删除任务ID:', taskId);
+        console.log(event)
+        await taskDeleteApi(taskId)
+        await scheduleStore.getTableData()
+        initGanttRender()
+        VxeUI.modal.message({
+            content: `任务：${taskId} 已删除！`,
+            status: 'success'
+        })
         // 执行删除逻辑
     }
     if (target.matches('button.edit-task[data-id]')) {
@@ -135,6 +154,7 @@ const handleClick = (event) => {
         // 执行删除逻辑
         modifyTask(taskId)
     }
+
 }
 
 const modifyTask = async (id) => {
@@ -143,6 +163,16 @@ const modifyTask = async (id) => {
     dialogFormVisible.value = true
 }
 
+const confirmModifyTask = async () => {
+    await scheduleStore.modifyCurTask()
+    initGanttRender()
+    VxeUI.modal.message({
+        content: `任务修改成功！`,
+        status: 'success'
+    })
+    dialogFormVisible.value = false
+    // 执行删除逻辑
+}
 onMounted(async () => {
     if (!ganttContainer.value) return;
     if (!gantt) return
@@ -159,6 +189,10 @@ onMounted(async () => {
 .gantt-container {
     width: 100%;
     height: 100%;
+}
+
+.gantt_cal_qi_controls {
+    display: none !important;
 }
 
 .mingcute--edit-line {
