@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi,commitEvalution } from '@/api/data/data'
+import { getTaskDataApi, commitEvalution } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
 import { workLoadStat } from '@/utils/tasksStat'
@@ -93,17 +93,17 @@ export const useProjectStore = defineStore('project', () => {
     return retData;
   });
 
- const joinUsers = computed(() => {
-  const users = []  
-  const retData = [];
+  const joinUsers = computed(() => {
+    const users = []
+    const retData = [];
     if (!curGanttData.value?.length) return retData;
 
     curGanttData.value.forEach(x => {
-        if (users.includes(x.receiver_name)) return;
-        users.push(x.receiver_name);
-        retData.push({ id: x.receiver, username:x.receiver_name })
+      if (users.includes(x.receiver_name)) return;
+      users.push(x.receiver_name);
+      retData.push({ id: x.receiver, username: x.receiver_name })
     });
-    return  retData;
+    return retData;
   });
 
 
@@ -142,18 +142,27 @@ export const useProjectStore = defineStore('project', () => {
   });
 
   const commitCurUserEvalution = async () => {
-    const ret = await commitEvalution({
-      ...selectUserEvaluateRef.value,
-      project: curSelectProjectRef.value,
-      evaluator: loginUser.value.id,
-      evaluated_user: selectUser.value.id,
-      evaluation_type: 'project',
-      evaluation_time: formatDate(new Date()),
-
-    })
-    selectUserEvaluateRef.value = {
-      comment: '',
-      score: 0
+    try {
+      const ret = await commitEvalution({
+        ...selectUserEvaluateRef.value,
+        project: curSelectProjectRef.value,
+        evaluator: loginUser.value.id,
+        evaluated_user: selectUser.value.id,
+        evaluation_type: 'project',
+        evaluation_time: formatDate(new Date()),
+      })
+      selectUserEvaluateRef.value = {
+        comment: '',
+        score: 0
+      }
+      return ret?.id ? true : false
+    } catch (e) {
+      console.log(e)
+      selectUserEvaluateRef.value = {
+        comment: '',
+        score: 0
+      }
+      return false
     }
   }
 
@@ -233,8 +242,8 @@ export const useProjectStore = defineStore('project', () => {
     curGanttData, curProjectReceiverMap, joinUsers, workLoadSta, totalTasks, completedTasks, pendTasks, draftTasks, runTasks, workloadIntensity, dateRange,
     updateCurSelectProjectTasks,
     //当前选中的用户
-    selectUser, curSelectUserStat,cleanSelectUser,
+    selectUser, curSelectUserStat, cleanSelectUser,
     //评价
-    selectUserEvaluateRef,commitCurUserEvalution
+    selectUserEvaluateRef, commitCurUserEvalution
   }
 })

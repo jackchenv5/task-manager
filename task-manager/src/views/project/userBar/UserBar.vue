@@ -5,8 +5,8 @@
             <el-form ref="form" :model="selectUserEvaluateRef" label-width="80px">
 
                 <el-form-item label="评价：">
-                    <el-rate v-model="selectUserEvaluateRef.score" :max="7" text-color="#ff9900"
-                        :texts="['不合格', '合格', '合格+', '良-', '良', '良+', '优']" show-text>
+                    <el-rate v-model="selectUserEvaluateRef.score" :max="7" text-color="#ff9900" :texts="EvaluateList"
+                        show-text>
                     </el-rate>
                 </el-form-item>
                 <el-form-item label="评语：">
@@ -91,7 +91,7 @@
                 <el-tooltip content="本项目完成率：按时完成/已完成任务数" placement="right" effect="light">
                     <div class="user-label">TL</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">90分</div>
+                <div style="font-size:0.8rem">00</div>
             </div>
             <div class="user-stats-content">
                 <el-tooltip content="本项目完成率：按时完成/已完成任务数" placement="right" effect="light">
@@ -114,6 +114,8 @@ import { ElMessage } from 'element-plus';
 const projectStore = useProjectStore()
 const { curSelectUserStat, selectUserEvaluateRef } = storeToRefs(projectStore)
 
+import { EvaluateList } from '@/constants/public'
+
 const dialogVisible = ref(false)
 
 const clickEvalution = () => {
@@ -122,10 +124,16 @@ const clickEvalution = () => {
         return
     }
     dialogVisible.value = true
-} 
-const confirmEvalution = async ()=>{
+}
+const confirmEvalution = async () => {
     const ret = await projectStore.commitCurUserEvalution()
-    ElMessage.success(`${curSelectUserStat.username}评价成功！`)
+    if (!ret) {
+        ElMessage.error(`${curSelectUserStat.value.username}评价失败！`)
+
+    } else {
+        ElMessage.success(`${curSelectUserStat.value.username}评价成功！`)
+    }
+    dialogVisible.value = false
 }
 </script>
 <style scoped>

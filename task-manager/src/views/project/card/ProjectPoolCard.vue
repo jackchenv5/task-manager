@@ -42,7 +42,7 @@ const isShowSelectProjectDialog = ref(false);
 
 const handleProjectClick = (project) => {
   curSelectProjectRef.value = project
-  proejctStore.cleanSelectUser()
+  projectStore.cleanSelectUser()
 }
 
 const handleDeleteProject = (proejct) => {
