@@ -44,6 +44,11 @@ export const groupAddApi = (params) =>{
 // 用户信息
 
 // 获取用户任务数据
+
+// 模拟登陆，用于测试
+export const checkLogin = () => get('/users/check_login/')
+export const getUserByUsername = (name) => get(`/users/get_by_username/${name}`)
+
 export const getUserApi = (params) => get('/users', params)
 
 export const getUserDetailApi = (id) => get(`/users/${id}`);

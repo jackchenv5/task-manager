@@ -1,21 +1,21 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
-import { checkLogin } from '@/api/login/login'
+// import { checkLogin } from '@/api/login/login'
 
-import { saveConfig,getUserDetailApi } from '@/api/data/data'
+import { saveConfig, getUserDetailApi, getUserByUsername,checkLogin } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
   const loginUser = ref({
     id: 1001,
     username: "李芬妮",
     emp_num: "007101",
-    role:0,
-    role_name:'',
-    group_leader:'',
-    email:'',
-    group:-1,
-    group_name:'',
+    role: 0,
+    role_name: '',
+    group_leader: '',
+    email: '',
+    group: -1,
+    group_name: '',
     role: "发布者",
     groupId: 6,
     groupName: "业务测试处-协议测试组",
@@ -29,9 +29,9 @@ export const useUserStore = defineStore('user', () => {
     //     }
   })
 
-  const initUser = async (id) =>{
-      const curUserInfo = await getUserDetailApi(id);
-      loginUser.value = curUserInfo
+  const initUser = async (id) => {
+    const curUserInfo = await getUserDetailApi(id);
+    loginUser.value = curUserInfo
   }
 
   const login = () => {
@@ -39,10 +39,22 @@ export const useUserStore = defineStore('user', () => {
     location.replace(loginURL);
   }
 
-  const checkAndLogin = async () => {
-    const userInfo = await checkLogin()
-    if (userInfo.status) {
+  const checkLoginAndStore = async () => {
+    // 来自统一登陆接口 api
+    const loginInfo = await checkLogin()
+    // 获取用户数据
+
+    if (loginInfo?.name) {
+      const userInfo = await getUserByUsername(loginInfo.name)
       loginUser.value = { ...userInfo }
+
+      // 将用户信息存储到localStorage（新增部分）
+      try {
+        localStorage.setItem('userInfo', JSON.stringify(userInfo))
+      } catch (error) {
+        console.error('存储用户信息失败:', error)
+      }
+
     } else {
       login();
     }
@@ -56,18 +68,18 @@ export const useUserStore = defineStore('user', () => {
     return true
   }
 
-  const getUserConfig = (key,defaultValue) => {
-    if(key){
-      return loginUser.value.config[key] ?  loginUser.value.config[key] : defaultValue
-    }else{
+  const getUserConfig = (key, defaultValue) => {
+    if (key) {
+      return loginUser.value.config[key] ? loginUser.value.config[key] : defaultValue
+    } else {
       return loginUser.value.config
     }
-    
+
   }
 
   const saveUserConfig = async () => {
     const res = await saveConfig(loginUser.value.id, loginUser.value.config)
   }
 
-  return { loginUser, checkAndLogin, getUserConfig, setUserConfig, initUser,  saveUserConfig }
+  return { loginUser, checkLoginAndStore, getUserConfig, setUserConfig, initUser, saveUserConfig }
 })

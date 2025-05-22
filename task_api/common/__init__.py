@@ -47,3 +47,9 @@ TASK_FILED_MAP={
     "project":"项目",
     "progress":"进度",
 }
+
+SIGNAL_ACTIONS = {
+    "created": "新增",
+    "updated": "修改",
+    "deleted": "删除",
+}

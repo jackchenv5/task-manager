@@ -94,32 +94,6 @@ def parse_date_range(date_str):
     except (ValueError, IndexError):
         return False, None, None
 
-"""
-def parse_date_range(date_range_str):
-    # 假设格式为 "月.日-月.日"，且年份为当前年份
-    # 分割字符串以获取起始和结束日期
-    flag,start_date,end_date=False,None,None
-    start_end = date_range_str.split('-')
-    if len(start_end) != 2:
-        return flag,start_date,end_date
-
-    start_date_str, end_date_str = start_end
-
-    # 获取当前年份
-    now = datetime.now()
-    current_year = now.year
-
-    # 假设日期的格式为 '%m.%d'
-    start_date = datetime.strptime(f"{current_year}.{start_date_str}", "%Y.%m.%d").date()
-    end_date = datetime.strptime(f"{current_year}.{end_date_str}", "%Y.%m.%d").date()
-
-    # 验证结束日期是否在开始日期之后
-    if end_date < start_date:
-        return flag, start_date, end_date
-
-    return True, start_date, end_date
-"""
-
 
 
 from datetime import datetime, timedelta, date
@@ -145,3 +119,19 @@ def workdays_between_with_holidays(start_date, end_date):
     days_between = delta.days + 1
     workdays = sum(1 for day in range(days_between) if not (is_weekend(start_date + timedelta(days=day)) or (start_date + timedelta(days=day)) in holidays) )
     return workdays
+
+def custom_model_to_dict(instance):
+    from django.db.models.fields import DateTimeField,DateField
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    data = {}
+    for field in instance._meta.fields:
+        # value = field.value_from_object(instance)
+        value = getattr(instance, field.name)
+        if isinstance(value, User):
+            data[field.name] = value.username
+        elif isinstance(field, (DateField, DateTimeField)):
+            data[field.name] = value.strftime('%Y-%m-%d') if value else None
+        else:
+            data[field.name] = value
+    return data

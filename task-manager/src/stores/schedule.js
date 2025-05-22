@@ -3,7 +3,7 @@ import { defineStore, storeToRefs } from 'pinia'
 import { getTaskDataApi,taskModifyApi } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
-import { reverseDateStr, percentToDecimal, TaskStatus } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus, formatDate } from '@/utils/public'
 
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
@@ -190,7 +190,13 @@ export const useScheduleStore = defineStore('schedule', () => {
     curTaskDetailRef.value = {id,name,project,receiver,related_task,sender,start_time,deadline_time,workload,content,challenge}
   }
 const modifyCurTask = async ()=>{
-  await taskModifyApi(curTaskDetailRef.value.id, {...curTaskDetailRef.value,sender: curTaskDetailRef.value.sender.join(",")})
+  await taskModifyApi(
+    curTaskDetailRef.value.id, {
+      ...curTaskDetailRef.value,
+    start_time:formatDate(curTaskDetailRef.value.start_time),
+    deadline_time:formatDate(curTaskDetailRef.value.deadline_time),
+    sender: curTaskDetailRef.value.sender.join(",")}
+    )
   await getTableData()
 }
   // 当前要展示的任务数据END

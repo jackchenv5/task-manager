@@ -10,7 +10,13 @@ const service = axios.create({
 
 // 请求拦截器（自动注入Token）
 service.interceptors.request.use(config => {
-  console.log('请求拦截器：...')
+  // 从本地存储获取用户信息（推荐localStorage或Pinia/Vuex）
+  const userInfo = JSON.parse(localStorage.getItem('userInfo')) 
+  
+  // 注入用户信息
+  if (userInfo?.id) {
+    config.headers['X-User-ID'] = userInfo.id
+  }
   return config
 })
 

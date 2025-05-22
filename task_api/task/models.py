@@ -5,6 +5,7 @@ from django.db import models
 from django.db.models import Sum
 
 from common.email import generate_email_body, send_email
+from common.utils import custom_model_to_dict
 from user.models import Group
 
 import common
@@ -102,66 +103,8 @@ class Task(AbstractTask):
     def __str__(self):
         return self.name
 
-    # def save(self, *args, **kwargs):
-    #     # 项目在进行中，并且进度为100%
-    #     if self.status.name == common.TASK_STATUS_PROGRESS and self.progress == '100':
-    #         self.status = TaskStatus.objects.get(name=common.TASK_STATUS_COMPLETED)
-    #     # 在保存之前检查是否有任何字段被修改
-    #     if not self._state.adding and self.status.name in [common.TASK_STATUS_PROGRESS,common.TASK_STATUS_COMPLETED]:
-    #         modify_content='<p style="font-weight: bold; font-size: 15px;">修改内容</p>'
-    #         orgin_task = Task.objects.get(id=self.id)
-    #         for f_obj in self._meta.get_fields():
-    #             try:
-    #                 f =f_obj.attname
-    #                 filed_name = common.TASK_FILED_MAP[f] if  f in common.TASK_FILED_MAP else ""
-    #             except AttributeError:
-    #                 print(f_obj.name,"不是常规字段")
-    #                 continue
-    #             #不一样的字段
-    #             old = getattr(orgin_task, f, None)
-    #             new = getattr(self, f, None)
-    #             if f == 'progress':
-    #                 old = f"{old}%"
-    #                 new = f"{new}%"
-    #             if f == 'status_id':
-    #                 # pend状态只能由草稿触发
-    #                 old = common.STATUS_TO_CHE[old]
-    #                 new = common.STATUS_TO_CHE[new]
-    #                 if new == common.PEND and old != common.DRAFT:
-    #                     return
-    #                 # 进行状态只能由PEND状态触发
-    #                 elif new == common.PROGRESS and old != common.PEND:
-    #                     return
-    #                 # 完成只能由进行状态触发
-    #                 elif new == common.FINISH and old != common.PROGRESS:
-    #                     return
-    #
-    #             if new != old :
-    #                 #发生修改并且修改内容为反馈信息
-    #                 if f in ['feedback','progress','act_workload','feedback_time']:
-    #                     self.feedback_time = datetime.now()
-    #                     if f == 'feedback_time':
-    #                         continue
-    #                     if f == 'feedback':
-    #                         # modify_content += f'<p>上次反馈信息：<p><pre>{old}</pre>'
-    #                         modify_content += f'<h4>{datetime.now().strftime("%Y-%m-%d %H:%M")} 最新反馈信息： <h4><pre>{new}</pre>'
-    #                     else:
-    #                         modify_content += f'<p style="font-weight: bold; font-size: 12px;">{filed_name} ： {old} ===> {new} </p>'
-    #                 else:
-    #                     modify_content += f'<p style="font-weight: bold; font-size: 12px;">{filed_name} ： {old} ===> {new} </p>'
-    #
-    #         #检查是否有反馈字段，有加上反馈时间。
-    #
-    #         email_body=generate_email_body(self,status="被修改",add_content=modify_content)
-    #         if self.publisher and self.publisher != self.receiver:
-    #             to =[self.publisher.email, self.receiver.email]
-    #         else:
-    #             to = [self.receiver.email]
-    #         senders = self.get_sender_email()
-    #         send_email(email_body, to,cc=senders, subject=self.receiver.username,action="任务修改")
-    #     super().save(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
+    def old_save(self, *args, **kwargs):
 
         #任务增加修改 组长和Tl都要通知
         to = self.receiver.get_group_leader_email()
@@ -244,8 +187,6 @@ class Task(AbstractTask):
                         modify_content += f'<pre style="font-weight: bold; font-size: 12px;">{filed_name} ： {old} ===> {new} </pre>'
 
             #在修改内容不是反馈相关的时候才通知邮件
-            print('change_fields',change_fields)
-            print('feed_back_fields',feed_back_fields)
             if not set(change_fields).issubset(set(feed_back_fields)):
                 email_body=generate_email_body(self,status="修改任务",add_content=modify_content)
                 #下发邮件
@@ -280,3 +221,37 @@ class Task(AbstractTask):
             return  total_workload
         else:
             return 0.0
+
+
+    def custom_model_to_dict(self):
+        from django.db.models.fields import DateTimeField,DateField
+        data = {}
+        for field in self._meta.fields:
+            value = field.value_from_object(self)
+            if isinstance(field, (DateField, DateTimeField)):
+                data[field.name] = value.strftime('%Y-%m-%d %H:%M:%S') if value else None
+            else:
+                data[field.name] = value
+        return data
+
+
+    def get_signal_log(self,action,user,changed_fields=None):
+        from common import SIGNAL_ACTIONS
+        if action not in SIGNAL_ACTIONS:
+            return f'not supported action:{action}'
+        # 转中文
+        action = SIGNAL_ACTIONS[action]
+        title,content_list = '',[]
+        # title 的信息
+        title = f'{self.receiver.username} 任务({self.id})被{action},任务名：{self.name},操作人员：{user.username}'
+        if action == '删除':
+            content = custom_model_to_dict(self)
+        elif action == '新增':
+            content = custom_model_to_dict(self)
+        elif action == '修改':
+            for key,value in changed_fields.items():
+                content_list.append(f'{key} : {value["old"]}->{value["new"]}')
+            content = "|||".join(content_list)
+        #  任务删除
+        return title,content
+        

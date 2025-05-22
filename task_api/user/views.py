@@ -12,7 +12,8 @@ from rest_framework.response import Response
 from rest_framework import status  
 from django_filters import rest_framework as filters
 from django.db.models import Q
-
+from rest_framework.decorators import action
+from django.shortcuts import get_object_or_404
 class UserFilter(filters.FilterSet):
     text = filters.CharFilter(method='filter_text', label='Search text')
 
@@ -52,6 +53,16 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = UserFilter
+
+    @action(detail=False, methods=['get'], url_path='get_by_username/(?P<username>\w+)')
+    def get_by_username(self, request, username=None):
+        user = get_object_or_404(self.get_queryset(), username=username)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def check_login(self, request, username=None):
+        return Response({'id':608,'name':'陈成F'})
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 

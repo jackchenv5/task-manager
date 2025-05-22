@@ -59,9 +59,9 @@
         <el-form-item label="任务描述:">
             <el-input type="textarea" :rows="2" v-model="curTaskDetailRef.description"></el-input>
         </el-form-item>
-        <el-form-item label="关联任务:">
+        <!-- <el-form-item label="关联任务:">
             <el-input type="text" v-model="curTaskDetailRef.related_task"></el-input>
-        </el-form-item>
+        </el-form-item> -->
     </el-form>
 </template>
 

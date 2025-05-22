@@ -23,13 +23,21 @@ class Signals(models.Model):
 
     # 操作信息
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
+    # 操作人员,由前端axios HEADER传递
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # 操作用户
     timestamp = models.DateTimeField(default=timezone.now)
 
-    # 变更详情
-    changed_fields = models.JSONField(null=True, blank=True)  # 修改的字段
-    old_values = models.JSONField(null=True, blank=True)      # 旧值
-    new_values = models.JSONField(null=True, blank=True)      # 新值
+    # # 变更详情
+    # changed_fields = models.JSONField(null=True, blank=True)  # 修改的字段
+    # old_values = models.JSONField(null=True, blank=True)      # 旧值
+    # new_values = models.JSONField(null=True, blank=True)      # 新值
+    
+    #关联项目
+    project = models.CharField(max_length=128, null=True,blank=True)
+    
+    # 日志内容
+    title = models.CharField(max_length=128, null=True, blank=True)
+    content = models.CharField(max_length=1024, null=True, blank=True)
 
     class Meta:
         verbose_name = '变更日志'
