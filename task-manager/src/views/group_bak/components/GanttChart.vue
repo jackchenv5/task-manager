@@ -59,7 +59,7 @@
 
 <script setup>
 import { nextTick, ref, onMounted, computed, watch } from 'vue'
-import { reverseDateStr, percentToDecimal, TaskStatus, getWeeksInMonth, isTaskInWeek, formatDate, getFisrtAndLastDay, getWorkdaysBetweenDates, getWorkdaysInWeek } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus, getWeeksInMonth, isTaskInWeek, formatDate, calWorkdays, getWorkdaysInWeek } from '@/utils/public'
 import { gantt } from 'dhtmlx-gantt'
 import 'dhtmlx-gantt/codebase/dhtmlxgantt.css'
 import { Sunny, PartlyCloudy, Cloudy, Lightning, CircleClose } from '@element-plus/icons-vue'
@@ -121,7 +121,7 @@ const userTaskData = computed(() => {
                 
                 if (!isTaskInWeek(week, task)) return
                 // 计算当前任务在这一周内的总工作量: 当前任务每一天的工作量 * 这个任务在当前周需要工作的天数
-                const taskDuration = getWorkdaysBetweenDates(task.start_date, task.end_date)
+                const taskDuration = calWorkdays(task.start_date, task.end_date)
                 const peerDayWorkload = task.workload / taskDuration
                 const workdaysInWeek = getWorkdaysInWeek(week, task)
                 const weekWorkload = peerDayWorkload * workdaysInWeek

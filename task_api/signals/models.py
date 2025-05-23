@@ -28,9 +28,7 @@ class Signals(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
 
     # # 变更详情
-    # changed_fields = models.JSONField(null=True, blank=True)  # 修改的字段
-    # old_values = models.JSONField(null=True, blank=True)      # 旧值
-    # new_values = models.JSONField(null=True, blank=True)      # 新值
+    changed_fields = models.JSONField(null=True, blank=True)  # 修改的字段
     
     #关联项目
     project = models.CharField(max_length=128, null=True,blank=True)

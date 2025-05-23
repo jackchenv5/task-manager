@@ -1,11 +1,11 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi, commitEvalution } from '@/api/data/data'
+import { getTaskDataApi, commitEvalution,getLogList } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
 import { workLoadStat } from '@/utils/tasksStat'
 
-import { reverseDateStr, percentToDecimal, TaskStatus, formatDate } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus, formatDate,getDateStr } from '@/utils/public'
 
 const myUserStore = useUserStore()
 
@@ -19,7 +19,13 @@ export const useProjectStore = defineStore('project', () => {
   const curSelectProjectRef = ref('')
   const curSelectProjectTasksRef = ref([])
   const selectUser = ref({})
+  const projectLogs = ref([])
 
+  // 项目日志
+  const updateProjectLogs = async () => {
+    const res = await getLogList({project: curSelectProjectRef.value,timestamp: getDateStr(1)})
+    projectLogs.value = res.length > 0 ? res : []
+  }
   const cleanSelectUser = () => {
     selectUser.value = {}
   }
@@ -47,7 +53,6 @@ export const useProjectStore = defineStore('project', () => {
   const initScheduleConfig = () => {
     projectFocusRef.value = myUserStore.getUserConfig('project_project_pool', [])
     curSelectProjectRef.value = myUserStore.getUserConfig('project_cur_select_project', '')
-    console.log(projectFocusRef.value);
   }
 
   const saveProjectConfig = () => {
@@ -60,6 +65,7 @@ export const useProjectStore = defineStore('project', () => {
   const init = () => {
     initScheduleConfig()
     updateCurSelectProjectTasks()
+    updateProjectLogs()
   }
 
 
@@ -157,7 +163,6 @@ export const useProjectStore = defineStore('project', () => {
       }
       return ret?.id ? true : false
     } catch (e) {
-      console.log(e)
       selectUserEvaluateRef.value = {
         comment: '',
         score: 0
@@ -169,6 +174,7 @@ export const useProjectStore = defineStore('project', () => {
   watch(curSelectProjectRef, (newValue) => {
     saveProjectConfig()
     updateCurSelectProjectTasks()
+    updateProjectLogs()
     cleanSelectUser()
   })
 
@@ -244,6 +250,7 @@ export const useProjectStore = defineStore('project', () => {
     //当前选中的用户
     selectUser, curSelectUserStat, cleanSelectUser,
     //评价
-    selectUserEvaluateRef, commitCurUserEvalution
+    selectUserEvaluateRef, commitCurUserEvalution,
+    projectLogs
   }
 })

@@ -6,33 +6,12 @@ import { defineStore } from 'pinia'
 import { saveConfig, getUserDetailApi, getUserByUsername,checkLogin } from '@/api/data/data'
 
 export const useUserStore = defineStore('user', () => {
-  const loginUser = ref({
-    id: 1001,
-    username: "李芬妮",
-    emp_num: "007101",
-    role: 0,
-    role_name: '',
-    group_leader: '',
-    email: '',
-    group: -1,
-    group_name: '',
-    role: "发布者",
-    groupId: 6,
-    groupName: "业务测试处-协议测试组",
-    config: {}
-    // config: {"group": {"selectedGroup": "武汉测试处-产品组",
-    //                    "radio": "pending", 
-    //                    "checkedMembers": ["刘兵"], 
-    //                    "selectedProjects": ["RT-TT-2024-004_2025年路由器滚动版本项目"],
-    //                    "selectedGroupId": 25},
-    //          "person": {"typeRadio": "pending"},
-    //     }
-  })
+  const loginUser = ref({})
 
-  const initUser = async (id) => {
-    const curUserInfo = await getUserDetailApi(id);
-    loginUser.value = curUserInfo
-  }
+  // const initUser = async (id) => {
+  //   const curUserInfo = await getUserDetailApi(id);
+  //   loginUser.value = curUserInfo
+  // }
 
   const login = () => {
     let loginURL = `${import.meta.env.VITE_LOGIN_URL}/login_for=${window.location.origin}`
@@ -69,7 +48,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const getUserConfig = (key, defaultValue) => {
-    if (key) {
+    if (key && loginUser.value.config  && (key in loginUser.value.config)) {
       return loginUser.value.config[key] ? loginUser.value.config[key] : defaultValue
     } else {
       return loginUser.value.config
@@ -81,5 +60,5 @@ export const useUserStore = defineStore('user', () => {
     const res = await saveConfig(loginUser.value.id, loginUser.value.config)
   }
 
-  return { loginUser, checkLoginAndStore, getUserConfig, setUserConfig, initUser, saveUserConfig }
+  return { loginUser, checkLoginAndStore, getUserConfig, setUserConfig, saveUserConfig }
 })

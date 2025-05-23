@@ -9,14 +9,12 @@ class SignalSerializer(serializers.ModelSerializer):
     2. 显示关联对象的字符串表示
     3. 自定义内容类型名称展示
     """
-    # content_type_name = serializers.SerializerMethodField()
-    # content_object_str = serializers.SerializerMethodField()
-    # user_username = serializers.SerializerMethodField()
+    content_type_name = serializers.SerializerMethodField()
+    timestamp = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')  # 自动解析
 
     class Meta:
         model = Signals
         fields = '__all__'
-        # extra_kwargs = {
-        #     'content_type': {'write_only': True},  # 内容类型仅用于写入
-        #     'object_id': {'write_only': True}      # 对象ID仅用于写入
-        # }
+    def get_content_type_name(self, obj):
+        """返回内容类型的完整名称（如 'task.Task'）"""
+        return f"{obj.content_type.app_label}"

@@ -134,7 +134,7 @@ const handleFeedbackSubmit = async (feedbackData) => {
 }
 
 onMounted(async () => {
-  await myUserStore.initUser(608)
+  // await myUserStore.initUser(608)
   await myPersonStore.getPersonTasks()
   typeRadio.value = personCfg.value.typeRadio || "all"
 

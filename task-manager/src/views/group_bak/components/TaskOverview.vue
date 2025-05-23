@@ -41,7 +41,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { isTaskInWeek, getWorkdaysBetweenDates, getWorkdaysInWeek } from '@/utils/public'
+import { isTaskInWeek, calWorkdays, getWorkdaysInWeek } from '@/utils/public'
 
 const props = defineProps({
   users: {
@@ -159,7 +159,7 @@ const userTaskData = computed(() => {
                 
                 if (!isTaskInWeek(week, task)) return
                 // 计算当前任务在这一周内的总工作量
-                const taskDuration = getWorkdaysBetweenDates(task.start_date, task.end_date)
+                const taskDuration = calWorkdays(task.start_date, task.end_date)
                 const peerDayWorkload = task.workload / taskDuration
                 const workdaysInWeek = getWorkdaysInWeek(week, task)
                 const weekWorkload = peerDayWorkload * workdaysInWeek

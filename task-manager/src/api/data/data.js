@@ -106,3 +106,8 @@ export const deleteProject = (name) => del(`/projects/${name}`)
 
 
 export const commitEvalution = (params) => post('/evaluations/',params)
+
+
+//获取日志
+
+export const getLogList = (params) => get('/logs/',params)

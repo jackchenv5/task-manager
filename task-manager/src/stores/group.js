@@ -1,100 +1,126 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/user'
-import { formatDate } from '@/utils/public'
+import { getFisrtAndLastDayOfMonth, getYearAndMonth,getWeeksInMonth } from '@/utils/public'
+import { workLoadStat,groupWorkloadSaturation } from '@/utils/tasksStat'
 import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi } from '@/api/data/data'
-
+import { storeToRefs } from 'pinia'
 const myUserStore = useUserStore()
-
+const { loginUser } = storeToRefs(myUserStore)
 
 export const useGroupStore = defineStore('group', () => {
-  const allTask = ref([])
+  // 系统总组
   const allGroup = ref([])
+  // 当前组配置
   const groupCfg = ref({})
-  const groupId = ref(-1)
+  // 当前选中组
+  const selectGroupID = ref(-1)
 
-  const  getAllTask = async (curGroupId,startDate,endDate) => {
-    if (curGroupId === undefined) {
-      if (groupId.value == -1) {
-        groupId.value = myUserStore.loginUser.config.group.selectedGroupId ? myUserStore.loginUser.config.group.selectedGroupId : myUserStore.loginUser.group
-      }
-      curGroupId = groupId.value
-    }
-    if (startDate === undefined && endDate === undefined) {
-      const currentDate = new Date()
-      const year = currentDate.getFullYear()
-      const month = currentDate.getMonth() + 1
-      
-      const firstDay = new Date(year, month - 1, 1)
-      const lastDay = new Date(year, month, 0)
-      
-      startDate = formatDate(firstDay)
-      endDate = formatDate(lastDay)
-    }
-    // 根据用户id和起止时间获取后端的数据
-    const params = {'group': curGroupId, 'start_time': startDate, 'deadline_time': endDate}
-    const response = await getTaskDataApi(params)
-    // { id: 10001, text: 'Test1xxxxx', status: '进行中', start_date: '2025-02-01', end_date: '2025-02-03 23:59:59', hours: 28, project: '项目1xxxxxxx', tl: '朱元璋', worker: '张三', process: '30%', workdays: 1}
-    let groupTasks = []
-    response.result.items.forEach(e => {
-        e.start_date = e.start_time
-        e.end_date = e.deadline_time
-        if (e.progress === null) {
-          e.progress = '0'
-        }
-        groupTasks.push(e)
-    })
-    allTask.value = groupTasks
-  };
+  const curSeletMonthDate = ref(new Date())
+
+  const initSelectGroupID = () => {
+    selectGroupID.value = loginUser.value.group
+  }
+  const updateGroupID = (id) => {
+    selectGroupID.value = id
+  }
+
+  const selectGroup = computed(() => {
+    return allGroup.value.find(item => item.id === selectGroupID.value)
+  })
+
+  const selectGroupCount = computed(() => {
+    return selectGroup.value?.users?.length || 0 
+  })
+
+  const selectGroupUsers = computed(() => {
+    console.log('user ............',selectGroup.value)
+    return selectGroup.value?.users || []
+  })
+
+  const weeksRef = computed(() => {
+    const [year, month] = getYearAndMonth(curSeletMonthDate.value)
+    return getWeeksInMonth(year, month)
+  })
+
   
-  const  getAllGroup = async () => {
-    // 获取所有组员信息数据
-    const params = {}
-    const response = await getUserGroupApi(params)
-    allGroup.value = response.result.items
-  }
+  // 当前月份总任务
+  const allTask = ref([])
 
-  const getGroupCfg = async () => {
-    // 获取用户组配置信息
-    groupCfg.value = myUserStore.getUserConfig("group") ? myUserStore.getUserConfig("group") : {}
-    if (!groupCfg.value.hasOwnProperty('selectedGroupId')) {
-      groupCfg.value['selectedGroupId'] = myUserStore.loginUser.group
-    }
-    if (!groupCfg.value.hasOwnProperty('selectedStatus')) {
-      groupCfg.value['selectedStatus'] = 'all'
-    }
 
-  }
+  const initAllTask = async () => {
+    // 登陆逻辑完成后， 用户登陆后就可以获取用户组ID
+    const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value)
+    const params = { 'group': selectGroupID.value, 'start_time': start, 'deadline_time': end }
+    const response = await getTaskDataApi(params)
+    allTask.value = response.result?.items ? response.result?.items : []
+    console.log('allTask', allTask.value)
+  };
 
-  const setGroupCfg = (key, value) => {
-    groupCfg.value[key] = value
-    myUserStore.setUserConfig("group", groupCfg.value)
-  }
-  const dispatchTask = async (params) => {
-    const res = await taskPublishApi(params)
-    return res
-  }
-  const uploadAllChange = async (changeIndexs) => {
-    
-    const promises = changeIndexs.map(async (index) => {
-      const newTask = allTask.value[index];
-      const params = {start_time: newTask.start_date, deadline_time: newTask.end_date};
-      
-      try {
-        const res = await taskModifyApi(newTask.id, params)
-        return { success: true, name: newTask.name }
-      } catch (error) {
-        return { success: false, name: newTask.name, error }
-      }
-    });
-    
-    const results = await Promise.all(promises);
-    const failMsg = results
-      .filter(r => !r.success)
-      .map(r => `任务 ${r.name} 更新失败: ${r.error.message}`)
-      .join('\n')
-    return failMsg
-  }
+  const groupStat = computed(() => {
+    const stat = workLoadStat(allTask.value)
+    console.log('stat ===========>',stat)
+    return stat
+  })
 
-  return { allTask, allGroup, groupCfg, groupId, getAllTask, dispatchTask, getAllGroup, getGroupCfg, setGroupCfg, uploadAllChange }
+ const groupWorkloadSaturationRef = computed(() => {
+  const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value,false)
+    const stat = groupWorkloadSaturation(groupStat.value.total,selectGroupCount.value,start,end)
+    console.log('stat ===========>',stat)
+    return stat
+  })
+// 当前选中任务类型
+const curTaskType = ref('all')
+
+
+//  组方法
+const initAllGroup = async () => {
+  // 获取所有组员信息数据
+  const params = {}
+  const response = await getUserGroupApi()
+  allGroup.value = response?.result?.items
+  console.log('group init .........', allGroup.value)
+}
+
+// 计算属性
+//  当前Table 数据
+// 从allTak中筛选，用户 和 任务类型
+
+const curTableData = computed(() => {
+})
+// 当前用户Gantt数据 
+const curGanttData = computed(() => {
+})
+
+
+// 组配置保存
+const initGroupCfg = async () => {
+  // 获取用户组配置信息
+  groupCfg.value = myUserStore.getUserConfig("group") ? myUserStore.getUserConfig("group") : {}
+  console.log(groupCfg.value)
+}
+
+const setGroupCfg = (key, value) => {
+  groupCfg.value[key] = value
+  myUserStore.setUserConfig("group", groupCfg.value)
+}
+
+const init = async () => {
+  await initAllGroup()
+  await initGroupCfg()
+  initSelectGroupID()
+  await initAllTask()
+}
+
+return { 
+  init, 
+  allGroup, selectGroup, selectGroupID, updateGroupID,
+  //任务数据
+  allTask,
+  // 统计数据
+  groupStat,groupWorkloadSaturationRef,selectGroupUsers,
+  //周 表数据
+  curSeletMonthDate,weeksRef
+}
+
 })

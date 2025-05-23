@@ -3,8 +3,10 @@ from django.db.models.signals import pre_save, post_delete
 from django.dispatch import receiver
 from common.utils import custom_model_to_dict
 from django.contrib.contenttypes.models import ContentType
-from .models import Signals
 
+from task.serializers import TaskSerializer
+from .models import Signals
+import json
 
 from threadlocals.threadlocals import get_current_request
 
@@ -48,6 +50,9 @@ def log_pre_save(sender, instance, **kwargs):
 
         if action == 'created':
             title,conent = instance.get_signal_log(action,user)
+            # 使用 TaskSerializer 序列化为 JSON
+            serializer = TaskSerializer(instance)
+            json_data = serializer.data  # 返回字典格式的序列化数据
             Signals.objects.create(
                 content_type=ContentType.objects.get_for_model(instance),
                 object_id=str(instance.pk),  # 强制转为字符串
@@ -55,6 +60,8 @@ def log_pre_save(sender, instance, **kwargs):
                 user=user,
                 title=title,
                 content=conent,
+                project=instance.project,
+                changed_fields=json_data
             )
         else:
             changed_fields = get_changed_fields(instance)
@@ -66,6 +73,8 @@ def log_pre_save(sender, instance, **kwargs):
                 user=user,
                 title=title,
                 content=conent,
+                project=instance.project,
+                changed_fields=json.dumps(changed_fields)
             )
 
 
@@ -76,6 +85,8 @@ def log_delete(sender, instance, **kwargs):
     action='deleted'
     user=get_user_for_instance()
     title,conent = instance.get_signal_log(action,user)
+    serializer = TaskSerializer(instance)
+    json_data = serializer.data  # 返回字典格式的序列化数据
     Signals.objects.create(
         content_type=ContentType.objects.get_for_model(instance),
         object_id=str(instance.pk),  # 强制转为字符串
@@ -83,5 +94,7 @@ def log_delete(sender, instance, **kwargs):
         user=user,
         title=title,
         content=conent,
+        project=instance.project,
+        changed_fields=json_data
     )
 

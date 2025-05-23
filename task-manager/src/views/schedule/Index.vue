@@ -49,9 +49,7 @@ import { useUserStore } from '@/stores/user'
 const myUserStore = useUserStore()
 onMounted(() => {
   scheduleStore.getTableData()
-  myUserStore.initUser(608).then(()=>{
-    scheduleStore.initScheduleConfig()
-  })
+  scheduleStore.initScheduleConfig()
 });
 
 onUnmounted(() => {

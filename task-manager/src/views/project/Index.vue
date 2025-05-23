@@ -43,10 +43,7 @@ const myUserStore = useUserStore()
 const projectStore = useProjectStore()
 
 onMounted(() => {
-  myUserStore.initUser(608).then(()=>{
-    projectStore.init()
-  })
-  
+  projectStore.init()
 });
 </script>
 
