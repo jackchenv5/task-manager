@@ -27,19 +27,22 @@ export const useGroupStore = defineStore('group', () => {
 
   const loading = ref(false)
 
+  const curTableSelectedIDs = ref([])
+  const changeCurTableSelectedIDs = (ids) => {
+    curTableSelectedIDs.value = ids
+  }
 
-  watch([curSelectUserName,selectWeek], ([u,w]) => {
-    console.log('user change',u,w)
-  })
   const changeSelectUserName = (name) => {
     curSelectUserName.value = name
     selectWeek.value = {}
+    curTaskType.value = TaskStatus.ALL
   }
 
 
   const changeWeek = (userName,week) => {
     curSelectUserName.value = userName
     selectWeek.value = week
+    curTaskType.value = TaskStatus.ALL
   }
   const goToday = () => {
     curSeletMonthDate.value = new Date()
@@ -47,6 +50,7 @@ export const useGroupStore = defineStore('group', () => {
   } 
   const cleanUser = () => {
     curSelectUserName.value = ''
+    curTaskType.value = TaskStatus.ALL
     selectWeek.value = {}
   }
   watch(curSeletMonthDate, (newValue, oldValue) => {
@@ -110,6 +114,28 @@ export const useGroupStore = defineStore('group', () => {
     console.log('allTask', allTask.value)
   };
 
+  const uploadAllChange = async (changeIndexs) => {
+    
+    const promises = changeIndexs.map(async (index) => {
+      const newTask = allTask.value[index];
+      const params = {start_time: newTask.start_date, deadline_time: newTask.end_date};
+      
+      try {
+        const res = await taskModifyApi(newTask.id, params)
+        return { success: true, name: newTask.name }
+      } catch (error) {
+        return { success: false, name: newTask.name, error }
+      }
+    });
+    
+    const results = await Promise.all(promises);
+    const failMsg = results
+      .filter(r => !r.success)
+      .map(r => `任务 ${r.name} 更新失败: ${r.error.message}`)
+      .join('\n')
+    return failMsg
+  }
+
   const groupStat = computed(() => {
     const stat = workLoadStat(allTask.value)
     console.log('stat ===========>', stat)
@@ -118,7 +144,7 @@ export const useGroupStore = defineStore('group', () => {
 
   const curSelectUserTasks = computed(() => {
     if (!curSelectUserName.value) {
-      return []
+      return allTask.value
     }
     const curSelectUserTasks = allTask.value.filter(item => item.receiver_name === curSelectUserName.value)
     return curSelectUserTasks
@@ -137,9 +163,18 @@ export const useGroupStore = defineStore('group', () => {
     const stat = workLoadStat(curSelectUserTasks.value)
     return stat
   })
+  const curSelectTasksReceiverList = computed(() => {
+    return  curSelectUserTasks.value.reduce((acc, item) => {
+      if (!acc.includes(item.receiver_name)) {
+        acc.push(item.receiver_name)
+      }
+      return acc
+    }, [])
+  })
   const curSelectUserWorkloadSaturationRef = computed(() => {
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
-    const stat = groupWorkloadSaturation(curSelectUserStat.value.total, 1, start, end)
+
+    const stat = groupWorkloadSaturation(curSelectUserStat.value.total, curSelectTasksReceiverList.length , start, end)
     return stat
   })
   const groupWorkloadSaturationRef = computed(() => {
@@ -158,14 +193,9 @@ export const useGroupStore = defineStore('group', () => {
     console.log('group init .........', allGroup.value)
   }
 
-  // 计算属性
-  //  当前Table 数据
-  // 从allTak中筛选，用户 和 任务类型
-
-  const curTableData = computed(() => {
-  })
   // 当前用户Gantt数据 
   const curGanttData = computed(() => {
+     return allTask.value.map(x => ({...x,start_date:x.start_time,end_date:x.deadline_time}))
   })
 
 
@@ -181,6 +211,17 @@ export const useGroupStore = defineStore('group', () => {
     myUserStore.setUserConfig("group", groupCfg.value)
   }
 
+  const dispatchTask = async () => {
+    if(curTableSelectedIDs.value.length === 0){
+      return [false,'请至少选择一个任务！']
+    }else{
+      const IDS = curTableSelectedIDs.value.join(",")
+      const res = await taskPublishApi({'ids': IDS, 'publisher': loginUser.value.id})
+      initAllTask()
+      return [true,"任务已下发"]
+    }
+    
+  }
   const init = async () => {
     await initAllGroup()
     await initGroupCfg()
@@ -189,7 +230,7 @@ export const useGroupStore = defineStore('group', () => {
   }
 
   return {
-    init,
+    init,curTaskType,
     allGroup, selectGroup, selectGroupID, updateGroupID,
     //任务数据
     allTask,
@@ -198,12 +239,14 @@ export const useGroupStore = defineStore('group', () => {
     //周 表数据
     curSeletMonthDate, weeksRef, changeMonth,
     // 当前用户
-    curSelectUserName, changeSelectUserName,cleanUser,
+    curSelectUserName, changeSelectUserName,cleanUser,curSelectTasksReceiverList,
     curSelectUserStat,curSelectUserWorkloadSaturationRef,
     //table
-    curSelectUserFilterTasks,loading,
+    curSelectUserFilterTasks,loading,curTableSelectedIDs,changeCurTableSelectedIDs,dispatchTask,
     // 当前周
-    selectWeek, changeWeek,goToday,
+    selectWeek, changeWeek,goToday,uploadAllChange,
+    // gantt
+    curGanttData,
   }
 
 })
