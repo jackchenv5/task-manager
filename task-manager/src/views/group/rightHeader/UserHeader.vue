@@ -1,33 +1,29 @@
 <template>
       <div class="header">
         <div class="group-info">
-          <el-avatar :size="50" fit="full" style="font-size: 1.2rem;background-color: rgb(16, 136, 116);" shape="square">陈</el-avatar>
+          <el-avatar :size="50" fit="full" style="font-size: 1.2rem;background-color: rgb(16, 136, 116);" shape="square">{{ curSelectUserName[0] }}</el-avatar>
           <div style="display: flex;flex-direction:column;justify-content: space-around">
-            <div style="font-size: 1.125rem;font-weight: 500;color: black;"> 陈成</div>
+            <div style="font-size: 1.125rem;font-weight: 500;color: black;"> {{ curSelectUserName }}</div>
             <div style="color:#00000073">最近很忙</div>
           </div>
 
         </div>
         <div style="display:flex;width: 30vw;justify-content: space-around;">
           <div class="group-info-item">
-            <div class="group-info-item-title">任务</div>
-            <div class="group-info-item-content">20/50</div>
-          </div>
-          <div class="group-info-item">
             <div class="group-info-item-title">工作量</div>
-            <div class="group-info-item-content">20人</div>
+            <div class="group-info-item-content">{{curSelectUserStat.completed}}/{{ curSelectUserStat?.total }}</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">饱和度</div>
-            <div class="group-info-item-content">20人</div>
+            <div class="group-info-item-content">{{ curSelectUserWorkloadSaturationRef }}%</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">项目</div>
-            <div class="group-info-item-content">20个</div>
+            <div class="group-info-item-content">{{curSelectUserStat.projects?.length}}个</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">待办</div>
-            <div class="group-info-item-content">12/20</div>
+            <div class="group-info-item-content">{{curSelectUserStat?.pendCount}}/{{ curSelectUserStat?.allCount }}</div>
           </div>
         </div>
       </div>
@@ -36,7 +32,10 @@
 
 
 <script setup>
-
+import {useGroupStore  } from '@/stores/group.js'
+import {  storeToRefs } from 'pinia'
+const groupStore = useGroupStore();
+const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef} = storeToRefs(groupStore);
 </script>
 
 

@@ -8,7 +8,8 @@ import {calWorkdays} from '@/utils/public'
 export const workLoadStat = (tasks) => {
   const initial = { total: 0, completed: 0, progress: 0, progressPer: 0, finish: 0, pend: 0, allCount: 0, finishCount: 0, pendCount: 0, progressCount:0, projects: [] };
 
-  if (tasks.length === 0) return initial;
+  console.log('tasks',tasks)
+  if ( !tasks.length || tasks.length === 0 ) return initial;
 
   return tasks.reduce((acc, task) => {
     const workload = Number(task.workload) || 0;
@@ -46,7 +47,7 @@ export const workLoadStat = (tasks) => {
 
 export const groupWorkloadSaturation = (workloads,groupNum,startDate,endDate) => {
   const  workdays = calWorkdays(startDate, endDate)
-  console.log(workdays,groupNum,startDate,endDate)
+  console.log('workload staturation',workdays,groupNum,startDate,endDate)
   const per = workloads /(groupNum * workdays) * 100
   return per.toFixed(1)
 };

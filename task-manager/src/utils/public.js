@@ -143,6 +143,7 @@ const GetWorkdaysInMonth = (dateInfo) => {
 // 判断任务是否在当前周内
 function IsTaskInWeek(week, task) {
     // 将日期字符串转换为日期对象
+    if(Object.keys(week).length === 0) return true
     const weekStart = new Date(week.start);
     const weekEnd = new Date(week.end);
     const taskStart = new Date(task.start_time);
@@ -251,46 +252,46 @@ export const TaskStatus = {
 export function getWeeksInMonth(year, month) {
     const firstDay = new Date(year, month - 1, 1)
     const lastDay = new Date(year, month, 0)
-  
+
     const weeks = []
     let currentWeekStart = new Date(firstDay)
-  
+
     // 调整到周一开始
     if (currentWeekStart.getDay() !== 1) {
-      const diff = currentWeekStart.getDay() - 1
-      currentWeekStart.setDate(currentWeekStart.getDate() - (diff >= 0 ? diff : 6))
+        const diff = currentWeekStart.getDay() - 1
+        currentWeekStart.setDate(currentWeekStart.getDate() - (diff >= 0 ? diff : 6))
     }
-  
+
     let weekIndex = 1
-  
+
     while (currentWeekStart <= lastDay) {
-      // 计算本周的实际开始和结束日期
-      const actualStart = currentWeekStart < firstDay ? firstDay : currentWeekStart
-      const weekEnd = new Date(currentWeekStart).setDate(currentWeekStart.getDate() + 6)
-      const actualEnd = weekEnd > lastDay ? lastDay : weekEnd
-  
-      // 仅当周的开始或结束日期在当月内时才添加
-      if (actualStart <= lastDay && actualEnd >= firstDay) {
-        // 计算工作日天数
-        const workday = calWorkdays(actualStart, actualEnd);
-  
-        weeks.push({
-          start: formatDate(actualStart),
-          end: formatDate(actualEnd),
-          label: `第${weekIndex}周`,
-          workday: workday
-        })
-        weekIndex++
-      }
-  
-      currentWeekStart.setDate(currentWeekStart.getDate() + 7)
+        // 计算本周的实际开始和结束日期
+        const actualStart = currentWeekStart < firstDay ? firstDay : currentWeekStart
+        const weekEnd = new Date(currentWeekStart).setDate(currentWeekStart.getDate() + 6)
+        const actualEnd = weekEnd > lastDay ? lastDay : weekEnd
+
+        // 仅当周的开始或结束日期在当月内时才添加
+        if (actualStart <= lastDay && actualEnd >= firstDay) {
+            // 计算工作日天数
+            const workday = calWorkdays(actualStart, actualEnd);
+
+            weeks.push({
+                start: formatDate(actualStart),
+                end: formatDate(actualEnd),
+                label: `第${weekIndex}周`,
+                workday: workday
+            })
+            weekIndex++
+        }
+
+        currentWeekStart.setDate(currentWeekStart.getDate() + 7)
     }
     return weeks
 }
-export  function calWorkdays(startDate, deadlineDate) {
+export function calWorkdays(startDate, deadlineDate) {
     let count = 0;
-    const currentDate =  new Date(startDate);
-    const  endDate = new Date(deadlineDate);
+    const currentDate = new Date(startDate);
+    const endDate = new Date(deadlineDate);
 
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
@@ -316,7 +317,7 @@ export function getFisrtAndLastDayOfMonth(date, isStr = true) {
     return [firstDay, lastDay]
 }
 
-export function getYearAndMonth(date, isStr=false) {
+export function getYearAndMonth(date, isStr = false) {
     const dateObj = date ? date : new Date()
 
     const year = dateObj.getFullYear()
@@ -371,3 +372,54 @@ export const formatDateTime = (date) => {
 export const getCUrrentMonth = () => {
     return new Date().getMonth() + 1;
 };
+export const getUserWeeksDataMap = (tasks,weeks, users) => {
+    const result = {}
+    users.forEach(userName => {
+        result[userName] = {}
+        weeks.forEach((week, index) => {
+
+            let currentWeekWorkloads = 0
+            let count = 0
+
+            tasks.forEach(task => {
+                // 如果任务执行者不是当前选中的用户， 继续遍历下一个
+                if (task.receiver_name !== userName) return
+
+                if (!isTaskInWeek(week, task)) return
+                // 计算当前任务在这一周内的总工作量
+                const taskDuration = calWorkdays(task.start_time, task.deadline_time)
+                const peerDayWorkload = task.workload / taskDuration
+                const workdaysInWeek = getWorkdaysInWeek(week, task)
+                const weekWorkload = peerDayWorkload * workdaysInWeek
+
+                currentWeekWorkloads += weekWorkload
+                count += 1
+            })
+
+            // 计算饱和度，防止除零错误
+            const saturation = week.workday > 0 ? (currentWeekWorkloads / week.workday) * 100 : 0
+
+            // 根据饱和度设置背景颜色
+            let bgColor = '#eee'
+            if (saturation > 0 && saturation < 100) {
+                bgColor = 'rgb(94, 94, 214)'
+            } else if (saturation >= 100 && saturation <= 110) {
+                bgColor = 'green'
+            } else if (saturation > 110 && saturation <= 120) {
+                bgColor = 'orange'
+            } else if (saturation > 120) {
+                bgColor = 'rgb(129, 9, 9)'
+            }
+
+            result[userName][index] = {
+                bgColor: bgColor,
+                count: count,
+                saturation: saturation.toFixed(0)
+            }
+            week[userName] = saturation.toFixed(0)
+        })
+    })
+
+    return result
+
+}

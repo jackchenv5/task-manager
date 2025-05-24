@@ -33,7 +33,7 @@
 </template>
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { isTaskInWeek, calWorkdays, getWorkdaysInWeek,getYearAndMonth } from '@/utils/public'
+import { isTaskInWeek, calWorkdays,getYearAndMonth,getWorkdaysInWeek,getUserWeeksDataMap} from '@/utils/public'
 
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
@@ -45,87 +45,9 @@ const headers = computed(() => {
   return ['用户名', ...weeksRef.value.map(week => week.label)]
 })
 
-const props = defineProps({
-  users: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  totalTasks: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  selectedStatus: {
-    type: String,
-    required: true,
-    default: () => ""
-  },
-  selectedMonth: {
-    type: Array,
-    required: true,
-    default: () => [new Date().getFullYear(), new Date().getMonth() + 1]
-  }
-})
-
-const emit = defineEmits(['update:selectedMonth', 'update:selectedUser', 'update:selectedWeek', 'update:isLoading'])
-
-// 计算当前月的周信息
-
-
-
 // 获取用户每一周的任务情况， 任务总数和饱和度
 const userTaskData = computed(() => {
-  const result = {}
-
-  selectGroupUsers.value.forEach(userName => {
-    result[userName] = {}
-    weeksRef.value.forEach((week, index) => {
-
-      let currentWeekWorkloads = 0
-      let count = 0
-
-      allTask.value.forEach(task => {
-        // 如果任务执行者不是当前选中的用户， 继续遍历下一个
-        if (task.receiver_name !== userName) return
-
-        if (!isTaskInWeek(week, task)) return
-        // 计算当前任务在这一周内的总工作量
-        const taskDuration = calWorkdays(task.start_time, task.deadline_time)
-        const peerDayWorkload = task.workload / taskDuration
-        const workdaysInWeek = getWorkdaysInWeek(week, task)
-        const weekWorkload = peerDayWorkload * workdaysInWeek
-
-        currentWeekWorkloads += weekWorkload
-        count += 1
-      })
-
-      // 计算饱和度，防止除零错误
-      const saturation = week.workday > 0 ? (currentWeekWorkloads / week.workday) * 100 : 0
-
-      // 根据饱和度设置背景颜色
-      let bgColor = '#eee'
-      if (saturation > 0 && saturation < 100) {
-        bgColor = 'rgb(94, 94, 214)'
-      } else if (saturation >= 100 && saturation <= 110) {
-        bgColor = 'green'
-      } else if (saturation > 110 && saturation <= 120) {
-        bgColor = 'orange'
-      } else if (saturation > 120) {
-        bgColor = 'rgb(129, 9, 9)'
-      }
-
-      result[userName][index] = {
-        bgColor: bgColor,
-        count: count,
-        saturation: saturation.toFixed(2)
-      }
-      week[userName] = saturation.toFixed(2)
-    })
-  })
-  console.log('result....................',result)
-
-  return result
+  return getUserWeeksDataMap(allTask.value,weeksRef.value,selectGroupUsers.value)
 })
 
 // 根据用户名和weekIndex获取其背景色、任务总数、饱和度
@@ -142,62 +64,27 @@ const getSaturation = (userName, index) => {
 }
 
 const changeUserData = (userName) => {
-  emit('update:isLoading', true)
-  emit('update:selectedUser', userName)
-  emit('update:selectedWeek', '')
+  groupStore.changeSelectUserName(userName)
 }
 
 const changeUserWeekData = (userName, week) => {
-  emit('update:isLoading', true)
-  emit('update:selectedUser', userName)
-  emit('update:selectedWeek', week)
+  groupStore.changeWeek(userName,week)
 }
 
 const selectedAll = () => {
-  emit('update:isLoading', true)
-  emit('update:selectedUser', '')
-  emit('update:selectedWeek', '')
+  groupStore.cleanUser()
 }
-
-// 日期信息计算属性
-const dateInfo = computed({
-  get() {
-    return {
-      year: props.selectedMonth[0],
-      month: props.selectedMonth[1]
-    }
-  },
-  set(value) {
-    emit('update:selectedMonth', [value.year, value.month])
-  }
-})
-
 // 月份导航方法
 const prevMonth = () => {
-  let [year, month] = props.selectedMonth
-  if (month === 1) {
-    year--
-    month = 12
-  } else {
-    month--
-  }
-  emit('update:selectedMonth', [year, month])
+  groupStore.changeMonth(true)
 }
 
 const nextMonth = () => {
-  let [year, month] = props.selectedMonth
-  if (month === 12) {
-    year++
-    month = 1
-  } else {
-    month++
-  }
-  emit('update:selectedMonth', [year, month])
+  groupStore.changeMonth(false)
 }
 
 const goToday = () => {
-  const today = new Date()
-  emit('update:selectedMonth', [today.getFullYear(), today.getMonth() + 1])
+  groupStore.goToday()
 }
 </script>
 <style>

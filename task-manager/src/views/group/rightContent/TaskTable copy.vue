@@ -215,17 +215,18 @@
         :max-height="tableMaxHeight"
         show-header
         stripe
+        :loading="isLoading"
         auto-resize
         :row-config="{ isHover: true }"
-        :data="curSelectUserFilterTasks" 
+        :data="filteredTasks" 
         @checkbox-all="selectAllChangeEvent"
         @checkbox-change="selectChangeEvent">
         <vxe-column type="checkbox" width="40"></vxe-column>
         <vxe-column field="name" title="任务名" width="120" show-overflow></vxe-column>
         <vxe-column field="status_name" title="状态" width="80"></vxe-column>
         <vxe-column field="receiver_name" title="执行人" width="80"></vxe-column>
-        <vxe-column field="start_time" title="开始时间" width="100" show-overflow></vxe-column>
-        <vxe-column field="deadline_time" title="截止时间" width="100" show-overflow></vxe-column>
+        <vxe-column field="start_date" title="开始时间" width="100" show-overflow></vxe-column>
+        <vxe-column field="end_date" title="截止时间" width="100" show-overflow></vxe-column>
         <vxe-column field="workload" title="工作量(天)" width="100"></vxe-column>
         <vxe-column field="project" title="项目" width="130" show-overflow></vxe-column>
         <vxe-column field="creator_name" title="创建人" width="110"></vxe-column>
@@ -248,10 +249,6 @@ import { useUserStore } from '@/stores/user'
 import Select from '@/components/selects/MutiSelect.vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import { getUserApi, taskModifyApi } from '@/api/data/data'
-
-import {  storeToRefs } from 'pinia'
-const groupStore = useGroupStore();
-const {curSelectUserFilterTasks,loading} = storeToRefs(groupStore);
 
 // 日历选择器中文显示
 const locale = zhCn
@@ -302,7 +299,6 @@ const dateRange = computed({
 })
 const handleEditClick = (row) => {
     // currentTask.value = row
-    console.log('row============>',row)
     currentTask.value = {...row, sender:row.sender.split(",")}
     showDetailPanel.value = true
 }
