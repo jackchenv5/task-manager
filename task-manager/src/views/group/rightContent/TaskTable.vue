@@ -241,7 +241,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { VxeUI } from 'vxe-table'
-import { getProgressStatus } from '@/utils/public'
+import { getProgressStatus,isTaskInWeek } from '@/utils/public'
 import { ElMessage } from 'element-plus';
 import { useGroupStore } from '@/stores/group'
 import { useUserStore } from '@/stores/user'
@@ -251,58 +251,32 @@ import { getUserApi, taskModifyApi } from '@/api/data/data'
 
 import {  storeToRefs } from 'pinia'
 const groupStore = useGroupStore();
-const {curSelectUserFilterTasks,loading} = storeToRefs(groupStore);
+const {curSelectUserFilterTasks,selectWeek} = storeToRefs(groupStore);
 
 // 日历选择器中文显示
 const locale = zhCn
 
 const myGroupStore = useGroupStore()
 const myUserStore = useUserStore()
-const emit = defineEmits(['update:refreshGroup', 'update:adjustTasks'])
-
-const props = defineProps({
-  groups: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  selectedGroupId: {
-    type: Number,
-    required: true,
-    default: () => -1
-  },
-  filteredTasks: {
-    type: Array,
-    required: true,
-    default: () => []
-  },
-  isLoading: {
-    type: Boolean,
-    required: true,
-    default: () => true
-  },
-})
 
 const tableMaxHeight = computed(() => window.innerHeight * 0.72)
 
 const showDetailPanel = ref(false)
 const currentTask = ref(null)
-// const dateRange = computed(() => [currentTask.value.start_date, currentTask.value.end_date])
 const dateRange = computed({
-  get: () => [currentTask.value.start_date, currentTask.value.end_date],
+  get: () => [currentTask.value.start_time, currentTask.value.deadline_time],
   set: (newValue) => {
     if (newValue) {
-      currentTask.value.start_date = newValue[0]
-      currentTask.value.end_date = newValue[1]
+      currentTask.value.start_time = newValue[0]
+      currentTask.value.deadline_time = newValue[1]
     } else {
-      currentTask.value.start_date = ''
-      currentTask.value.end_date = ''
+      currentTask.value.start_time = ''
+      currentTask.value.deadline_time = ''
     }
   }
 })
 const handleEditClick = (row) => {
     // currentTask.value = row
-    console.log('row============>',row)
     currentTask.value = {...row, sender:row.sender.split(",")}
     showDetailPanel.value = true
 }
@@ -373,10 +347,11 @@ const toggleDetails = () => {
 
 const handleConfirm = async () => {
     const sender = currentTask.value.sender.join(',')
+    console.log('commit task ... ',currentTask.value)
     const params = {workload: currentTask.value.workload, 
                     sender: sender, 
-                    start_time: currentTask.value.start_date, 
-                    deadline_time: currentTask.value.end_date,
+                    start_time: currentTask.value.start_time, 
+                    deadline_time: currentTask.value.deadline_time,
                     receiver: currentTask.value.receiver}
     try {
       const res = await taskModifyApi(currentTask.value.id, params)
