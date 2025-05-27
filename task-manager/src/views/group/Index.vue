@@ -2,7 +2,7 @@
   <div style="display: flex; height: 90vh;background-color: whitesmoke; width: 100%;">
     <div class="left">
       <GroupHeader></GroupHeader>
-      <Weeks></Weeks>
+      <Weeks style="flex-grow: 1;"></Weeks>
     </div>
     
     <div class="right">
@@ -51,10 +51,10 @@ onMounted(() => {
 
 .left,
 .right {
-  flex: 1;
+  width: 50vw;
   display: flex;
   flex-direction: column;
-  justify-content: start;
+  /* flex: 1; */
   align-items: start;
   /* border-left: 2px solid ; */
   /* border: 1px solid #ccc; */

@@ -104,10 +104,16 @@ export const addProject = (params) => post('/projects/',params)
 export const modifyProject = (name,params) => patch(`/projects/${name}/`,params)
 export const deleteProject = (name) => del(`/projects/${name}`)
 
-
+// 评论
 export const commitEvalution = (params) => post('/evaluations/',params)
+
+export const updateEvalution = (id,params) => patch(`/evaluations/${id}/`,params)
+
+export const getEvaluation= (params) => get('/evaluations/',params)
 
 
 //获取日志
 
 export const getLogList = (params) => get('/logs/',params)
+
+

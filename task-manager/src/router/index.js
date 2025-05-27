@@ -38,7 +38,7 @@ router.beforeEach(async (to, from, next) => {
         // 已登录 跳过
         // 未登录，会自动重定向到登陆界面
   const userStore = useUserStore()
-  userStore.checkLoginAndStore()
+  await userStore.checkLoginAndStore()
   // 本地记录当前用户信息  
   next()
 })

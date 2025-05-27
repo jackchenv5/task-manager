@@ -219,7 +219,7 @@ const dispatchTasks = async () => {
     }
 
     const ids = selectedRows
-      .map(row => row.id)  // 提取每个 Proxy 对象的 id
+      .map(row => row.id)  // 提取每个 Proxy 对象的 id  
       .join(',');
     const params = { 'ids': ids, 'publisher': myUserStore.loginUser.id, }
     try {

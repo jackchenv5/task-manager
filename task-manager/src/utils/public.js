@@ -28,9 +28,13 @@ const IsWorkday = (date) => {
 };
 
 // 辅助函数：格式化日期为 YYYY-MM-DD
-const FormatDate = (date) => {
+export const formatDate = (date,isMonth=false) => {
     if (!(date instanceof Date)) date = new Date(date);
-    return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    if(isMonth) return `${year}-${month}`
+    return `${year}-${month}-${day}`;
 };
 
 
@@ -170,7 +174,6 @@ function IsTaskInWeek(week, task) {
 
 // 封装基础方法
 export const isWorkday = (date) => IsWorkday(date)
-export const formatDate = (date) => FormatDate(date)
 export const formatVxeDate = (date) => FormatVxeDate(date)
 export const getDayTotalWorkHours = (events, transStr) => GetDayTotalWorkHours(events, transStr)
 export const getProgressStatus = (process) => GetProgressStatus(process)
@@ -423,3 +426,4 @@ export const getUserWeeksDataMap = (tasks,weeks, users) => {
     return result
 
 }
+

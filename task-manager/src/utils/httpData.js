@@ -30,7 +30,8 @@ service.interceptors.response.use(
       403: '没有权限',
       500: '服务器错误'
     }
-    ElMessage.error(Object.keys(error.response.data).map(key => key + ":" + error.response.data[key]).join(",") || '网络异常')
+    const errorMsg = Object.keys(error.response.data).map(key => key + ":" + error.response.data[key]).join(",")
+    ElMessage.error(errorMsg.substring(0, 100) || '网络异常')
     return Promise.reject(error)
   }
 )

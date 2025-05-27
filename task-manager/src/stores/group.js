@@ -1,9 +1,9 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/user'
-import { getFisrtAndLastDayOfMonth, getYearAndMonth, getWeeksInMonth,isTaskInWeek } from '@/utils/public'
+import { getFisrtAndLastDayOfMonth, getYearAndMonth, getWeeksInMonth,isTaskInWeek,formatDate } from '@/utils/public'
 import { workLoadStat, groupWorkloadSaturation } from '@/utils/tasksStat'
-import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi } from '@/api/data/data'
+import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi, getLogList,commitEvalution } from '@/api/data/data'
 import { storeToRefs } from 'pinia'
 import { TaskStatus } from '@/constants/public'
 const myUserStore = useUserStore()
@@ -28,6 +28,16 @@ export const useGroupStore = defineStore('group', () => {
   const loading = ref(false)
 
   const curTableSelectedIDs = ref([])
+  
+  //TODO 组员日志
+  // const groupsLogs = await getLogList({})
+  
+  // 项目日志
+  const updateProjectLogs = async () => {
+    const res = await getLogList({project: curSelectProjectRef.value,timestamp: getDateStr(1)})
+    projectLogs.value = res.length > 0 ? res : []
+  }
+
   const changeCurTableSelectedIDs = (ids) => {
     curTableSelectedIDs.value = ids
   }
@@ -229,11 +239,25 @@ export const useGroupStore = defineStore('group', () => {
     await initAllTask()
   }
 
+  const commitCurUserEvalution = async (user,project,score,comment) => {
+      const ret = await commitEvalution({
+        score:score,
+        comment:comment,
+        project: project,
+        evaluator: loginUser.value.id,
+        evaluated_user: user,
+        evaluation_type: 'group',
+        evaluation_time: formatDate(new Date()),
+      })
+      return ret?.id ? true : false
+  }
+
+
   return {
     init,curTaskType,
     allGroup, selectGroup, selectGroupID, updateGroupID,
     //任务数据
-    allTask,
+    allTask,initAllTask,
     // 统计数据
     groupStat, groupWorkloadSaturationRef, selectGroupUsers,
     //周 表数据
@@ -247,6 +271,8 @@ export const useGroupStore = defineStore('group', () => {
     selectWeek, changeWeek,goToday,uploadAllChange,
     // gantt
     curGanttData,
+    // 评价
+    commitCurUserEvalution,
   }
 
 })

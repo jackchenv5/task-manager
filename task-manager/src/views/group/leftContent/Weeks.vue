@@ -1,34 +1,33 @@
 <template>
-  <div class="weeksRef-container">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+  <div class="weeks-container">
+    <div class="toolbar">
       <div>
         <el-button class="allSelect-el-button" type="primary" @click="selectedAll">全选</el-button>
       </div>
       <p style="flex: 1; text-align: center;font-size:large;font-weight:600">{{ getYearAndMonth(curSeletMonthDate,true) }}</p>
-      <div class="month-selected-button">
+      <div style="margin-right: 20px;">
         <el-button @click="prevMonth">< </el-button>
-            <el-button type="info" @click="goToday">本月</el-button>
+            <el-button type="warning" @click="goToday">本月</el-button>
             <el-button @click="nextMonth">></el-button>
       </div>
     </div>
-
     <div class="table-header">
       <div class="header-cell" v-for="header in headers" :key="header">
         {{ header }}
       </div>
     </div>
 
-    <div class="table-body">
+    <el-scrollbar class="table-body">
       <div class="table-row" v-for="userName in selectGroupUsers" :key="userName">
         <div class="table-cell user-cell" @click="changeUserData(userName)">{{ userName }}</div>
         <div class="table-cell week-cell" v-for="(week, index) in weeksRef" :key="index"
-          :style="{ backgroundColor: getSaturationColor(userName, index) }" @click="changeUserWeekData(userName, week)">
+          :style="{ backgroundColor: getSaturationColor(userName, index),'user-active':userActive }" @click="changeUserWeekData(userName, week)">
           <div>
             {{ getTaskCount(userName, index) }} <br> {{ getSaturation(userName, index) }}%
           </div>
         </div>
       </div>
-    </div>
+    </el-scrollbar>
   </div>
 </template>
 <script setup>
@@ -66,8 +65,9 @@ const getSaturation = (userName, index) => {
 const changeUserData = (userName) => {
   groupStore.changeSelectUserName(userName)
 }
-
+const userActive = ref(false)
 const changeUserWeekData = (userName, week) => {
+  userActive.value = true
   groupStore.changeWeek(userName,week)
 }
 
@@ -88,37 +88,56 @@ const goToday = () => {
 }
 </script>
 <style>
-.weeksRef-container {
+.weeks-container {
   width: 100%;
   height: 80vh;
   background-color: white;
-  /* border: 1px solid #eee; */
-  margin-top: 5px;
+  display: flex;
+  flex-direction: column;
+}
+.toolbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  height: 7vh;
+  background: white;
+  border-right: 1px solid #eee;
+  /* margin-top: 1vh; */
+  gap: 10px;
 }
 
 .table-header {
   display: flex;
-  border-bottom: 1px solid #ebeef5;
+  /* border-bottom: 1px solid #ebeef5; */
   padding: 12px 0;
   font-weight: bold;
-  background-color: #f5f7fa;
+  background-color: #0b0c0e;
+  color  : white;
 }
 
 .header-cell {
   flex: 1;
+  border-left: 1px solid #ebeef5;
   text-align: center;
   padding: 0 10px;
 }
 
 .table-body {
-  max-height: 56vh;
-  overflow-y: auto;
+  flex: 1;  /* 或 flex-grow: 1 */
+  min-height: 0; /* 关键：允许内容收缩 */
+  overflow-y: auto; /* 自动显示滚动条 */
+
 }
 
 .table-row {
   display: flex;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid #b0b4bb;
   padding: 12px 0;
+}
+.table-row:hover,active {
+  background-color: rgb(219, 219, 211);
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  transition: all 0.5s ease-in-out;
 }
 
 .table-cell {
@@ -126,6 +145,7 @@ const goToday = () => {
   text-align: center;
   padding: 0 10px;
 }
+
 
 .user-cell {
   font-weight: 500;
@@ -135,8 +155,10 @@ const goToday = () => {
   min-height: 50px;
   border-radius: 4px;
   margin: 0 5px;
-  background: #C5FBC8;
+  background: #a3abad;
+  color: white;
   cursor: pointer;
+  border-left:3px solid rgba(47, 69, 110, 0.986);
 }
 
 .week-cell {
@@ -151,10 +173,19 @@ const goToday = () => {
 }
 
 .user-cell:hover {
-  border: 2px solid black;
+  border-radius: 10px;
+  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease-in-out;
 }
 
+.user-active {
+  background: #a3abad;
+  color: white;
+  border: 3px solid rgb(196, 164, 164);  /* 红色边框突出选中 */
+  box-shadow: 0 0 5px rgba(235, 178, 178, 0.7);  /* 可选：添加发光效果 */
+}
 .week-cell:hover {
-  border: 2px solid black;
+  border-radius: 10px;
+  transition: all 0.3s ease-in-out;
 }
 </style>

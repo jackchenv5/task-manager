@@ -47,7 +47,8 @@ const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,cu
   justify-content: space-between;
   align-items: center;
   /* border: 1px solid #fafcff; */
-  border-left:2px solid black;
+  border-left:1px solid rgb(248, 244, 244);
+  border-bottom: 1px solid rgb(206, 209, 212);
   height: 10vh;
   background-color: white;
   color: rgba(0, 0, 0, 0.88);
