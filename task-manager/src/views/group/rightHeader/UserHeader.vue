@@ -42,29 +42,33 @@ const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,cu
 <style scoped>
 
 .header {
-  width: 100%;
+  /* padding:0 10px; */
+  margin: 5px;
+  width: 48vw;
+  border-radius: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* border: 1px solid #fafcff; */
-  border-left:1px solid rgb(248, 244, 244);
-  border-bottom: 1px solid rgb(206, 209, 212);
+  /* border: 1px solid white; */
+  /* border-left:1px solid rgb(248, 244, 244); */
+  /* border-bottom: 1px solid rgb(206, 209, 212); */
   height: 10vh;
   background-color: white;
   color: rgba(0, 0, 0, 0.88);
   font-size: 14px;
-  line-height: 1.5714285714285714;
-  list-style: none;
+  /* line-height: 1.5714285714285714; */
+  /* list-style: none; */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 }
 
 
 .group-info {
-  width: 10vw;
+  width: 15vw;
   display: flex;
   height: 5vh;
+  gap:10px;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
 }
 
 .group-info-item{

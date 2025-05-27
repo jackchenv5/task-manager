@@ -102,7 +102,7 @@ const handleLogout = () => {
   justify-content: start; */
   border-bottom: 2px solid #d6dfdf;
   border-top: 1px solid #f5f9f9;
-  background: #ffffff;
+  /* background: #ffffff; */
   width: 100vw;
   height: 6vh;
 }

@@ -1,7 +1,7 @@
 <template>
   <div class="weeks-container">
     <div class="toolbar">
-      <div>
+      <div style="margin-left: 15px;">
         <el-button class="allSelect-el-button" type="primary" @click="selectedAll">全选</el-button>
       </div>
       <p style="flex: 1; text-align: center;font-size:large;font-weight:600">{{ getYearAndMonth(curSeletMonthDate,true) }}</p>
@@ -89,7 +89,12 @@ const goToday = () => {
 </script>
 <style>
 .weeks-container {
-  width: 100%;
+  padding: 10px;
+  margin:5px;
+  width: 48vw;
+  margin-left: 5px;
+  border-radius: 10px;
+  width: 47vw;
   height: 80vh;
   background-color: white;
   display: flex;
@@ -172,9 +177,10 @@ const goToday = () => {
   cursor: pointer;
 }
 
-.user-cell:hover {
+.user-cell,.week-cell:hover {
   border-radius: 10px;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
+  opacity: 0.5; 
   transition: all 0.3s ease-in-out;
 }
 
@@ -184,8 +190,9 @@ const goToday = () => {
   border: 3px solid rgb(196, 164, 164);  /* 红色边框突出选中 */
   box-shadow: 0 0 5px rgba(235, 178, 178, 0.7);  /* 可选：添加发光效果 */
 }
-.week-cell:hover {
+
+/* .week-cell:hover {
   border-radius: 10px;
   transition: all 0.3s ease-in-out;
-}
+} */
 </style>
