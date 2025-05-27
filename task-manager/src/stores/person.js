@@ -1,10 +1,9 @@
 import { ref,computed,watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/user'
-import { formatDate,getFisrtAndLastDayOfMonth } from '@/utils/public'
+import { formatDate,getFisrtAndLastDayOfMonth,reverseDateStr, percentToDecimal } from '@/utils/public'
 import {workLoadStat,groupWorkloadSaturation} from '@/utils/tasksStat'
 import { taskModifyApi, getTaskDataApi } from '@/api/data/data'
-
 import { TaskStatus } from '@/constants/public'
 const myUserStore = useUserStore()
 
@@ -32,6 +31,20 @@ export const usePersonStore = defineStore('person', () => {
   })
 
   const personCfg = myUserStore.getUserConfig("person") ? myUserStore.getUserConfig("person") : {}
+
+  // 甘特数据格式化
+  const curGanttData = computed(() => {
+    if (!allTask.value?.length) return [];
+
+    return allTask.value.map(x => ({
+      ...x,
+      text: x.name,
+      start_date: reverseDateStr(x.start_time),
+      duration: x.diff_days,
+      progress: percentToDecimal(x.progress)
+    }));
+  });  
+  
   const changeMonthDate = (date) => {
       curSeletMonthDate.value = date
       curTaskType.value =  TaskStatus.ALL
@@ -61,6 +74,7 @@ export const usePersonStore = defineStore('person', () => {
   }
   const feedbackTask = async (id, feedInfo) =>{
     const res = await taskModifyApi(id, feedInfo);
+    getPersonTasks()
     return res;
   }
 
@@ -75,6 +89,8 @@ export const usePersonStore = defineStore('person', () => {
     // 统计数据
     stat,workloadSaturation,
     curTaskType,allTask,filteredTasks,
-     personCfg, getPersonTasks, feedbackTask 
+     personCfg, getPersonTasks, feedbackTask ,
+    //  ganntt
+    curGanttData
   }
 })

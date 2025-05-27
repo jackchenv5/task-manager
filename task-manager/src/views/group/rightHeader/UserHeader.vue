@@ -10,8 +10,8 @@
         </div>
         <div style="display:flex;width: 30vw;justify-content: space-around;">
           <div class="group-info-item">
-            <div class="group-info-item-title">工作量</div>
-            <div class="group-info-item-content">{{curSelectUserStat.completed}}/{{ curSelectUserStat?.total }}</div>
+            <div class="group-info-item-title">已完成/工作量</div>
+            <div class="group-info-item-content">{{curSelectUserStat.completed.toFixed(1)}}/{{ curSelectUserStat?.total.toFixed(1) }}</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">饱和度</div>

@@ -6,6 +6,7 @@ import { workLoadStat, groupWorkloadSaturation } from '@/utils/tasksStat'
 import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi, getLogList,commitEvalution } from '@/api/data/data'
 import { storeToRefs } from 'pinia'
 import { TaskStatus } from '@/constants/public'
+import SelectUserVue from '@/components/dialog/SelectUser.vue'
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 
@@ -183,8 +184,9 @@ export const useGroupStore = defineStore('group', () => {
   })
   const curSelectUserWorkloadSaturationRef = computed(() => {
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
-
-    const stat = groupWorkloadSaturation(curSelectUserStat.value.total, curSelectTasksReceiverList.length , start, end)
+    let userNum = 1
+    if(!curSelectUserName.value) userNum = curSelectTasksReceiverList.value.length
+    const stat = groupWorkloadSaturation(curSelectUserStat.value.total, userNum, start, end)
     return stat
   })
   const groupWorkloadSaturationRef = computed(() => {

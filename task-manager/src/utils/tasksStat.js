@@ -1,7 +1,7 @@
 
 import { getEvaluation } from '@/api/data/data'
 
-import { EvaluateMap, TaskStatus } from '@/constants/public'
+import { TaskStatus,EvaluteType } from '@/constants/public'
 
 import { calWorkdays, formatDate } from '@/utils/public'
 
@@ -76,31 +76,39 @@ export function compareDateStrings(dateStr1, dateStr2) {
   else return 0;                     // 相等
 }
 
-export const mergeTasks = async (tasks, evaluator, users, yearMonth) => {
+const getEvalutionMap = async (evaluator,users,yearMonth,evaluation_type) =>{
+    // 异步获取评价数据
+    const evaluationsMap = {}
+    const evaluations = await getEvaluation({
+      evaluator: evaluator,
+      evaluation_type: evaluation_type,
+      users: users.join(','),
+      year_month: formatDate(yearMonth, true)
+    });
+  
+    for (const evaluation of evaluations) {
+      if (!evaluationsMap[evaluation.evaluated_user_username]) {
+        evaluationsMap[evaluation.evaluated_user_username] = {};
+      }
+      if (!evaluationsMap[evaluation.evaluated_user_username][evaluation.project]) {
+        evaluationsMap[evaluation.evaluated_user_username][evaluation.project] = evaluation;
+      }
+    }
+    return evaluationsMap
+}
+export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_type=EvaluteType.GROUP) => {
   console.log(yearMonth,formatDate(yearMonth, true),formatDate(yearMonth))
   const empty = '';
   const retList = [];
   const tmpTasks = sortByString(tasks, ['receiver_name', 'project', 'start_time']);
   const retData = {};
-  const evaluationsMap = {}
-  // 异步获取评价数据
-  console.log(users, evaluator)
-  const evaluations = await getEvaluation({
-    evaluator: evaluator,
-    evaluation_type: 'group',
-    users: users.join(','),
-    year_month: formatDate(yearMonth, true)
-  });
-
-  for (const evaluation of evaluations) {
-    if (!evaluationsMap[evaluation.evaluated_user_username]) {
-      evaluationsMap[evaluation.evaluated_user_username] = {};
-    }
-    if (!evaluationsMap[evaluation.evaluated_user_username][evaluation.project]) {
-      evaluationsMap[evaluation.evaluated_user_username][evaluation.project] = evaluation;
-    }
+  const evaluationsMap = await getEvalutionMap(evaluator,users,yearMonth,evaluation_type)
+  let evaluationsPersonMap = null
+  // 组评价信息，需要加上个人自评的信息
+  if(evaluation_type === EvaluteType.GROUP ){
+     evaluationsPersonMap = await getEvalutionMap(evaluator,users,yearMonth,EvaluteType.USER)
   }
-  console.log('evaluationsMap======================>',evaluationsMap)
+  
   // 使用 for...of 处理异步任务
   for (const task of tmpTasks) {
     if (!retData[task.receiver_name]) {
@@ -110,22 +118,41 @@ export const mergeTasks = async (tasks, evaluator, users, yearMonth) => {
     if (!retData[task.receiver_name][task.project]) {
       const evaluationInfo = evaluationsMap?.[task.receiver_name]?.[task.project] ||
       {
-        'evaluated_user': task.receiver, evaluation_type: 'group', 'evaluated_user_username': task.receiver, evaluator: evaluator, comment: '', score: 0,
+        'evaluated_user': task.receiver, evaluation_type: evaluation_type, 'evaluated_user_username': task.receiver_name, evaluator: evaluator, comment: '', score: 0,
         project: task.project,
         evaluation_time: formatDate(yearMonth)
       }
-      retData[task.receiver_name][task.project] = {
-        receiver: task.receiver,
-        project: task.project,
-        workloads: 0,
-        act_workloads: 0,
-        start_time: null,
-        deadline_time: null,
-        evaluation: evaluationInfo,
-        evaluation_score: evaluationInfo.score,
-        evaluation_comment: evaluationInfo.comment,
-        tasks: []
-      };
+
+      if(evaluationsPersonMap){
+        retData[task.receiver_name][task.project] = {
+          receiver: task.receiver,
+          project: task.project,
+          workloads: 0,
+          act_workloads: 0,
+          start_time: null,
+          deadline_time: null,
+          evaluation_user_commnet: evaluationsPersonMap?.[task.receiver_name]?.[task.project]?.comment || '',
+          evaluation__user_score: evaluationsPersonMap?.[task.receiver_name]?.[task.project]?.score || 0,
+          evaluation: evaluationInfo,
+          evaluation_score: evaluationInfo.score,
+          evaluation_comment: evaluationInfo.comment,
+          tasks: []
+        };
+      }else{
+        retData[task.receiver_name][task.project] = {
+          receiver: task.receiver,
+          project: task.project,
+          workloads: 0,
+          act_workloads: 0,
+          start_time: null,
+          deadline_time: null,
+          evaluation: evaluationInfo,
+          evaluation_score: evaluationInfo.score,
+          evaluation_comment: evaluationInfo.comment,
+          tasks: []
+        };
+      }
+
     }
 
     // 同步累加数据

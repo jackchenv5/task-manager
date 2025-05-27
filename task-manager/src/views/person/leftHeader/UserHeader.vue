@@ -34,10 +34,10 @@
 <script setup>
 import {usePersonStore  } from '@/stores/person.js'
 import {useUserStore} from '@/stores/user.js'
-const myUserStore = useUserStore()
 
 import {  storeToRefs } from 'pinia'
 
+const myUserStore = useUserStore()
 const personStore = usePersonStore();
 const { loginUser } = storeToRefs(myUserStore)
 const {stat,workloadSaturation} = storeToRefs(personStore);

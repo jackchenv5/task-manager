@@ -12,6 +12,14 @@ import 'vxe-table/lib/style.css'
 import VxeUIAll from 'vxe-pc-ui'
 import 'vxe-pc-ui/lib/style.css'
 
+import VxeUIPluginExportXLSX from '@vxe-ui/plugin-export-xlsx'
+import ExcelJS from 'exceljs'
+// ...
+
+VxeUITable.use(VxeUIPluginExportXLSX, {
+  ExcelJS
+})
+
 // main.ts
 
 // 如果您正在使用CDN引入，请删除下面一行。

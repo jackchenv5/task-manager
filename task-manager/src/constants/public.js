@@ -23,4 +23,9 @@ export const EvaluateMap = EvaluateList.reduce((acc, item, index) => {
   return acc;
 }, {});
 
+export const EvaluteType = {
+  PROJECT: 'project',
+  GROUP: 'group',
+  USER: 'user'
+}
 

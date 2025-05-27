@@ -1,15 +1,13 @@
 <template>
-    <el-dialog v-model="dialogVisible" :title="`${selectUserEvaluateRef.evaluated_user_username}`" width="500px">
-        <p style="color:#aaa">此评分和评语只会展示给TL，作为项目投入参考参考~</p>
-        <p style="color:red" v-if="selectUserEvaluateRef.id">此人此月已给出评价，再次评价视为修改~</p>
+    <el-dialog v-model="dialogVisible" :title="`${loginUser.username}`" width="500px">
+        <p style="color:red" v-if="selectUserEvaluateRef.id">此月已给出自评，再次自评视为修改~</p>
         <el-form ref="form" :model="selectUserEvaluateRef" label-width="80px">
-
-            <el-form-item label="评价：">
+            <el-form-item label="评级：">
                 <el-rate v-model="selectUserEvaluateRef.score" :max="7" text-color="#ff9900" :texts="EvaluateList"
                     show-text>
                 </el-rate>
             </el-form-item>
-            <el-form-item label="评语：">
+            <el-form-item label="自评：">
                 <el-input type="textarea" v-model="selectUserEvaluateRef.comment" placeholder="请输入内容" :rows="5"></el-input>
             </el-form-item>
         </el-form>
@@ -77,15 +75,15 @@ import { VxeUI } from 'vxe-table'
 import { mergeTasks } from '@/utils/tasksStat'
 
 
-import { useGroupStore } from '@/stores/group.js'
+import {usePersonStore  } from '@/stores/person.js'
 import { useUserStore } from '@/stores/user.js'
-import { EvaluateList } from '@/constants/public'
+import { EvaluateList,EvaluteType } from '@/constants/public'
 
 import {commitEvalution,updateEvalution} from '@/api/data/data.js'
-const groupStore = useGroupStore();
 const userStore = useUserStore();
+const personStore = usePersonStore();
 const { loginUser } = storeToRefs(userStore)
-const { allTask, selectGroupUsers, curSeletMonthDate } = storeToRefs(groupStore);
+const { allTask,  curSeletMonthDate } = storeToRefs(personStore);
 
 const mergeData = ref([])
 const selectUserEvaluateRef = ref({})
@@ -114,12 +112,12 @@ const confirmEvalution = async ()=>{
                 })
     }
     dialogVisible.value = false
-    groupStore.initAllTask()
+    personStore.getPersonTasks()
     console.log('查看返回结果。。。。。。。。。。。',ret)
 }
 watch([allTask,curSeletMonthDate], async () => {
     
-    mergeData.value = await mergeTasks(allTask.value, loginUser.value.id, selectGroupUsers.value, curSeletMonthDate.value)
+    mergeData.value = await mergeTasks(allTask.value, loginUser.value.id, [loginUser.value.username], curSeletMonthDate.value,EvaluteType.USER)
     console.log(mergeData.value)
 }, { immediate: true })
 
@@ -128,30 +126,6 @@ const exportEvent = () => {
     const $table = tableRef.value
     if ($table) {
         $table.exportData()
-    }
-}
-
-const editClosedEvent = ({ row, column }) => {
-    const $table = tableRef.value
-    if ($table) {
-        const field = column.field
-        const cellValue = row[field]
-        // 判断单元格值是否被修改
-
-        if ($table.isUpdateByRow(row, field)) {
-            groupStore.commitCurUserEvalution(row.receiver, row.project, row.evaluation_score, row.evalution_comment).then(() => {
-                VxeUI.modal.message({
-                    content: `局部保存成功！ ${column.title} ==> ${cellValue}`,
-                    status: 'success'
-                }
-                ).then(() => {
-                    // 局部更新单元格为已保存状态
-                    $table.reloadRow(row, null, field)
-
-                })
-
-            })
-        }
     }
 }
 

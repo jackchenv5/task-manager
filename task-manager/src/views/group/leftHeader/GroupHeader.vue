@@ -71,7 +71,7 @@ const handleCommand = (command) => {
 
 
 .group-info {
-  width: 12vw;
+  width: 15vw;
   display: flex;
   height: 5vh;
   align-items: center;

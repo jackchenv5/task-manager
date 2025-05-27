@@ -1,5 +1,5 @@
 <template>
-    <el-dialog v-model="dialogVisible" :title="`${selectUserEvaluateRef.evaluated_user_username}`" width="500px">
+    <el-dialog v-model="dialogVisible" :title="`${selectUserEvaluateRef.evaluated_user_username} | ${selectUserEvaluateRef.project}`" width="700px">
         <p style="color:#aaa">此评分和评语只会展示给TL，作为项目投入参考参考~</p>
         <p style="color:red" v-if="selectUserEvaluateRef.id">此人此月已给出评价，再次评价视为修改~</p>
         <el-form ref="form" :model="selectUserEvaluateRef" label-width="80px">
@@ -22,6 +22,7 @@
             </div>
         </template>
     </el-dialog>
+    <vxe-button @click="exportEvent">直接导出EXCEL文件</vxe-button>
     <vxe-table ref="tableRef" :max-height="tableMaxHeight" show-header auto-resize highlight-current-row
         :expand-config="{ trigger: '', accordion: true }" :row-config="{ isHover: true, height: 45 }" keep-source
         @edit-closed="editClosedEvent" :data="mergeData">
@@ -53,11 +54,17 @@
         <vxe-column field="deadline_time" title="截止时间" show-overflow></vxe-column>
         <vxe-column field="workloads" title="计划工作量(天)"></vxe-column>
         <vxe-column field="act_workloads" title="实际工作量(天)"></vxe-column>
-        <vxe-column field="evaluation_comment" title="评价" width="300">
-        </vxe-column>
-        <vxe-column field="evalution_score" title="评级" width="250">
+        <vxe-column field="evaluation_user_commnet" title="组员自评" ></vxe-column>
+        <vxe-column field="evaluation__user_score" title="组员评级"   width="250">
             <template #default="{ row }">
-                <el-rate v-model="row.evaluation_score" :max="7" text-color="gray" disabled :texts="EvaluateList" show-text>
+                <el-rate v-model="row.evaluation__user_score" :max="7" text-color="blue" disabled :texts="EvaluateList" show-text>
+                </el-rate>
+            </template>
+        </vxe-column>
+        <vxe-column field="evaluation_comment" title="组长评价" ></vxe-column>
+        <vxe-column field="evalution_score" title="组长评级" width="250">
+            <template #default="{ row }">
+                <el-rate v-model="row.evaluation_score" :max="7" text-color="red" disabled :texts="EvaluateList" show-text>
                 </el-rate>
             </template>
         </vxe-column>
@@ -70,7 +77,7 @@
 </template>
   
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 const tableRef = ref(null)
 import { VxeUI } from 'vxe-table'
@@ -115,7 +122,6 @@ const confirmEvalution = async ()=>{
     }
     dialogVisible.value = false
     groupStore.initAllTask()
-    console.log('查看返回结果。。。。。。。。。。。',ret)
 }
 watch([allTask,curSeletMonthDate], async () => {
     
@@ -127,34 +133,8 @@ watch([allTask,curSeletMonthDate], async () => {
 const exportEvent = () => {
     const $table = tableRef.value
     if ($table) {
-        $table.exportData()
+        $table.exportData({type: 'xlsx'})
     }
 }
-
-const editClosedEvent = ({ row, column }) => {
-    const $table = tableRef.value
-    if ($table) {
-        const field = column.field
-        const cellValue = row[field]
-        // 判断单元格值是否被修改
-
-        if ($table.isUpdateByRow(row, field)) {
-            groupStore.commitCurUserEvalution(row.receiver, row.project, row.evaluation_score, row.evalution_comment).then(() => {
-                VxeUI.modal.message({
-                    content: `局部保存成功！ ${column.title} ==> ${cellValue}`,
-                    status: 'success'
-                }
-                ).then(() => {
-                    // 局部更新单元格为已保存状态
-                    $table.reloadRow(row, null, field)
-
-                })
-
-            })
-        }
-    }
-}
-
 
 </script>
-<style></style>

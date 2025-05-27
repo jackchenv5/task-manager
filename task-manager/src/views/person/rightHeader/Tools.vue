@@ -1,6 +1,6 @@
 <template>
-  <el-drawer v-model="isAdjustTasks" title="任务调整" direction="btt" size="100%" style="height: 100%">
-    <GanttChart :users="curSelectTasksReceiverList" :selectedMonth="getYearAndMonth(curSeletMonthDate)" />
+  <el-drawer v-model="isAdjustTasks" title="本月任务甘特图" direction="btt" size="100%" style="height: 100%">
+    <GanttChart />
   </el-drawer>
   <el-drawer v-model="isAssessment" title="绩效考核" direction="btt" size="100%" style="height: 100%">
     <Assessment></Assessment>
@@ -27,6 +27,9 @@ import {  storeToRefs } from 'pinia'
 
 const personStore = usePersonStore();
 const {curTaskType} = storeToRefs(personStore);
+
+const isAdjustTasks = ref(false)
+const isAssessment = ref(false)
 
 </script>
 <style scoped>

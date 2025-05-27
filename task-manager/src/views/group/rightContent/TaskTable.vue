@@ -271,10 +271,10 @@ const handleConfirm = async () => {
 </script>
 
 <style>
-.table-container {
+/* .table-container {
   width: 50vw;
   height: 60vh;
-}
+} */
 
 /* 半屏详情面板样式 */
 .halfscreen-detail-panel {

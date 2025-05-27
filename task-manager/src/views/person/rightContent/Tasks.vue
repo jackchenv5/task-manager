@@ -119,7 +119,7 @@ const handleFeedbackSubmit = async () => {
     return
   }
   try {
-    await myPersonStore.feedbackTask(feedbackData.value.id,feedbackData.value)
+    await personStore.feedbackTask(feedbackData.value.id,feedbackData.value)
     ElMessage.success("反馈成功！")
   } catch (err) {
     ElMessage.error(`反馈失败：${err}`)
