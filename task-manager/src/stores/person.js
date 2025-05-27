@@ -20,7 +20,7 @@ export const usePersonStore = defineStore('person', () => {
   const workloadSaturation = computed(() => {
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
 
-    const saturation = groupWorkloadSaturation(stat.value.total, stat.length , start, end)
+    const saturation = groupWorkloadSaturation(stat.value.total, 1 , start, end)
     return saturation
   })
   const filteredTasks = computed(()=>{

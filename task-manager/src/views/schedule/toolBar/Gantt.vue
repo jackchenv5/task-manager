@@ -82,6 +82,11 @@ const initGanttRender = () => {
     gantt.parse({
         tasks: joinData,
     });
+    gantt.attachEvent("onBeforeTaskDrag", function(id, mode, e){
+        console.log('before drag task...', id, mode, e)
+        return false;
+    //...
+});
 }
 const initGantt = () => {
     // 基本配置
@@ -90,10 +95,17 @@ const initGantt = () => {
     gantt.plugins({
         quick_info: true
     });
+
+
     gantt.showLightbox = function () {
         // code of the custom form
         return false
     }
+
+    // 在initGanttRender函数中添加事件监听
+    gantt.attachEvent("onBeforeTaskDrag", function (id, mode, e) {
+        return false; // 拦截所有拖拽操作
+    });
 
     gantt.config.scale_height = 60;
     gantt.config.scales = [
@@ -107,7 +119,7 @@ const initGantt = () => {
     })
 
     gantt.config.columns = [
-        { name: "text", label: "任务名", width: 120, tree: true },
+        { name: "text", label: "任务名", width: 170, tree: true },
         { name: "start_date", label: "开始时间", width: 140, align: "center" },
         { name: "duration", label: "持续/天", width: 50, align: "center" },
         { name: "workload", label: "工时/天", width: 50, align: "center" },

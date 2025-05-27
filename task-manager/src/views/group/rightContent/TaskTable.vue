@@ -1,7 +1,6 @@
 <template>
-  <div class="table-container">
-    <!-- 半屏详情面板 -->
-    <el-drawer v-model="showDetailPanel" title="任务详情" direction="ltr" size="50%">
+  <!-- 半屏详情面板 -->
+  <el-drawer v-model="showDetailPanel" title="任务详情" direction="ltr" size="50%">
       <div class="detail-grid">
         <!-- 任务名称和工作量 -->
         <div class="detail-row">
@@ -123,8 +122,8 @@
         </div>
       </div>
     </el-drawer>
-
-    <vxe-table ref="taskTable" border :max-height="tableMaxHeight" show-header stripe auto-resize
+  <div class="table-container">
+    <vxe-table ref="taskTable" border :max-height="tableMaxHeight" show-header stripe auto-resize w
       :row-config="{ isHover: true }" :data="curSelectUserFilterTasks" @checkbox-all="selectAllChangeEvent" @checkbox-change="selectChangeEvent">
       <vxe-column type="checkbox" width="40"></vxe-column>
       <vxe-column field="name" title="任务名" width="120" show-overflow></vxe-column>
@@ -132,10 +131,10 @@
       <vxe-column field="receiver_name" title="执行人" width="80"></vxe-column>
       <vxe-column field="start_time" title="开始时间" width="100" show-overflow></vxe-column>
       <vxe-column field="deadline_time" title="截止时间" width="100" show-overflow></vxe-column>
-      <vxe-column field="workload" title="工作量(天)" width="100"></vxe-column>
+      <vxe-column field="workload" title="工时(天)" width="100"></vxe-column>
       <vxe-column field="project" title="项目" width="130" show-overflow></vxe-column>
       <vxe-column field="creator_name" title="创建人" width="110"></vxe-column>
-      <vxe-column title="操作" width="130" fixed="right">
+      <vxe-column title="操作" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" size="small" @click="handleEditClick(row)">编辑</el-button>
         </template>
@@ -271,10 +270,10 @@ const handleConfirm = async () => {
 </script>
 
 <style>
-/* .table-container {
+.table-container {
   width: 50vw;
   height: 60vh;
-} */
+}
 
 /* 半屏详情面板样式 */
 .halfscreen-detail-panel {

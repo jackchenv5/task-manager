@@ -6,7 +6,6 @@ import { workLoadStat, groupWorkloadSaturation } from '@/utils/tasksStat'
 import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi, getLogList,commitEvalution } from '@/api/data/data'
 import { storeToRefs } from 'pinia'
 import { TaskStatus } from '@/constants/public'
-import SelectUserVue from '@/components/dialog/SelectUser.vue'
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
 
@@ -149,7 +148,6 @@ export const useGroupStore = defineStore('group', () => {
 
   const groupStat = computed(() => {
     const stat = workLoadStat(allTask.value)
-    console.log('stat ===========>', stat)
     return stat
   })
 
@@ -192,17 +190,14 @@ export const useGroupStore = defineStore('group', () => {
   const groupWorkloadSaturationRef = computed(() => {
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
     const stat = groupWorkloadSaturation(groupStat.value.total, selectGroupCount.value, start, end)
-    console.log('stat ===========>', stat)
     return stat
   })
 
   //  组方法
   const initAllGroup = async () => {
     // 获取所有组员信息数据
-    const params = {}
     const response = await getUserGroupApi()
     allGroup.value = response?.result?.items
-    console.log('group init .........', allGroup.value)
   }
 
   // 当前用户Gantt数据 

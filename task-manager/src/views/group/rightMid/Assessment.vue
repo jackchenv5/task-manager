@@ -23,11 +23,11 @@
         </template>
     </el-dialog>
     <vxe-button @click="exportEvent">直接导出EXCEL文件</vxe-button>
-    <vxe-table ref="tableRef" :max-height="tableMaxHeight" show-header auto-resize highlight-current-row
+    <vxe-table ref="tableRef"  show-header auto-resize highlight-current-row show-overflow
         :expand-config="{ trigger: '', accordion: true }" :row-config="{ isHover: true, height: 45 }" keep-source
         @edit-closed="editClosedEvent" :data="mergeData">
-        <vxe-column field="receiver_name" title="执行人" width="80"></vxe-column>
-        <vxe-column field="project" title="项目" width="400" show-overflow></vxe-column>
+        <vxe-column field="receiver_name" title="执行人" width="80" fixed="left"></vxe-column>
+        <vxe-column field="project" title="项目" width="400" fixed="left"></vxe-column>
         <vxe-column type="expand" width="60">
             <template #content="{ row }">
                 <h3>任务详情</h3>
@@ -50,18 +50,18 @@
 
             </template>
         </vxe-column>
-        <vxe-column field="start_time" title="开始时间" show-overflow></vxe-column>
-        <vxe-column field="deadline_time" title="截止时间" show-overflow></vxe-column>
-        <vxe-column field="workloads" title="计划工作量(天)"></vxe-column>
-        <vxe-column field="act_workloads" title="实际工作量(天)"></vxe-column>
-        <vxe-column field="evaluation_user_commnet" title="组员自评" ></vxe-column>
+        <vxe-column field="start_time" title="开始时间" width="100"></vxe-column>
+        <vxe-column field="deadline_time" title="截止时间" width="100"></vxe-column>
+        <vxe-column field="workloads" title="计划工作量(天)" width="120"></vxe-column>
+        <vxe-column field="act_workloads" title="实际工作量(天)" width="120"></vxe-column>
+        <vxe-column field="evaluation_user_commnet" title="组员自评"  ></vxe-column>
         <vxe-column field="evaluation__user_score" title="组员评级"   width="250">
             <template #default="{ row }">
                 <el-rate v-model="row.evaluation__user_score" :max="7" text-color="blue" disabled :texts="EvaluateList" show-text>
                 </el-rate>
             </template>
         </vxe-column>
-        <vxe-column field="evaluation_comment" title="组长评价" ></vxe-column>
+        <vxe-column field="evaluation_comment" title="组长评价"  ></vxe-column>
         <vxe-column field="evalution_score" title="组长评级" width="250">
             <template #default="{ row }">
                 <el-rate v-model="row.evaluation_score" :max="7" text-color="red" disabled :texts="EvaluateList" show-text>

@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.utils import timezone
 
+
 User = get_user_model()
 
 class Signals(models.Model):
@@ -65,3 +66,4 @@ class Signals(models.Model):
             return model_class.objects.get(pk=int(self.object_id))
         except (model_class.DoesNotExist, ValueError):
             return None
+    

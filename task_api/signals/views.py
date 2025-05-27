@@ -6,11 +6,12 @@ from django_filters import rest_framework as filters
 class SignalFilter(filters.FilterSet):
     timestamp = filters.DateTimeFilter(field_name="timestamp", lookup_expr='gte')
     project = filters.CharFilter(lookup_expr='icontains')  # 支持模糊查询
+    title = filters.CharFilter(lookup_expr='icontains')  # 支持模糊查询
     user = filters.NumberFilter(field_name="user_id")  # 假设receiver是一个关联到User的外键
     
     class Meta:
         model = Signals
-        fields = ['action', 'project','user','timestamp']
+        fields = ['action', 'project','user','timestamp','title']
 
 
 class SignalViewset(viewsets.ReadOnlyModelViewSet):

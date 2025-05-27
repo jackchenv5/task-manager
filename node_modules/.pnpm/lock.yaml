@@ -1,0 +1,42 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    dependencies:
+      add:
+        specifier: ^2.0.6
+        version: 2.0.6
+      vxe-utils:
+        specifier: ^2.0.1
+        version: 2.0.1(xe-utils@3.7.4)
+      xe-utils:
+        specifier: ^3.7.4
+        version: 3.7.4
+
+packages:
+
+  add@2.0.6:
+    resolution: {integrity: sha512-j5QzrmsokwWWp6kUcJQySpbG+xfOBqqKnup3OIk1pz+kB/80SLorZ9V8zHFLO92Lcd+hbvq8bT+zOGoPkmBV0Q==}
+
+  vxe-utils@2.0.1:
+    resolution: {integrity: sha512-A2MSZWtamNiXZ61bz5BrpyUg8Qd29HMDyrF0vBorx4kwWno5+qlkeQU7VMcyGIwoHlP/jOCCTgnhVq3J92vG7g==}
+    peerDependencies:
+      xe-utils: '>=2.7.0'
+
+  xe-utils@3.7.4:
+    resolution: {integrity: sha512-9yuCHLOU+og4OEkPWWtzrYk1Zt1hgN66U/NCJ0+vYJSx1MplBtoQRz8aEA+2RmCr3leLru98vQxNpw/vJsu/sg==}
+
+snapshots:
+
+  add@2.0.6: {}
+
+  vxe-utils@2.0.1(xe-utils@3.7.4):
+    dependencies:
+      xe-utils: 3.7.4
+
+  xe-utils@3.7.4: {}

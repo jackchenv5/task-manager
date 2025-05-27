@@ -5,9 +5,11 @@ from common.utils import custom_model_to_dict
 from django.contrib.contenttypes.models import ContentType
 
 from task.serializers import TaskSerializer
+from project.serializers import ProjectEvaluationSerializer
 from .models import Signals
 import json
-
+from task.models import Task
+from project.models import ProjectEvaluation
 from threadlocals.threadlocals import get_current_request
 
 def get_user_for_instance():
@@ -25,9 +27,8 @@ def get_user_for_instance():
 
 def should_log_model(model):
     # 添加需要监控的模型，例如：
-    from task.models import Task
-    from project.models import ProjectEvaluation
     return model in [Task, ProjectEvaluation]
+
 def get_changed_fields(instance):
 
     model_class = instance.__class__
@@ -38,6 +39,16 @@ def get_changed_fields(instance):
         field: {'old': old_data.get(field), 'new': new_data.get(field)}
         for field in new_data if new_data[field] != old_data.get(field)
     }
+
+def get_serializers_data(instance):
+    model_class = instance.__class__
+    if model_class == Task:
+        serializer = TaskSerializer(instance)
+    elif model_class == ProjectEvaluation:
+        serializer = ProjectEvaluationSerializer(instance)
+    else:
+        serializer = None
+    return serializer.data
 @receiver(pre_save)
 def log_pre_save(sender, instance, **kwargs):
         if not should_log_model(sender):
@@ -51,8 +62,7 @@ def log_pre_save(sender, instance, **kwargs):
         if action == 'created':
             title,conent = instance.get_signal_log(action,user)
             # 使用 TaskSerializer 序列化为 JSON
-            serializer = TaskSerializer(instance)
-            json_data = serializer.data  # 返回字典格式的序列化数据
+            data = get_serializers_data(instance)
             Signals.objects.create(
                 content_type=ContentType.objects.get_for_model(instance),
                 object_id=str(instance.pk),  # 强制转为字符串
@@ -61,7 +71,7 @@ def log_pre_save(sender, instance, **kwargs):
                 title=title,
                 content=conent,
                 project=instance.project,
-                changed_fields=json_data
+                changed_fields=data
             )
         else:
             changed_fields = get_changed_fields(instance)

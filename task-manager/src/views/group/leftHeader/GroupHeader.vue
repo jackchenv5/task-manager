@@ -47,9 +47,7 @@ const {allGroup, selectGroup,selectGroupID,groupStat,groupWorkloadSaturationRef}
 const handleCommand = (command) => {
   groupStore.updateGroupID(command)
 }
-
 </script>
-
 
 <style scoped>
 
@@ -67,6 +65,7 @@ const handleCommand = (command) => {
   line-height: 1.5714285714285714;
   list-style: none;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  
 }
 
 
@@ -75,7 +74,8 @@ const handleCommand = (command) => {
   display: flex;
   height: 5vh;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
+  gap:20px;
 }
 
 .group-info-item{
