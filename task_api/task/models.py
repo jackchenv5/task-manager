@@ -104,7 +104,7 @@ class Task(AbstractTask):
         return self.name
 
 
-    def old_save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
 
         #任务增加修改 组长和Tl都要通知
         to = self.receiver.get_group_leader_email()
@@ -169,8 +169,8 @@ class Task(AbstractTask):
                     elif new == common.TASK_STATUS_PROGRESS and old != common.TASK_STATUS_PENDING:
                         return
                     # 完成只能由进行状态触发
-                    #elif new == common.TASK_STATUS_COMPLETED and old != common.TASK_STATUS_PROGRESS:
-                    #    return
+                    elif new == common.TASK_STATUS_COMPLETED and old != common.TASK_STATUS_PROGRESS:
+                       return
 
                     #发生修改并且修改内容为反馈信息
                     if f in ['feedback','progress','act_workload','feedback_time']:

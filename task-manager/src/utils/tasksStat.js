@@ -7,10 +7,9 @@ import { calWorkdays, formatDate } from '@/utils/public'
 
 // 统计所选任务的总工作量，已完成量，进度,总数，已完成，未完成，进行中，待下发，项目数
 export const workLoadStat = (tasks) => {
-  const initial = { total: 0, completed: 0, progress: 0, progressPer: 0, finish: 0, pend: 0, allCount: 0, finishCount: 0, pendCount: 0, progressCount: 0, projects: [] };
+  const initial = { total: 0, completed: 0, progress: 0, progressPer: 0,achieveCount:0, finish: 0, pend: 0, allCount: 0, finishCount: 0, pendCount: 0, progressCount: 0, projects: [] };
 
-  console.log('tasks', tasks)
-  if (!tasks.length || tasks.length === 0) return initial;
+  if (!tasks || tasks.length === 0) return initial;
 
   return tasks.reduce((acc, task) => {
     const workload = Number(task.workload) || 0;
@@ -28,6 +27,8 @@ export const workLoadStat = (tasks) => {
     }
 
     if (task.status === TaskStatus.FINISH) {
+            // 达成率
+      if(compareDateStrings(task.deadline_time, task.feedback_time) >=0) acc.achieveCount += 1
       acc.completed += workload;
       acc.finishCount += 1;
     }

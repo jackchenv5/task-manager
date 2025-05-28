@@ -1,11 +1,13 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi, commitEvalution,getLogList } from '@/api/data/data'
+import { getTaskDataApi, commitEvalution,getLogList,getEvaluation } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
 import { workLoadStat } from '@/utils/tasksStat'
 
 import { reverseDateStr, percentToDecimal, TaskStatus, formatDate,getDateStr } from '@/utils/public'
+
+import { EvaluateList, EvaluteType } from '@/constants/public'
 
 const myUserStore = useUserStore()
 
@@ -30,10 +32,6 @@ export const useProjectStore = defineStore('project', () => {
     selectUser.value = {}
   }
 
-  const selectUserEvaluateRef = ref({
-    comment: '',
-    score: 0
-  })
 
   const deleteProjectInFocus = (project) => {
     const projectIndex = projectFocusRef.value.indexOf(project)
@@ -125,27 +123,27 @@ export const useProjectStore = defineStore('project', () => {
   // 9.自评
   const curSelectUserStat = computed(() => {
     const curUserTasks = curProjectReceiverMap.value[selectUser.value.username];
-    const retData = {
-      username: selectUser.value.username,
-      workLoad: 0,
-      completed: 0,
-      progress: 0,
-      contribution: '',
-      participation: 0,
-      score: 0,
-      leaderScore: 0,
-      tlScore: 0,
-      selfScore: 0,
-    }
-    if (!curUserTasks) return retData;
-    const { total, completed, progress } = workLoadStat(curUserTasks);
-    retData.workLoad = total;
-    retData.completed = completed;
-    retData.progress = progress;
-    retData.participation = (total / workLoadSta.value.total * 100).toFixed(1);
-
+    const retData = workLoadStat(curUserTasks);
+    retData.participation = (retData.total / workLoadSta.value.total * 100).toFixed(1);
     return retData;
   });
+  const curUserEvalution = ref({})
+  const updateCurSelectUserEvalution = async ()=>{ 
+    if(!selectUser.value.username) return {}
+    const evaluations = await getEvaluation({
+      project: curSelectProjectRef.value,
+      evaluated_user: selectUser.value.id,
+      year_month: formatDate(new Date(), true)
+    });
+    curUserEvalution.value = evaluations.reduce((acc, cur) => {
+      if(!acc[cur.evaluation_type]) acc[cur.evaluation_type] = {...cur,scoreValue:EvaluateList[cur.score -1]};
+      return acc;
+    }, {});
+  }
+
+  const cleanUserValution = () => {
+    curUserEvalution.value = {};
+  };
 
   const commitCurUserEvalution = async () => {
     try {
@@ -154,7 +152,7 @@ export const useProjectStore = defineStore('project', () => {
         project: curSelectProjectRef.value,
         evaluator: loginUser.value.id,
         evaluated_user: selectUser.value.id,
-        evaluation_type: 'project',
+        evaluation_type: EvaluteType.PROJECT,
         evaluation_time: formatDate(new Date()),
       })
       selectUserEvaluateRef.value = {
@@ -176,7 +174,13 @@ export const useProjectStore = defineStore('project', () => {
     updateCurSelectProjectTasks()
     updateProjectLogs()
     cleanSelectUser()
+    cleanUserValution()
   })
+
+  watch(selectUser, (newValue) => {
+    updateCurSelectUserEvalution()
+  })
+
 
   const updateCurSelectProjectTasks = async () => {
     const data = await getTaskDataApi({ project: curSelectProjectRef.value })
@@ -250,7 +254,7 @@ export const useProjectStore = defineStore('project', () => {
     //当前选中的用户
     selectUser, curSelectUserStat, cleanSelectUser,
     //评价
-    selectUserEvaluateRef, commitCurUserEvalution,
+    commitCurUserEvalution,curUserEvalution,
     projectLogs
   }
 })

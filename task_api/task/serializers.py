@@ -26,6 +26,7 @@ class TaskSerializer(serializers.ModelSerializer):
     start_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
     done_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
     deadline_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
+    feedback_time = serializers.DateTimeField(format='%Y-%m-%d',allow_null=True,required=False)
     category_name = serializers.SerializerMethodField(required=False)
     creator_name = serializers.SerializerMethodField(required=False)
     receiver_name = serializers.SerializerMethodField(required=False)
@@ -43,7 +44,7 @@ class TaskSerializer(serializers.ModelSerializer):
     sender  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
     class Meta:
             model = Task
-            fields = ['id','name','category','content','challenge','feedback','creator','receiver','publisher',
+            fields = ['id','name','category','content','challenge','feedback','feedback_time','creator','receiver','publisher',
                       'start_time','done_time','deadline_time','description','sender','workload','act_workload','progress',
                       'status','project','related_task_name','related_task'
                       ,'category_name','creator_name','receiver_name','publisher_name','status_name','workload_intensity','diff_days','workloads']

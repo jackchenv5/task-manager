@@ -32,7 +32,7 @@
 
             </el-tooltip>
 
-            <div class="user-tag">{{ curSelectUserStat.username }}</div>
+            <div class="user-tag">{{ selectUser.username }}</div>
 
         </div>
         <div class="user-item">
@@ -41,7 +41,7 @@
                 <el-tooltip content="本项目投入总工时:天" placement="right" effect="light">
                     <div class="user-label">总工时</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">{{ curSelectUserStat.workLoad.toFixed(1) }}天</div>
+                <div style="font-size:0.8rem">{{ curSelectUserStat.total?.toFixed(1) }}天</div>
             </div>
             <div class="user-stats-content">
                 <el-tooltip content="本项目已完成工时:天" placement="right" effect="light">
@@ -59,23 +59,17 @@
         </div>
         <div class="user-item">
             <Icon icon="mdi:achievement-outline" :width="35" color="rgb(245 111 108)" />
-            <!-- <div class="user-stats-content">
-                <el-tooltip content="投入工时算" placement="right" effect="light">
-                    <div  class="user-label">贡献</div>
-            </el-tooltip>
-                <div  style="font-size:0.8rem">未知</div>
-            </div> -->
             <div class="user-stats-content">
-                <el-tooltip content="本项目投入比例：本人工时/项目工时" placement="right" effect="light">
-                    <div class="user-label">参与度</div>
+                <el-tooltip content="本项目投入比例：本人总工时/项目总工时" placement="right" effect="light">
+                    <div class="user-label">贡献</div>
                 </el-tooltip>
                 <div style="font-size:0.8rem">{{ curSelectUserStat.participation }}%</div>
             </div>
             <div class="user-stats-content">
-                <el-tooltip content="本项目完成率：按时完成/已完成任务数" placement="right" effect="light">
-                    <div class="user-label">综合评分</div>
+                <el-tooltip content="按时达成率：按时完成数/已完成任务数" placement="right" effect="light">
+                    <div class="user-label">达成率</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">60</div>
+                <div style="font-size:0.8rem">{{ curSelectUserStat.finishCount ? (curSelectUserStat.achieveCount/curSelectUserStat.finishCount * 100).toFixed(1) : 0 }}%</div>
             </div>
         </div>
 
@@ -85,19 +79,19 @@
                 <el-tooltip content="本项目投入比例：本人工时/项目工时" placement="right" effect="light">
                     <div class="user-label">组长</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">90分</div>
+                <div style="font-size:0.8rem">{{ curUserEvalution.group?.scoreValue || '-' }}</div>
             </div>
             <div class="user-stats-content">
                 <el-tooltip content="本项目完成率：按时完成/已完成任务数" placement="right" effect="light">
                     <div class="user-label">TL</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">00</div>
+                <div style="font-size:0.8rem">{{ curUserEvalution.project?.scoreValue || '-' }}</div>
             </div>
             <div class="user-stats-content">
                 <el-tooltip content="本项目完成率：按时完成/已完成任务数" placement="right" effect="light">
                     <div class="user-label">自评</div>
                 </el-tooltip>
-                <div style="font-size:0.8rem">90分</div>
+                <div style="font-size:0.8rem">{{ curUserEvalution.user?.scoreValue || '-' }}</div>
             </div>
         </div>
         <div class="user-tool">
@@ -112,7 +106,7 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 const projectStore = useProjectStore()
-const { curSelectUserStat, selectUserEvaluateRef } = storeToRefs(projectStore)
+const { selectUser,curSelectUserStat, selectUserEvaluateRef,curUserEvalution } = storeToRefs(projectStore)
 
 import { EvaluateList } from '@/constants/public'
 

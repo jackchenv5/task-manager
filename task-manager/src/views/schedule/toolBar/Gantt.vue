@@ -55,7 +55,6 @@ watch(
 );
 
 
-
 const initGanttRender = () => {
     let orginData = [];
 
