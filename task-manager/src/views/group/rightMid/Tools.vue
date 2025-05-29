@@ -5,14 +5,16 @@
   <el-drawer v-model="isAssessment" title="绩效考核" direction="btt" size="100%" style="height: 100%">
     <Assessment></Assessment>
   </el-drawer>
-  <div class="tool-container">
-    <el-radio-group v-model="curTaskType" size="small">
+  <div class="tool-wrapper">
+    <div class="tool-container">
+      <el-radio-group v-model="curTaskType"  fill="#6cf" >
       <el-radio-button v-for="item in taskStatusArray" :label="item.label" :value="item.value" />
     </el-radio-group>
     <el-button type="primary" @click="isAdjustTasks = true">任务调整</el-button>
     <el-button type="primary" @click="dispatchTasks">下发</el-button>
     <el-button type="primary" @click="isAssessment = true">绩效考核</el-button>
     <el-button type="primary">导出</el-button>
+    </div>
     <!-- <el-button type="primary">日志</el-button> -->
   </div>
 </template>
@@ -44,11 +46,15 @@ const dispatchTasks = async () => {
 </script>
 <style scoped>
 .tool-container {
+  padding: 0 15px;
+  margin-top: 1vh;
   width: 100%;
   display: flex;
   align-items: center;
   height: 7vh;
   background: white;
+  border-radius: 10px;
+  /* border-right: 1px solid #eee; */
   /* margin-top: 1vh; */
   gap: 10px;
 }

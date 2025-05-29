@@ -7,6 +7,7 @@
       </div>
       <div class="card-content">
         <div class="ratio-label">
+          <Icon name="streamline:business-progress-bar-2"></Icon>
           {{ workLoadSta.completed.toFixed(0) }}天/{{ workLoadSta.total.toFixed(0) }}天
         </div>
         <el-progress type="dashboard" :percentage="workLoadSta.progress.toFixed(0)" :stroke-width="12" :width="70"
@@ -61,7 +62,7 @@
 <script setup>
 import { useProjectStore } from "@/stores/project";
 import { storeToRefs } from "pinia";
-
+import { Icon } from '@iconify/vue';
 const projectStore = useProjectStore();
 const {
   joinUsers,
@@ -83,7 +84,6 @@ const {
   gap: 12px;
   height: 18vh;
   width: 98%;
-  padding: 5px;
 }
 
 /* 统一卡片样式 [6,7](@ref) */

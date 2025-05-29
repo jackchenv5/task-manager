@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex; height: 90vh;background-color: #eee; width: 100%;">
+  <div style="display: flex; height: 90vh;width: 100%;">
     <div class="left">
       <GroupHeader></GroupHeader>
       <Weeks></Weeks>
@@ -7,8 +7,11 @@
     
     <div class="right">
       <UserHeader></UserHeader>
-      <Tools></Tools>
-      <TaskTable></TaskTable>
+      <div class="right-content">
+        <Tools></Tools>
+        <TaskTable></TaskTable>
+      </div>
+      
 
     </div>
   </div>
@@ -37,6 +40,9 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.right-content {
+  padding: 5px 10px;
+}
 .el-link {
   font-size: 18px;
   margin-right: 20px;

@@ -123,7 +123,7 @@
       </div>
     </el-drawer>
   <div class="table-container">
-    <vxe-table ref="taskTable" border :max-height="tableMaxHeight" show-header stripe auto-resize w
+    <vxe-table ref="taskTable" border  height="100%" show-header stripe auto-resize 
       :row-config="{ isHover: true }" :data="curSelectUserFilterTasks" @checkbox-all="selectAllChangeEvent" @checkbox-change="selectChangeEvent">
       <vxe-column type="checkbox" width="40"></vxe-column>
       <vxe-column field="name" title="任务名" width="120" show-overflow></vxe-column>
@@ -271,8 +271,11 @@ const handleConfirm = async () => {
 
 <style>
 .table-container {
-  width: 50vw;
-  height: 60vh;
+  padding: 5px;
+  margin-top: 1vh;
+  height: 69vh;
+  background-color: white;
+  border-radius: 10px;
 }
 
 /* 半屏详情面板样式 */

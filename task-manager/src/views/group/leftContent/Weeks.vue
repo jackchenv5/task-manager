@@ -1,6 +1,7 @@
 <template>
   <div class="weeks-container">
-    <div class="toolbar">
+    <div class="weeks-wrapper">
+      <div class="toolbar">
       <div style="margin-left: 15px;">
         <el-button class="allSelect-el-button" type="primary" @click="selectedAll">全选</el-button>
       </div>
@@ -28,6 +29,8 @@
         </div>
       </div>
     </el-scrollbar>
+    </div>
+
   </div>
 </template>
 <script setup>
@@ -89,34 +92,46 @@ const goToday = () => {
 </script>
 <style>
 .weeks-container {
-  padding: 10px;
-  margin:5px;
-  width: 48vw;
-  margin-left: 5px;
-  border-radius: 10px;
-  width: 47vw;
+  /* padding: 10px; */
+  /* margin:5px; */
+  width: 50vw;
+  /* margin-left: 5px; */
+  /* border-radius: 10px; */
+  /* width: 47vw; */
+  /* margin-top: 10 solid black; */
+  /* border:  1px solid rgb(144 156 181); */
   height: 80vh;
-  background-color: white;
+  /* background-color: white; */
   display: flex;
   flex-direction: column;
 }
+
+.weeks-wrapper {
+  padding: 5px 10px;
+  /* background-color: white; */
+}
+
 .toolbar {
+  margin-top: 1vh;
   width: 100%;
   display: flex;
   align-items: center;
   height: 7vh;
   background: white;
-  border-right: 1px solid #eee;
+  border-radius: 10px;
+  /* border-right: 1px solid #eee; */
   /* margin-top: 1vh; */
   gap: 10px;
 }
 
 .table-header {
+  margin-top: 1vh;
   display: flex;
   /* border-bottom: 1px solid #ebeef5; */
+  border-radius: 10px;
   padding: 12px 0;
   font-weight: bold;
-  background-color: #0b0c0e;
+  background-color: #3b6363;
   color  : white;
 }
 
@@ -128,9 +143,10 @@ const goToday = () => {
 }
 
 .table-body {
-  flex: 1;  /* 或 flex-grow: 1 */
-  min-height: 0; /* 关键：允许内容收缩 */
-  overflow-y: auto; /* 自动显示滚动条 */
+  margin-top: 1vh;
+  height: 63vh;
+  background-color: white;
+  border-radius: 10px;
 
 }
 
@@ -139,8 +155,9 @@ const goToday = () => {
   border-bottom: 1px solid #b0b4bb;
   padding: 12px 0;
 }
-.table-row:hover,active {
-  background-color: rgb(219, 219, 211);
+.table-row:hover {
+  background-color: rgb(243, 243, 206);
+  opacity:0.6;
   box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
   transition: all 0.5s ease-in-out;
 }
@@ -177,10 +194,10 @@ const goToday = () => {
   cursor: pointer;
 }
 
-.user-cell,.week-cell:hover {
-  border-radius: 10px;
-  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
-  opacity: 0.5; 
+.week-cell:hover {
+  border-radius: 15px;
+  box-shadow: 0 0 5px rgba(253, 2, 2, 0.5);
+  opacity: 1; 
   transition: all 0.3s ease-in-out;
 }
 

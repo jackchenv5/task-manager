@@ -52,16 +52,12 @@ const handleCommand = (command) => {
 <style scoped>
 
 .header {
-  /* padding: 10px 0; */
-  margin:5px;
-  width: 48vw;
+  border:  1px solid rgb(144 156 181);
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius:10px;
-  /* border: 1px solid rgba(230, 226, 226, 0.575); */
-  /* border-left:1px solid rgb(248, 244, 244); */
-  /* border-bottom: 1px solid rgb(206, 209, 212); */
+  /* border-radius:10px; */
   height: 10vh;
   background-color: white;
   /* color: rgba(0, 0, 0, 0.88); */

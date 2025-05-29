@@ -110,17 +110,6 @@ export const useProjectStore = defineStore('project', () => {
     return retData;
   });
 
-
-  // 参与人员个人数据统计
-  // 1.个人参与此项目总工时
-  // 2.已成为工时+汇报完成
-  // 3.进度
-  // 4.贡献值
-  // 5.参与度
-  // 6.综合评分
-  // 7.组长评分
-  // 8.TL评分
-  // 9.自评
   const curSelectUserStat = computed(() => {
     const curUserTasks = curProjectReceiverMap.value[selectUser.value.username];
     const retData = workLoadStat(curUserTasks);

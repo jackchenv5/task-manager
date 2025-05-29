@@ -1,16 +1,16 @@
 <template>
-  <div style="height: 92vh;width: 100%;overflow: hidden;background-color: #ddd;">
+  <div style="height: 92vh;width: 100%;overflow: hidden;">
     <div style="display: flex;width: 100%;height: 20vh; justify-content: space-around;align-items: center;">
       <div
-        style="height:18vh;width: 27%; background-color: white;border: 1px solid #eee;border-radius: 5px;padding: 5px;margin: 0px 5px; display: flex;flex-direction: column;">
+        style="height:18vh;width: 27%; display: flex;flex-direction: column;">
         <ProjectPoolCard></ProjectPoolCard>
       </div>
       <div
-        style="height:18vh;width: 23%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        style="height:18vh;width: 23%;display: flex;flex-direction: column;">
         <UserPoolCard></UserPoolCard>
       </div>
       <div
-        style="height:18vh;width: 49%;background-color: white;;border: 1px solid white;border-radius: 5px;padding: 5px;margin: 0px 5px;display: flex;flex-direction: column;">
+        style="height:18vh;width: 49%;display: flex;flex-direction: column;">
         <StaticsCard></StaticsCard>
       </div>
 
@@ -60,63 +60,6 @@ onMounted(() => {
   align-items: start;
   width: 49vw;
   /* 内容垂直居中 */
-  background-color: #f1f3f6;
-}
 
-/* 默认事件样式 */
-.custom-event {
-  border-radius: 3px;
-  color: #333;
-  font-size: 12px;
-  padding: 2px;
-  background: #a5dc86;
-  width: 50%;
-}
-
-/* 根据进度设置背景色 */
-.progress-0 {
-  background-color: #f0f0f0;
-}
-
-.progress-25 {
-  background-color: #ffcc99;
-}
-
-.progress-50 {
-  background-color: #76c7c0;
-}
-
-.progress-75 {
-  background-color: #f5d4f9;
-}
-
-.progress-100 {
-  background-color: #a5dc86;
-}
-
-/* 默认日期单元格样式 */
-.custom-date-cell {
-  border-radius: 3px;
-}
-
-/* 根据日期设置背景色 */
-.highlight-date-1 {
-  background-color: #ffcc99;
-}
-
-/* 浅橙色 */
-.highlight-date-2 {
-  background-color: #76c7c0;
-}
-
-/* 浅蓝色 */
-.highlight-date-3 {
-  background-color: #a5dc86;
-}
-
-/* 浅绿色 */
-
-.non_working_day {
-  background-color: rgb(204, 152, 169) !important;
 }
 </style>

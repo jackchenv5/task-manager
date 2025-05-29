@@ -43,9 +43,10 @@ const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,cu
 
 .header {
   /* padding:0 10px; */
-  margin: 5px;
-  width: 48vw;
-  border-radius: 10px;
+  /* margin: 5px; */
+  border:  1px solid rgb(144 156 181);
+  width: 100%;
+  /* border-radius: 10px; */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -65,7 +66,7 @@ const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,cu
 .group-info {
   width: 15vw;
   display: flex;
-  height: 5vh;
+  /* height: 5vh; */
   gap:10px;
   align-items: center;
   justify-content: center;
@@ -74,7 +75,7 @@ const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,cu
 .group-info-item{
   display: flex;
   flex-direction: column;
-  height: 5vh;
+  /* height: 5vh; */
   justify-content: space-between;
   align-items: center;
 }

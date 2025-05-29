@@ -1,16 +1,16 @@
 <template>
     <div class="user-bar">
-        <el-dialog v-model="dialogVisible" :title="`${curSelectUserStat.username}`" width="500px">
+        <el-dialog v-model="dialogVisible" :title="`${selectUser.username}`" width="500px">
             <p style="color:#aaa">此评价和评语只会展示给组长，作为绩效参考~</p>
-            <el-form ref="form" :model="selectUserEvaluateRef" label-width="80px">
+            <el-form ref="form" :model="evaulateForm" label-width="80px">
 
                 <el-form-item label="评价：">
-                    <el-rate v-model="selectUserEvaluateRef.score" :max="7" text-color="#ff9900" :texts="EvaluateList"
+                    <el-rate v-model="evaulateForm.score" :max="7" text-color="#ff9900" :texts="EvaluateList"
                         show-text>
                     </el-rate>
                 </el-form-item>
                 <el-form-item label="评语：">
-                    <el-input type="textarea" v-model="selectUserEvaluateRef.comment" placeholder="请输入内容"
+                    <el-input type="textarea" v-model="evaulateForm.comment" placeholder="请输入内容"
                         :rows="5"></el-input>
                 </el-form-item>
             </el-form>
@@ -111,9 +111,13 @@ const { selectUser,curSelectUserStat, selectUserEvaluateRef,curUserEvalution } =
 import { EvaluateList } from '@/constants/public'
 
 const dialogVisible = ref(false)
+const evaulateForm = ref({
+    score: 0,
+    comment:''
+})
 
 const clickEvalution = () => {
-    if (!curSelectUserStat.value.username) {
+    if (!selectUser.value.username) {
         ElMessage.error('请选择评价用户！')
         return
     }

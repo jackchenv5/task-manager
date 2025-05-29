@@ -97,13 +97,18 @@ const handleLogout = () => {
 
 </script>
 <style>
+.main-layout{
+  background-color: rgba(225, 227, 233, 0.829);
+  width: 100%;
+  margin: 0 auto;
+}
 .head {
   /* display: flex;
   justify-content: start; */
   border-bottom: 2px solid #d6dfdf;
   border-top: 1px solid #f5f9f9;
-  /* background: #ffffff; */
-  width: 100vw;
+  background: #ffffff;
+  width: 100%;
   height: 6vh;
 }
 
