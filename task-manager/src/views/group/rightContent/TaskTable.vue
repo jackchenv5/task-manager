@@ -134,7 +134,7 @@
       <vxe-column field="workload" title="工时(天)" width="100"></vxe-column>
       <vxe-column field="project" title="项目" width="130" show-overflow></vxe-column>
       <vxe-column field="creator_name" title="创建人" width="110"></vxe-column>
-      <vxe-column title="操作" fixed="right">
+      <vxe-column title="操作" fixed="right" width="100">
         <template #default="{ row }">
           <el-button type="primary" size="small" @click="handleEditClick(row)">编辑</el-button>
         </template>

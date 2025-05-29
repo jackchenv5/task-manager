@@ -2,7 +2,7 @@
       <div class="header">
         <div class="group-info">
           <el-avatar :size="50" fit="full" style="font-size: 1.2rem;background-color: rgb(24, 43, 104);">{{ selectGroup?.name[0] }}</el-avatar>
-          <div style="display: flex;flex-direction:column;height: 6vh;justify-content: space-around">
+          <div style="display: flex;flex-direction:column;height: 6vh;justify-content:center ">
             <el-dropdown placement="bottom-end" @command="handleCommand">
               <h1 style="font-size: 1.125rem;font-weight: 500;color: black;"> {{ selectGroup?.name }}</h1>
               <template #dropdown>
@@ -52,38 +52,41 @@ const handleCommand = (command) => {
 <style scoped>
 
 .header {
-  width: 100%;
+  /* padding: 10px 0; */
+  margin:5px;
+  width: 48vw;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-left:1px solid rgb(248, 244, 244);
-  border-bottom: 1px solid rgb(206, 209, 212);
+  border-radius:10px;
+  /* border: 1px solid rgba(230, 226, 226, 0.575); */
+  /* border-left:1px solid rgb(248, 244, 244); */
+  /* border-bottom: 1px solid rgb(206, 209, 212); */
   height: 10vh;
   background-color: white;
-  color: rgba(0, 0, 0, 0.88);
+  /* color: rgba(0, 0, 0, 0.88); */
   font-size: 14px;
-  line-height: 1.5714285714285714;
-  list-style: none;
+  /* list-style: none; */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   
 }
 
 
 .group-info {
-  width: 15vw;
+  width: 20vw;
   display: flex;
   height: 5vh;
   align-items: center;
-  justify-content: center;
-  gap:20px;
+  gap:10px;
+  margin-left: 20px;
 }
 
 .group-info-item{
   display: flex;
   flex-direction: column;
-  height: 5vh;
-  justify-content: space-between;
-  align-items: center;
+  /* height: 4vh; */
+  /* justify-content: center; */
+  /* align-items: center; */
 }
 .group-info-item-title{ 
   font-size: 0.8rem;

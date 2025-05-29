@@ -1,8 +1,8 @@
 <template>
-  <div style="display: flex; height: 90vh;background-color: whitesmoke; width: 100%;">
+  <div style="display: flex; height: 90vh;background-color: #eee; width: 100%;">
     <div class="left">
       <GroupHeader></GroupHeader>
-      <Weeks style="flex-grow: 1;"></Weeks>
+      <Weeks></Weeks>
     </div>
     
     <div class="right">
@@ -52,7 +52,7 @@ onMounted(() => {
 .left,
 .right {
   width: 50vw;
-  display: flex;
+  display: inline-block;
   flex-direction: column;
   /* flex: 1; */
   align-items: start;
