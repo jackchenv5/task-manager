@@ -2,6 +2,7 @@
     <div class="user-bar">
         <el-dialog v-model="dialogVisible" :title="`${selectUser.username}`" width="500px">
             <p style="color:#aaa">此评价和评语只会展示给组长，作为绩效参考~</p>
+            <p style="color:red" v-if="evaulateForm.id">此人已评价，修改视为跟新评价~</p>
             <el-form ref="form" :model="evaulateForm" label-width="80px">
 
                 <el-form-item label="评价：">
@@ -106,14 +107,15 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 const projectStore = useProjectStore()
-const { selectUser,curSelectUserStat, selectUserEvaluateRef,curUserEvalution } = storeToRefs(projectStore)
+const { selectUser,curSelectUserStat ,curUserEvalution } = storeToRefs(projectStore)
 
 import { EvaluateList } from '@/constants/public'
 
 const dialogVisible = ref(false)
 const evaulateForm = ref({
     score: 0,
-    comment:''
+    comment:'',
+    id:0
 })
 
 const clickEvalution = () => {
@@ -121,15 +123,24 @@ const clickEvalution = () => {
         ElMessage.error('请选择评价用户！')
         return
     }
+    evaulateForm.value.score = curUserEvalution.value.project?.score || 0
+    evaulateForm.value.comment = curUserEvalution.value.project?.comment || ''
+    evaulateForm.value.id = curUserEvalution.value.project?.id || 0
     dialogVisible.value = true
 }
 const confirmEvalution = async () => {
-    const ret = await projectStore.commitCurUserEvalution()
+    console.log(evaulateForm.value)
+    const ret = await projectStore.commitCurUserEvalution(evaulateForm.value)
     if (!ret) {
-        ElMessage.error(`${curSelectUserStat.value.username}评价失败！`)
+        ElMessage.error(`${selectUser.value.username}评价失败！`)
 
     } else {
-        ElMessage.success(`${curSelectUserStat.value.username}评价成功！`)
+        ElMessage.success(`${selectUser.value.username}评价成功！`)
+    }
+    evaulateForm.value = {
+        score: 0,
+        comment:'',
+        id:0
     }
     dialogVisible.value = false
 }

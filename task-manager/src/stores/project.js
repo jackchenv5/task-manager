@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi, commitEvalution,getLogList,getEvaluation } from '@/api/data/data'
+import { getTaskDataApi, commitEvalution,getLogList,getEvaluation,updateEvalution } from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
 import { workLoadStat } from '@/utils/tasksStat'
@@ -129,34 +129,31 @@ export const useProjectStore = defineStore('project', () => {
       return acc;
     }, {});
   }
-
+  const commitCurUserEvalution = async (e)=>{
+    let ret = null
+    console.log('e',e)
+    if(!e.id){
+      console.log('commit')
+        ret = await commitEvalution({
+          project: curSelectProjectRef.value,
+          evaluator: loginUser.value.id,
+          evaluated_user: selectUser.value.id,
+          evaluation_type: EvaluteType.PROJECT,
+          evaluation_time: formatDate(new Date()),
+          score:e.score,
+          comment:e.comment
+        })
+        }else{
+        const {id,...commitData} = e
+        console.log(id,commitData)
+        ret = await updateEvalution(id,e)
+    }
+    updateCurSelectUserEvalution()
+    return ret?.id ? true : false
+}
   const cleanUserValution = () => {
     curUserEvalution.value = {};
   };
-
-  const commitCurUserEvalution = async () => {
-    try {
-      const ret = await commitEvalution({
-        ...selectUserEvaluateRef.value,
-        project: curSelectProjectRef.value,
-        evaluator: loginUser.value.id,
-        evaluated_user: selectUser.value.id,
-        evaluation_type: EvaluteType.PROJECT,
-        evaluation_time: formatDate(new Date()),
-      })
-      selectUserEvaluateRef.value = {
-        comment: '',
-        score: 0
-      }
-      return ret?.id ? true : false
-    } catch (e) {
-      selectUserEvaluateRef.value = {
-        comment: '',
-        score: 0
-      }
-      return false
-    }
-  }
 
   watch(curSelectProjectRef, (newValue) => {
     saveProjectConfig()
