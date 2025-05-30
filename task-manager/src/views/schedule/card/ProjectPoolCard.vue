@@ -83,7 +83,7 @@ const SelectProjectConfirm = (isConfirm, projects) => {
   display: flex;
   justify-content: space-between;
   padding: 5px 10px;
-  height: 5vh;
+  /* height: 5vh; */
   /* padding-top: 10px; */
   border-bottom: 1px solid rgb(243, 233, 233);
 }
