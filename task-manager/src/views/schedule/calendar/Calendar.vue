@@ -1,5 +1,5 @@
 <template>
-  <div ref="schedulerContainer" style="width: 100%; height: 100vh" @mousedown="handleMouseDown" @click="handleClick"
+  <div ref="schedulerContainer"  @mousedown="handleMouseDown" @click="handleClick"
     @mousemove="handleMouseMove" @mouseup="handleMouseUp" @mouseleave="handleMouseUp"></div>
 </template>
 

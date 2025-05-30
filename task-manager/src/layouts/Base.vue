@@ -49,7 +49,7 @@
 
 
     <!-- 动态内容区域 -->
-    <div class="content-container">
+    <div>
       <router-view v-slot="{ Component }">
       </router-view>
     </div>

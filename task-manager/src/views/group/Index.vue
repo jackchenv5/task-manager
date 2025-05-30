@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex; height: 90vh;width: 100%;">
+  <div style="display: flex;justify-content: space-around; height: 90vh;width: 100vw;">
     <div class="left">
       <GroupHeader></GroupHeader>
       <Weeks></Weeks>
