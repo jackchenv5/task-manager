@@ -22,8 +22,8 @@ export const useSystemStore = defineStore('system', () => {
 
     const addGroup = async (data) => {
         const ret = await groupAddApi(data)
-        console.log('返回组修改结果：', id, ret)
         updateGroupTableData()
+        return ret.id ? true : false
     }
 
     const deleteGroup = async (id) => {

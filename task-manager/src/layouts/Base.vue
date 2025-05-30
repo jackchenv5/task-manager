@@ -97,6 +97,13 @@ const handleLogout = () => {
 
 </script>
 <style>
+
+/* 全局防护规则 */
+/* * {
+  box-sizing: border-box; 
+} */
+
+
 .main-layout{
   background-color: rgba(225, 227, 233, 0.829);
   width: 100%;

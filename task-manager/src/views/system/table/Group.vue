@@ -11,7 +11,6 @@
       :edit-config="{ mode: 'cell', trigger: 'dblclick', showStatus: true }" keep-source :data="list"
       @edit-closed="editClosedEvent">
       <vxe-column field="id" title="ID" min-width="60"></vxe-column>
-      <!-- <vxe-column field="name" title="组名" width="300" type="html" :edit-render="{ name: 'VxeInput' }"></vxe-column> -->
       <vxe-column field="name" title="组名" width="300" :edit-render="{ name: 'VxeInput' }"></vxe-column>
       <vxe-column field="users" title="组员" min-width="600" :edit-render="userEditRender"></vxe-column>
       <vxe-column field="group_leader" title="组长" width="200" :edit-render="groupLeaderEditRender"></vxe-column>
@@ -105,7 +104,6 @@ const departLeaderRender = reactive({
 })
 
 const editClosedEvent = ({ row, column }) => {
-  console.log(row, column)
   const $table = tableRef.value
   if ($table) {
     const field = column.field
@@ -148,11 +146,19 @@ const btnGroupCellRender = reactive({
             return acc;
           }, [])
 
-        }).then(() => {
-          VxeUI.modal.message({
+        }).then((ret) => {
+          if(ret){
+            VxeUI.modal.message({
             content: `复制组:${postData.name}成功,请直接编辑新增的组！`,
             status: 'success'
           })
+          }else{
+            VxeUI.modal.message({
+            content: `复制组:${postData.name}失败！`,
+            status: 'error'
+          })
+          }
+
         })
       } else if (params.name === 'del') {
         systemStore.deleteGroup(id).then(() => {
@@ -191,9 +197,14 @@ onMounted(async () => {
   departLeaderRender.options = userListData
 })
 
-</script>
+</script>``
 
 <style  scoped>
+
+.vxe-toolbar{
+    background-color: unset!important;;
+  }
+
 .mylist-table {
   ::v-deep(.keyword-highlight) {
     background-color: #FFFF00;

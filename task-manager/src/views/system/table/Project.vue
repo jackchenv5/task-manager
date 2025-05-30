@@ -188,6 +188,10 @@ onMounted(async () => {
 </script>
 
 <style  scoped>
+.vxe-toolbar{
+    background-color: unset!important;;
+  }
+  
 .mylist-table {
   ::v-deep(.keyword-highlight) {
     background-color: #FFFF00;

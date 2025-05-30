@@ -4,37 +4,29 @@
     @update:modelValue="updateSelectProjects" @update:visible="updateVisible" @comfirm="SelectProjectConfirm">
   </SelectProject>
   <!-- 对话框区 END -->
-  <div style="height: 4vh">
-    <el-row>
-      <el-col :span="4">
-        <div style="
-            margin-top: 5px;
-            color: white;
-            background-color: black;
-            border-radius: 5px;
-          ">
-          项目池
-        </div>
-      </el-col>
-      <el-col :span="8" :offset="12">
+  <div class="pool-card">
+    <div class="user-pool-card-header">
+      <div style="color:black;border-radius: 5px;">项目池</div>
+      <div>
         <el-button @click="isShowSelectProjectDialog = true" size="small">添加</el-button>
         <el-popconfirm title="确认清空项目池？" @confirm="scheduleStore.cleanProjectPool" placement="right">
           <template #reference>
             <el-button size="small">清空</el-button>
           </template>
         </el-popconfirm>
-      </el-col>
-    </el-row>
-    <el-scrollbar style="height: 14vh">
-      <el-tag v-for="item in projectPool" :key="item" :type="curSelectProjectRef === item ? 'success' : ''"
-        :color="curSelectProjectRef === item ? '#4269E0' : ''" class="my-tag" closable @click="handleProjectClick(item)"
-        @close="handleDeleteProject(item)">
-        <el-text truncated :style="{
-          width: '22vw',
-          color: curSelectProjectRef === item ? 'white' : 'black',
-        }">{{ item }}</el-text>
-      </el-tag>
-    </el-scrollbar>
+      </div>
+    </div>
+    <div class="pool-list">
+      <el-scrollbar>
+        <el-tag v-for="item in projectPool" :key="item" :type="curSelectProjectRef === item ? 'success' : ''"
+          :color="curSelectProjectRef === item ? '#4269E0' : ''" class="my-tag" closable @click="handleProjectClick(item)"
+          @close="handleDeleteProject(item)">
+          <el-text truncated :style="{ width: '20vw', color: curSelectProjectRef === item ? 'white' : 'black', }">{{ item
+          }}</el-text>
+        </el-tag>
+      </el-scrollbar>
+    </div>
+
   </div>
 </template>
 <script setup>
@@ -74,6 +66,34 @@ const SelectProjectConfirm = (isConfirm, projects) => {
 </script>
 
 <style scoped>
+.pool-card {
+  background-color: white;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #e0dbdb;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* height: 18vh; */
+  /* flex-shrink: 0 */
+}
+
+
+.user-pool-card-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 10px;
+  height: 5vh;
+  /* padding-top: 10px; */
+  border-bottom: 1px solid rgb(243, 233, 233);
+}
+
+.pool-list {
+  min-height: 0px;
+  flex: 1; 
+  /* border: 1px solid red; */
+}
+
 .my-tag {
   margin: 3px;
   cursor: pointer;
@@ -81,13 +101,5 @@ const SelectProjectConfirm = (isConfirm, projects) => {
 
 .tag-content {
   max-width: 100%;
-  /* /* vertical-align: middle; */
 }
-
-/* .el-tag .el-tag__close {
-    margin-left: 8px;
-    border: 1px solid;
-    border-radius: 3px;
-
-} */
 </style>

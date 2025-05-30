@@ -269,7 +269,7 @@
               <Select
                 v-model="queryForm.project"
                 placeholder="请选择项目"
-                :api="getProjectApi"
+                :api="getProjectList"
                 label-field="name"
                 value-field="id"
                 filterable
@@ -357,7 +357,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import Select from '@/components/selects/MutiSelect.vue'
 import { Download } from '@element-plus/icons-vue'
-import {  getUserGroupApi, getUserApi, getProjectApi, getTaskDataApi } from '@/api/data/data'
+import {  getUserGroupApi, getUserApi, getProjectList, getTaskDataApi } from '@/api/data/data'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import { TaskStatus, getProgressStatus } from '@/utils/public'
 
