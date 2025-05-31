@@ -15,17 +15,24 @@
       <el-button type="info">Excel 模版下载</el-button>
     </div>
     <div class="tool-class">
-      <el-button type="warning">Excel 导入任务</el-button>
+      <el-upload ref="upload"  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+        :limit="1" :on-exceed="handleExceed" :auto-upload="false">
+        <template #trigger>
+          <el-button type="primary">select file</el-button>
+        </template>
+        <el-button class="ml-3" type="success" @click="submitUpload">
+          upload to server
+        </el-button>
+        <template #tip>
+          <div class="el-upload__tip text-red">
+            limit 1 file, new file will cover the old file
+          </div>
+        </template>
+      </el-upload>
     </div>
   </div>
   <!-- <el-drawer v-model="drawer" title="任务调整"  direction="btt" :close-on-click-modal="false" size="80%" :with-header="true" > -->
-  <el-drawer
-    v-model="drawer"
-    title="任务调整"
-    direction="btt"
-    size="80%"
-    :with-header="false"
-  >
+  <el-drawer v-model="drawer" title="任务调整" direction="btt" size="80%" :with-header="false">
     <div style="display: flex; justify-content: space-between; margin-bottom: 10px">
       <div style="font-size: 1.2rem; font-weight: bolder">任务调整</div>
       <div style="display: flex; align-items: center">

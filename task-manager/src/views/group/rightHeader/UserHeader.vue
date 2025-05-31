@@ -4,7 +4,7 @@
           <el-avatar :size="50" fit="full" style="font-size: 1.2rem;background-color: rgb(16, 136, 116);" shape="square">{{ curSelectUserName[0] }}</el-avatar>
           <div style="display: flex;flex-direction:column;justify-content: space-around">
             <div style="font-size: 1.125rem;font-weight: 500;color: black;"> {{ curSelectUserName || "所有编排人员" }}</div>
-            <div style="color:#00000073">参与人员:{{ curSelectTasksReceiverList.length }}</div>
+            <div style="color:#00000073">{{ selectWeek.label || '月' }}</div>
           </div>
 
         </div>
@@ -35,7 +35,7 @@
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
 const groupStore = useGroupStore();
-const {curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,curSelectTasksReceiverList} = storeToRefs(groupStore);
+const {selectWeek,curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,curSelectTasksReceiverList} = storeToRefs(groupStore);
 </script>
 
 

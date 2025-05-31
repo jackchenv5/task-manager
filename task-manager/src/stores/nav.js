@@ -4,12 +4,12 @@ import { defineStore } from 'pinia'
 
 export const useNavStore = defineStore('navigation', () => {
   const navItems = ref([
-    { path: '/person', title: '我的任务' },
-    { path: '/group', title: '小组视图' },
-    { path: '/project', title: '项目视图' },
-    { path: '/schedule', title: '任务编排' },
-    { path: '/search', title: '任务查询' },
-    { path: '/system', title: '系统配置' }
+    { path: '/person', title: '我的任务',name:'person' },
+    { path: '/group', title: '小组视图' ,name :'group'},
+    { path: '/project', title: '项目视图',name :'project' },
+    { path: '/schedule', title: '任务编排', name: 'schedule' },
+    { path: '/search', title: '任务查询',name :'search' },
+    { path: '/system', title: '系统配置',name: 'system' }
   ])
 
   const  updateTitle = (index, newTitle) => {

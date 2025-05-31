@@ -49,6 +49,7 @@ const headers = computed(() => {
 
 // 获取用户每一周的任务情况， 任务总数和饱和度
 const userTaskData = computed(() => {
+  console.log(weeksRef.value)
   return getUserWeeksDataMap(allTask.value,weeksRef.value,selectGroupUsers.value)
 })
 

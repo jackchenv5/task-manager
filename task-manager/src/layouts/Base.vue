@@ -5,10 +5,12 @@
       <el-row>
         <el-col :span="20">
           <el-header class="nav-container">
-            <router-link v-for="item in navStore.navItems" :key="item.path" :to="item.path" class="router-link"
+          <template v-for="item in navStore.navItems">
+            <router-link  v-if="hasPerm(item)" :key="item.path" :to="item.path" class="router-link"
               :class="{ active: $route.path.startsWith(item.path) }">
               {{ item.title }}
             </router-link>
+          </template>
           </el-header>
         </el-col>
         <el-col :span="4">
@@ -66,7 +68,33 @@ const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 // 登陆信息
 
-
+const hasPerm = (router) => {
+  if(router.name === 'person'){
+    return true
+  }else if(router.name === 'group'){
+    if(loginUser.value.group_leader === loginUser.value.username) {
+      return true
+    }
+  }else if(router.name === 'schedule'){
+    if(['下发人员','编排人员'].includes(loginUser.value.role_name)){
+       return true
+    }
+  }else if(router.name === 'project'){
+    if(['下发人员','编排人员'].includes(loginUser.value.role_name)){
+       return true
+    }
+  }else if(router.name === 'search'){
+       return true
+  }else if(router.name === 'system'){
+    if(['下发人员'].includes(loginUser.value.role_name)){
+       return true
+    }
+  }else {
+    console.log(`${router.name} is not support!`)
+    return false
+  }
+  return false
+}
 const user = ref({
   name: loginUser.value.username,
   role: loginUser.value.role_name,

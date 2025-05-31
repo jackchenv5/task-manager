@@ -25,6 +25,7 @@ export const useUserStore = defineStore('user', () => {
 
     if (loginInfo?.name) {
       const userInfo = await getUserByUsername(loginInfo.name)
+      console.log('userInfo========>',userInfo)
       loginUser.value = { ...userInfo }
 
       // 将用户信息存储到localStorage（新增部分）
