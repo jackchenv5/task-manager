@@ -292,6 +292,7 @@
           <el-col :span="8" class="button-group">
             <el-button type="primary" @click="handleQuery">查询</el-button>
             <el-button @click="resetQuery">清除条件</el-button>
+            <el-button @click="exportExcel">导出Excel</el-button>
           </el-col>
         </el-row>
       </el-form>
@@ -357,10 +358,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import Select from '@/components/selects/MutiSelect.vue'
 import { Download } from '@element-plus/icons-vue'
-import {  getUserGroupApi, getUserApi, getProjectList, getTaskDataApi } from '@/api/data/data'
+import {  getUserGroupApi, getUserApi, getProjectList, getTaskDataApi,exportTestUrl } from '@/api/data/data'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import { TaskStatus, getProgressStatus } from '@/utils/public'
-
 const locale = zhCn
 
 // 表格高度
@@ -457,6 +457,10 @@ const handleQuery = async () => {
   tableData.value = queryItems.value.slice(0, page.pageSize)
   page.total = queryItems.value.length
   loading.value = false;
+}
+
+const exportExcel = () => { 
+   exportTestUrl(queryForm.value)
 }
 
 // 重置查询条件

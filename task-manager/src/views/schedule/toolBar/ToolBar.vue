@@ -12,21 +12,12 @@
       </el-badge>
     </div>
     <div class="tool-class">
-      <el-button type="info">Excel 模版下载</el-button>
+      <el-button type="info" @click="exportTemplateUrl">Excel 模版下载</el-button>
     </div>
-    <div class="tool-class">
-      <el-upload ref="upload"  action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-        :limit="1" :on-exceed="handleExceed" :auto-upload="false">
+    <div >
+      <el-upload ref="upload"  :action="`http://127.0.0.1:8000/api/task/import/${loginUser.id}/`" :limit="1" >
         <template #trigger>
-          <el-button type="primary">select file</el-button>
-        </template>
-        <el-button class="ml-3" type="success" @click="submitUpload">
-          upload to server
-        </el-button>
-        <template #tip>
-          <div class="el-upload__tip text-red">
-            limit 1 file, new file will cover the old file
-          </div>
+          <el-button type="primary">导入任务</el-button>
         </template>
       </el-upload>
     </div>
@@ -55,9 +46,12 @@ import { ref, onMounted } from "vue";
 const drawer = ref(false);
 const joinType = ref("project");
 import Gantt from "./Gantt.vue";
-
 import { useScheduleStore } from "@/stores/schedule";
 import { storeToRefs } from "pinia";
+import { useUserStore } from "@/stores/user";
+import {exportTemplateUrl} from '@/api/data/data'
+const userStore = useUserStore();
+const {loginUser} = storeToRefs(userStore);
 
 const scheduleStore = useScheduleStore();
 const { curPendTasksLength, lastPendTasksLength } = storeToRefs(scheduleStore);

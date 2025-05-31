@@ -427,7 +427,7 @@ export const getUserWeeksDataMap = (tasks,weeks, users) => {
 
 }
 
-function objectToQueryString(obj) {
+export function objectToQueryString(obj) {
     // 创建一个空字符串用于存放最终的查询字符串
     let queryString = "";
     // 遍历对象的所有键值对

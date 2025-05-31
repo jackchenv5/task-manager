@@ -632,10 +632,6 @@ class ImportExcel(APIView):
         if not excel_file:
             return Response({"error": "No file uploaded."}, status=400)
 
-            # 验证文件类型（可选，但推荐）
-        # if not isinstance(excel_file, InMemoryUploadedFile):
-        #     return Response({"error": "Uploaded file is not an InMemoryUploadedFile."}, status=400)
-
         # 使用 pandas 读取 Excel 文件
         try:
             df1 = pd.read_excel(excel_file)
