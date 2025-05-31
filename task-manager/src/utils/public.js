@@ -427,3 +427,24 @@ export const getUserWeeksDataMap = (tasks,weeks, users) => {
 
 }
 
+function objectToQueryString(obj) {
+    // 创建一个空字符串用于存放最终的查询字符串
+    let queryString = "";
+    // 遍历对象的所有键值对
+    for (let key in obj) {
+      // 确保属性属于对象本身而不是原型链上的:w
+      if (obj.hasOwnProperty(key)) {
+        // 对值进行encodeURIComponent编码，以处理特殊字符
+        let value = encodeURIComponent(obj[key]);
+        if(!value || value === "undefined") continue;
+        console.log(key,value)
+        // 如果是第一个键值对，则不需要添加&
+        if (queryString !== "") {
+          queryString += "&";
+        }
+        queryString += `${key}=${value}`;
+      }
+    }
+  
+    return queryString;
+  }

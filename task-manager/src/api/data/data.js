@@ -1,5 +1,5 @@
 import { get,patch,post,del} from '@/utils/httpData'
-
+import {objectToQueryString} from '@/utils/public'
 
 // 获取用户任务数据
 export const getTaskDataApi = (params) => get('/tasks', params)
@@ -90,3 +90,27 @@ export const getEvaluation= (params) => get('/evaluations/',params)
 export const getLogList = (params) => get('/logs/',params)
 
 
+export const  importTask= (uerId) => `${import.meta.env.VITE_API_URL}/api/task/import/${uerId}/`
+
+
+const exportUrl = ()=> {
+    let params = objectToQueryString(filterInfo.value)
+    let url=`${import.meta.env.VITE_API_URL}/api/task/export/`
+    if(params){
+      url=`${import.meta.env.VITE_API_URL}/api/task/export/?${params}`
+    }
+    window.open(url);
+  }
+  
+  const exportTestUrl = ()=> {
+    let params = objectToQueryString(filterInfo.value)
+    let url=`${import.meta.env.VITE_API_URL}/api/task/export_test/`
+    if(params){
+      url=`${import.meta.env.VITE_API_URL}/api/task/export_test/?${params}`
+    }
+    window.open(url);
+  }
+  const exportTemplateUrl = ()=> {
+    let url=`${import.meta.env.VITE_API_URL}/api/task/export_template/`
+    window.open(url);
+  }
