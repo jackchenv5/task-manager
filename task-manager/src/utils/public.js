@@ -196,7 +196,7 @@ export function reverseDateStr(dateString) {
 export function percentToDecimal(percentStr) {
     // 1. 检查输入是否为字符串或数字
     if (typeof percentStr !== "string" && typeof percentStr !== "number") {
-        console.warn("Invalid input: expected a string or number");
+        console.warn("Invalid input: expected a string or number", percentStr);
         return 0; // 默认返回 0 或抛出错误
     }
 

@@ -125,14 +125,15 @@ const userTaskData = computed(() => {
                 const peerDayWorkload = task.workload / taskDuration
                 const workdaysInWeek = getWorkdaysInWeek(week, task)
                 const weekWorkload = peerDayWorkload * workdaysInWeek
+                console.log(userName, task, week, taskDuration, peerDayWorkload, workdaysInWeek, weekWorkload)
                 
                 currentWeekWorkloads += weekWorkload
                 count += 1
             })
             
             // 计算饱和度，周内的总工作量 / 周内的总工作天数
+           
             const saturation = week.workday > 0 ? (currentWeekWorkloads / week.workday) * 100 : 0
-            
             // 根据饱和度设置背景颜色和icon
             let bgColor = '#eee'
             let icon = CircleClose
@@ -217,6 +218,7 @@ const initGantt = () => {
   ]
 
   gantt.config.drag_progress = false
+  gantt.config.drag_move = true
   const [year, month] = props.selectedMonth
   const firstDay = new Date(year, month - 1, 1)
   const lastDay = new Date(year, month, 0)
@@ -241,6 +243,7 @@ const loadSampleData = (data) => {
 }
 
 const ganttData = computed(() => {
+  console.log(filteredTasks.value)
   return {
     data: filteredTasks.value.map(x => ({
       id: x.id,
@@ -262,7 +265,10 @@ const updateTaskInStore = (updatedTask) => {
   
   if (index !== -1) {
     const newStartDate = formatDate(updatedTask.start_date)
-    const newEndDate = formatDate(updatedTask.end_date.setDate(updatedTask.end_date.getDate() - 1)) 
+    const endDate = new Date(updatedTask.start_date)
+    endDate.setDate(endDate.getDate() + updatedTask.duration - 1)
+    const newEndDate = formatDate(endDate)
+    console.log(updatedTask, newStartDate, newEndDate)
     const newTask = {
       ...myGroupStore.allTask[index],
       start_time: newStartDate,
@@ -305,11 +311,11 @@ watch(() => myGroupStore.allTask, (newVal) => {
     loadSampleData(ganttData.value);
     
     // 重新添加事件监听
-    gantt.attachEvent("onAfterTaskDrag", (id, mode, e) => {
-      const task = gantt.getTask(id);
-      updateTaskInStore(task);
-      return true;
-    });
+    // gantt.attachEvent("onAfterTaskDrag", (id, mode, e) => {
+    //   const task = gantt.getTask(id);
+    //   updateTaskInStore(task);
+    //   return true;
+    // });
   });
 }, {deep: true});
 
