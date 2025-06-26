@@ -28,6 +28,7 @@
         @edit-closed="editClosedEvent" :data="mergeData">
         <vxe-column field="receiver_name" title="执行人" width="80" fixed="left"></vxe-column>
         <vxe-column field="project" title="项目" width="400" fixed="left"></vxe-column>
+        <vxe-column field="creator" title="测试负责人" width="40" fixed="left"></vxe-column>
         <vxe-column type="expand" width="60">
             <template #content="{ row }">
                 <h3>任务详情</h3>
@@ -133,7 +134,7 @@ watch([allTask,curSeletMonthDate], async () => {
 const exportEvent = () => {
     const $table = tableRef.value
     if ($table) {
-        $table.exportData({type: 'xlsx'})
+        $table.openExport();
     }
 }
 

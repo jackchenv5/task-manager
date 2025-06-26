@@ -107,7 +107,6 @@ export const useGroupStore = defineStore('group', () => {
   })
 
   const selectGroupUsers = computed(() => {
-    console.log('user ............', selectGroup.value)
     return selectGroup.value?.users || []
   })
 
@@ -121,7 +120,6 @@ export const useGroupStore = defineStore('group', () => {
     const params = { 'group': selectGroupID.value, 'start_time': start, 'deadline_time': end }
     const response = await getTaskDataApi(params)
     allTask.value = response.result?.items ? response.result?.items : []
-    console.log('allTask', allTask.value)
   };
 
   const uploadAllChange = async (changeIndexs) => {
@@ -210,7 +208,6 @@ export const useGroupStore = defineStore('group', () => {
   const initGroupCfg = async () => {
     // 获取用户组配置信息
     groupCfg.value = myUserStore.getUserConfig("group") ? myUserStore.getUserConfig("group") : {}
-    console.log(groupCfg.value)
   }
 
   const setGroupCfg = (key, value) => {
