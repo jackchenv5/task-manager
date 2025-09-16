@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/user'
 // 使用Vite的glob特性动态加载模块
 const modules = import.meta.glob('./modules/*.js', { eager: true })
 const baseRoutes = []
- 
+
 Object.values(modules).forEach(mod => {
   baseRoutes.push(...mod.default)
 })
@@ -19,6 +19,7 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: BaseLayout,
+      redirect:'/person/index',
     },
     ...baseRoutes,
     // 404路由需放在最后
@@ -35,11 +36,11 @@ router.beforeEach(async (to, from, next) => {
 
   // 检查登录状态
   // 1.先从store 中检查是否登陆
-        // 已登录 跳过
-        // 未登录，会自动重定向到登陆界面
+  // 已登录 跳过
+  // 未登录，会自动重定向到登陆界面
   const userStore = useUserStore()
   await userStore.checkLoginAndStore()
-  // 本地记录当前用户信息  
+  // 本地记录当前用户信息
   next()
 })
 

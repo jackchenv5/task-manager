@@ -34,8 +34,12 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { isTaskInWeek, calWorkdays,getYearAndMonth,getWorkdaysInWeek,getUserWeeksDataMap} from '@/utils/public'
+
+import { ElButton, ElScrollbar } from 'element-plus'
+
+
+import { ref, computed,shallowRef,watchEffect } from 'vue'
+import { getYearAndMonth,getUserWeeksDataMap} from '@/utils/public'
 
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
@@ -47,11 +51,13 @@ const headers = computed(() => {
   return ['用户名', ...weeksRef.value.map(week => week.label)]
 })
 
-// 获取用户每一周的任务情况， 任务总数和饱和度
-const userTaskData = computed(() => {
-  console.log(weeksRef.value)
-  return getUserWeeksDataMap(allTask.value,weeksRef.value,selectGroupUsers.value)
-})
+
+const userTaskData = shallowRef({});
+
+watchEffect(() => {
+  userTaskData.value = getUserWeeksDataMap(allTask.value, weeksRef.value, selectGroupUsers.value);
+});
+
 
 // 根据用户名和weekIndex获取其背景色、任务总数、饱和度
 const getSaturationColor = (userName, index) => {

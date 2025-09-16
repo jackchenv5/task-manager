@@ -24,14 +24,11 @@ import Weeks from './leftContent/Weeks.vue';
 import Tools from './rightMid/Tools.vue';
 import TaskTable from './rightContent/TaskTable.vue';
 
-import { onMounted, ref, watch } from 'vue';
+import { onMounted } from 'vue';
 
 import {useGroupStore  } from '@/stores/group.js'
-import { storeToRefs } from 'pinia';
 
 const groupStore = useGroupStore();
-
-// const {allGroup, selectGroup, groupMembers} = storeToRefs(groupStore);
 
 onMounted(() => {
   groupStore.init()

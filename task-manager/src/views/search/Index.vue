@@ -1,7 +1,133 @@
 <template>
   <div class="query-container">
     <!-- 半屏详情面板 -->
-        <el-drawer
+    <el-drawer
+        v-model="showEditDrawer"
+        title="任务编辑"
+        direction="ltr"
+        size="50%"
+
+    >
+      <el-form
+          ref="formRef"
+          :rules="formRules"
+          style="padding: 10px"
+          label-position="top"
+          :model="formData"
+      >
+        <el-form-item>
+          <el-button type="primary" @click="onCopy(formRef)">复制</el-button>
+          <el-button type="primary" @click="onSubmit(formRef)">提交</el-button>
+        </el-form-item>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="项目:" >
+              <Select style="width: 95%" v-model="formData.project" :api="getProjectList" label-field="name" value-field="name" filterable  :filter-field="['name']"></Select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="名称:" prop="name">
+              <el-input v-model="formData.name" style="width: 95%"></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="6">
+            <el-form-item label="执行人:" prop="receiver">
+              <Select
+                  style="width: 95%"
+                  v-model="formData.receiver"
+                  :api="getUserApi"
+                  label-field="username"
+                  value-field="id"
+                  filterable
+                  :filter-field="['username', 'emp_num', 'email']"
+              ></Select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="创建人:" prop="creator">
+              <Select
+                  style="width: 95%"
+                  v-model="formData.creator"
+                  :api="getUserApi"
+                  label-field="username"
+                  value-field="id"
+                  filterable
+                  :filter-field="['username', 'emp_num', 'email']"
+              ></Select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="11">
+            <el-form-item label="抄送:">
+              <Select
+                  style="width: 95%"
+                  v-model="formData.sender"
+                  :api="getUserApi"
+                  label-field="username"
+                  value-field="username"
+                  filterable
+                  multiple
+                  :filter-field="['username', 'emp_num', 'email']"
+              ></Select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="12">
+            <el-form-item label="时间范围:" required>
+              <el-config-provider :locale="locale">
+                <el-date-picker style="max-width:150px"
+                                v-model="formData.start_time"
+                                type="date"
+                                placeholder="开始日期"
+                                value-format="YYYY-MM-DD"
+                                clearable
+                />
+                <span>~</span>
+
+                <el-date-picker style="max-width:150px"
+                                v-model="formData.deadline_time"
+                                type="date"
+                                placeholder="截止日期"
+                                value-format="YYYY-MM-DD"
+                                clearable
+                />
+              </el-config-provider>
+
+            </el-form-item>
+          </el-col>
+          <el-col :span="11">
+            <el-form-item label="工作量:" prop="workload">
+              <el-input-number v-model="formData.workload" :precision="1" :step="0.5" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-scrollbar style="height: 45vh">
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="任务内容:" prop="content">
+                <el-input type="textarea" :rows="12" v-model="formData.content"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="11">
+              <el-form-item label="挑战目标:">
+                <el-input
+                    type="textarea"
+                    :rows="12"
+                    v-model="formData.challenge"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+          <el-form-item label="任务描述:">
+            <el-input type="textarea" :rows="4" v-model="formData.description"></el-input>
+          </el-form-item>
+        </el-scrollbar>
+
+      </el-form>
+    </el-drawer>
+    <el-drawer
           v-model="showDetailPanel"
           title="任务详情"
           direction="ltr"
@@ -266,16 +392,8 @@
           <!-- 第三行筛选条件 -->
           <el-col :span="8">
             <el-form-item label="项目">
-              <Select
-                v-model="queryForm.project"
-                placeholder="请选择项目"
-                :api="getProjectList"
-                label-field="name"
-                value-field="id"
-                filterable
-                :filter-field="['name']"
-                clearable
-              />
+              <Select style="width: 95%;" v-model="queryForm.project" :api="getProjectList" label-field="name"
+                      value-field="name" filterable  :filter-field="['name']"></Select>
             </el-form-item>
           </el-col>
           
@@ -292,7 +410,11 @@
           <el-col :span="8" class="button-group">
             <el-button type="primary" @click="handleQuery">查询</el-button>
             <el-button @click="resetQuery">清除条件</el-button>
-            <el-button @click="exportExcel">导出Excel</el-button>
+            <el-button @click="exportExcel" style="margin-left:10px;">导出Excel</el-button>
+            <el-radio-group v-model="exportType" style="margin-left:10px; border:1px solid ;border-radius:10px;padding:0px 5px;">
+              <el-radio value="export">标准</el-radio>
+              <el-radio value="export_test">测试</el-radio>
+            </el-radio-group>
           </el-col>
         </el-row>
       </el-form>
@@ -312,6 +434,7 @@
         :row-config="{ isHover: true }"
         :data="tableData"
         :loading="loading"
+        :edit-config="{trigger:'dblclick',mode:'cell'}"
         :height="tableHeight"
       >
         <vxe-column type="seq" width="60" title="序号"></vxe-column>
@@ -325,18 +448,67 @@
             </el-tag>
           </template>
         </vxe-column>
-        
+        <vxe-column title="进度" width="70">
+          <template #default="{ row }">
+            <el-progress
+                type="circle"
+                :percentage="parseInt(row.progress || 0)"
+                :stroke-width="5"
+                show-text="false"
+                :status="parseInt(row.progress || 0) === 100 ? 'success' : 'primary' "
+                :width="25"
+            ><span></span></el-progress>
+          </template>
+        </vxe-column>
         <vxe-column field="receiver_name" title="执行人" width="120"></vxe-column>
-        <vxe-column field="start_time" title="开始时间" width="150"></vxe-column>
-        <vxe-column field="deadline_time" title="截止时间" width="150"></vxe-column>
-        <vxe-column field="workload" title="工作量(人天)" width="120"></vxe-column>
+        <vxe-column field="start_time" title="开始时间" sortable width="180" :edit-render="{}">
+          <template #default="{row}">
+            <el-text type="info">{{row.start_time}}</el-text>
+          </template>
+          <template #edit="{row}" v-if="loginUser.perm.schedule">
+
+            <el-date-picker style="max-width:150px"
+                            v-model="row.start_time"
+                            type="date"
+                            placeholder="开始日期"
+                            value-format="YYYY-MM-DD"
+                            clearable
+                            @blur="changeDate(row,'start')"
+            />
+          </template>
+        </vxe-column>
+        <vxe-column field="deadline_time" title="截止时间" width="180" :edit-render="{}">
+          <template #default="{row}">
+            <el-text type="info">{{row.deadline_time}}</el-text>
+          </template>
+          <template #edit="{row}" v-if="loginUser.perm.schedule">
+            <el-date-picker style="max-width:150px"
+                            v-model="row.deadline_time"
+                            type="date"
+                            placeholder="截止时间"
+                            value-format="YYYY-MM-DD"
+                            clearable
+                            @blur="changeDate(row,'end')"
+            />
+          </template>
+        </vxe-column>
+        <vxe-column field="workload" title="工作量(天)" width="180" v-if="loginUser.perm.schedule" :edit-render="{}">
+          <template #default="{row}">
+            <el-text type="warning">{{row.workload}}</el-text>
+          </template>
+          <template #edit="{row}">
+            <el-input v-model="row.workload"  @change="changeWorkLoad(row)"></el-input>
+          </template>
+        </vxe-column>
         <vxe-column field="project" title="项目" width="150" show-overflow></vxe-column>
         <vxe-column field="related_task" title="关联任务" width="150" show-overflow></vxe-column>
         <vxe-column field="creator_name" title="创建人" width="120"></vxe-column>
         
-        <vxe-column title="操作" width="120" fixed="right">
+        <vxe-column title="操作" width="220" fixed="right">
           <template #default="{ row }">
-            <el-button link size="small" @click="handleDetail(row)">详情</el-button>
+            <el-button size="small" @click="handleDetail(row)" type="info">详情</el-button>
+            <el-button  size="small" @click="handleEdit(row)" type="primary"  v-if="loginUser.perm.schedule">编辑</el-button>
+            <el-button  size="small" @dblclick="handleDelete(row)" type="warning"  v-if="loginUser.perm.schedule">删除</el-button>
           </template>
         </vxe-column>
       </vxe-table>
@@ -355,16 +527,171 @@
 </template>
 
 <script setup>
+import {ElDrawer,ElForm,ElFormItem,ElConfigProvider,ElDatePicker,ElCol,ElRow,ElButton,ElInput,ElSelect,ElRadioGroup,ElRadio,ElTag,ElOption,ElProgress,ElText,ElMessage,ElInputNumber} from "element-plus";
 import { ref, reactive, onMounted } from 'vue'
 import Select from '@/components/selects/MutiSelect.vue'
-import { Download } from '@element-plus/icons-vue'
-import {  getUserGroupApi, getUserApi, getProjectList, getTaskDataApi,exportTestUrl } from '@/api/data/data'
+import {
+  getUserGroupApi,
+  getUserApi,
+  getProjectList,
+  getTaskDataApi,
+  exportUrl,
+  taskModifyApi,
+  taskAddApi, taskDeleteApi
+} from '@/api/data/data'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import { TaskStatus, getProgressStatus } from '@/utils/public'
 const locale = zhCn
 
+import { useUserStore } from '@/stores/user'
+import { storeToRefs } from 'pinia'
+import {sortByString} from "@/utils/tasksStat.js";
+const userStore = useUserStore()
+const { loginUser } = storeToRefs(userStore)
+
+// 查看详情
+const showDetailPanel = ref(false);
+const showEditDrawer = ref(false);
+
+const currentTask = ref({});
+// 提交form 表单功能
+const formRef = ref();
+const formData = reactive({
+  id:null,
+  name: null,
+  content: null,
+  challenge: null,
+  creator: null,
+  receiver: null,
+  start_time: null,
+  deadline_time: null,
+  description: null,
+  sender: null,
+  workload: null,
+  status: null,
+  project: null,
+});
+
+const formRules = reactive({
+  name: [
+    {
+      required: true,
+      message: "请输入任务名",
+    },
+  ],
+  receiver: [
+    {
+      required: true,
+      message: "请输入执行者",
+    },
+  ],
+  content: [
+    {
+      required: true,
+      message: "请输入任务内容",
+    },
+  ],
+  start_time: [
+    {
+      required: true,
+      message: "请输入任务开始时间",
+    },
+  ],
+  deadline_time: [
+    {
+      required: true,
+      message: "请输入任务截止时间",
+    },
+  ],
+  workload: [
+    {
+      required: true,
+      message: "请输入任务工时",
+    },
+  ],
+});
+
+const onSubmit = async (formRef) => {
+  //TODO 提交前验证！
+  // 准备所有请求的Promise数组
+  const isValid = await formRef.validate((valid, fields) => {
+    if (!valid) return false;
+    return true;
+  });
+  if (!isValid) return;
+  const data = await taskModifyApi(formData.id, {...formData,sender: formData.sender ? formData.sender.join(",") : ''})
+  if(data?.id){
+    ElMessage.success(`任务修改成功！`)
+  }else {
+    ElMessage.error(`任务修改失败！`)
+  }
+  showEditDrawer.value = false
+  handleQuery()
+}
+
+const onCopy = async (formRef) => {
+  //TODO 提交前验证！
+  // 准备所有请求的Promise数组
+  const isValid = await formRef.validate((valid, fields) => {
+    if (!valid) return false;
+    return true;
+  });
+  if (!isValid) return;
+  delete formData.id;
+  const data = await taskAddApi({...formData,sender: formData.sender ? formData.sender.join(",") : '',status:TaskStatus.PEND,creator:loginUser.value.id})
+  if(data?.id){
+    ElMessage.success(`任务添加成功！`)
+  }else {
+    ElMessage.error(`任务添加失败！`)
+  }
+  showEditDrawer.value = false
+  handleQuery()
+}
+
+const exportType = ref('export')
 // 表格高度
 const tableHeight = ref(500)
+
+function isNumberOrNumericString(value) {
+  // 如果是数字类型
+  if (typeof value === 'number') {
+    return !isNaN(value);
+  }
+  // 如果是字符串类型
+  if (typeof value === 'string') {
+    // 检查字符串是否为非空且可以转换为数字
+    return value.trim() !== '' && !isNaN(Number(value));
+  }
+  return false;
+}
+
+const  changeDate = async (row,type) =>{
+  let data = null
+  if(type === 'start'){
+      data = await taskModifyApi(row.id,{start_time:row.start_time})
+  }else{
+      data = await taskModifyApi(row.id,{deadline_time:row.deadline_time})
+  }
+  if(data?.id){
+    ElMessage.success(`修改任务时间成功！`)
+  }else {
+    ElMessage.error(`修改任务时间失败！`)
+  }
+}
+
+
+const  changeWorkLoad = async (row) =>{
+  if(!isNumberOrNumericString(row.workload)){
+    ElMessage.error(`请输入数字!`)
+    return
+  }
+  const data = await taskModifyApi(row.id,{workload:row.workload})
+  if(data?.id){
+    ElMessage.success(`修改任务工作量成功`)
+  }else {
+    ElMessage.error(`修改任务工作量失败!`)
+  }
+}
 
 function calculateTableHeight() {
   // 获取窗口总高度
@@ -377,7 +704,7 @@ function calculateTableHeight() {
   const filterHeight = filterCard ? filterCard.offsetHeight : 0;
   // 计算表格高度（减去20px的额外空间）
   tableHeight.value = windowHeight - headerHeight - filterHeight - 140;
-  console.log(windowHeight, headerHeight, filterHeight, tableHeight.value)
+
 }
 
 // 筛选表单数据
@@ -395,7 +722,7 @@ const queryForm = reactive({
 // 分页数据
 const page = reactive({
   currentPage: 1,
-  pageSize: 10,
+  pageSize: 100,
   total: 0
 })
 
@@ -438,7 +765,7 @@ const handleQuery = async () => {
   loading.value = true
   page.currentPage = 1
   // 获取所有的筛选条件\
-  console.log(queryForm)
+
   const params = {
     group: queryForm.group? queryForm.group : "",  // 组内人员（数组）
     receiver: queryForm.receiver? queryForm.receiver : "",          // 执行人
@@ -446,21 +773,31 @@ const handleQuery = async () => {
     status: TaskStatus[queryForm.status] ? TaskStatus[queryForm.status] : "",             // 状态
     start_time: queryForm.timeRange.length == 2? queryForm.timeRange[0] : "",  // 时间范围开始
     deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
-    flag_time: queryForm.flag_time, // 标定时间
+    flag_time: queryForm.flag_time ? queryForm.flag_time : "", // 标定时间
     project: queryForm.project? queryForm.project : "",           // 项目
     search_text: queryForm.search_text             // 关键字
   }
-  console.log(params);
+
   const response = await getTaskDataApi(params)
-  console.log(response)
-  queryItems.value = response.result.items
+  queryItems.value = sortByString(response,['start_time']).reverse()
   tableData.value = queryItems.value.slice(0, page.pageSize)
   page.total = queryItems.value.length
   loading.value = false;
 }
 
-const exportExcel = () => { 
-   exportTestUrl(queryForm.value)
+const exportExcel = () => {
+  const params = {
+    group: queryForm.group? queryForm.group : "",  // 组内人员（数组）
+    receiver: queryForm.receiver? queryForm.receiver : "",          // 执行人
+    creator: queryForm.creator? queryForm.creator : "",                     // 创建人
+    status: TaskStatus[queryForm.status] ? TaskStatus[queryForm.status] : "",             // 状态
+    start_time: queryForm.timeRange.length == 2? queryForm.timeRange[0] : "",  // 时间范围开始
+    deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
+    flag_time: queryForm.flag_time ? queryForm.flag_time : "", // 标定时间
+    project: queryForm.project? queryForm.project : "",           // 项目
+    search_text: queryForm.search_text             // 关键字
+  }
+  exportUrl(params,exportType.value)
 }
 
 // 重置查询条件
@@ -485,21 +822,49 @@ const handlePageChange = () => {
 // 导出数据
 const exportData = () => {
   // 实现导出逻辑
-  console.log('导出数据')
+
 }
 
-// 查看详情
-const showDetailPanel = ref(false);
-const currentTask = ref({});
 
 const handleDetail = (row) => {
-  console.log('查看详情', row)
+
   currentTask.value = row;
   showDetailPanel.value = true
-  console.log(showDetailPanel.value)
+
+
+}
+const handleEdit = (row) => {
+  formData.id = row.id
+  formData.name = row.name
+  formData.content = row.content
+  formData.challenge = row.challenge
+  formData.receiver = row.receiver
+  formData.creator = row.creator
+  formData.start_time = row.start_time
+  formData.deadline_time = row.deadline_time
+  formData.description = row.description
+  formData.sender = row.sender?.split(",")
+  formData.workload = row.workload
+  formData.status = row.status
+  formData.project = row.project
+
+  showEditDrawer.value = true
+
 
 }
 
+const handleDelete = async (row) => {
+
+  await taskDeleteApi(row.id)
+  handleQuery()
+  // if(data?.id){
+  //   ElMessage.success(`任务修改成功！`)
+  // }else {
+  //   ElMessage.error(`任务修改失败！`)
+  // }
+
+
+}
 // 初始化加载数据
 onMounted(() => {
   calculateTableHeight()

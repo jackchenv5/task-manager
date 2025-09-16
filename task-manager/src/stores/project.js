@@ -5,7 +5,7 @@ import { useUserStore } from '@/stores/user'
 
 import { workLoadStat } from '@/utils/tasksStat'
 
-import { reverseDateStr, percentToDecimal, TaskStatus, formatDate,getDateStr } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus, formatDate,getDateStr,calWorkdays } from '@/utils/public'
 
 import { EvaluateList, EvaluteType } from '@/constants/public'
 
@@ -22,10 +22,24 @@ export const useProjectStore = defineStore('project', () => {
   const curSelectProjectTasksRef = ref([])
   const selectUser = ref({})
   const projectLogs = ref([])
+  const monthRange = ref('')
+  const taskType = ref(0)
 
+  const updateMonthRange = (newRange)=>{
+    if(newRange){
+      const start = new Date(newRange[0].getFullYear(), newRange[0].getMonth(), 1);
+      const end = new Date(newRange[1].getFullYear(), newRange[1].getMonth() + 1, 0);
+      monthRange.value = [start,end]
+    }else{
+      monthRange.value = newRange
+    }
+
+  }
   // 项目日志
   const updateProjectLogs = async () => {
+    if(!curSelectProjectRef.value  || curSelectProjectRef.value == null || Object.keys(curSelectProjectRef.value).length === 0) return
     const res = await getLogList({project: curSelectProjectRef.value,timestamp: getDateStr(1)})
+    console.log(res)
     projectLogs.value = res.length > 0 ? res : []
   }
   const cleanSelectUser = () => {
@@ -49,7 +63,8 @@ export const useProjectStore = defineStore('project', () => {
   }
   // 一次加载所有关于schedule 的config
   const initScheduleConfig = () => {
-    projectFocusRef.value = myUserStore.getUserConfig('project_project_pool', [])
+    const project_pool = myUserStore.getUserConfig('project_project_pool', [])
+    projectFocusRef.value = project_pool
     curSelectProjectRef.value = myUserStore.getUserConfig('project_cur_select_project', '')
   }
 
@@ -71,12 +86,27 @@ export const useProjectStore = defineStore('project', () => {
   // 甘特数据格式化
   const curGanttData = computed(() => {
     if (!curSelectProjectTasksRef.value?.length) return [];
-
-    return curSelectProjectTasksRef.value.map(x => ({
+    //根据用户日期过滤
+    let dateRangeData = []
+    if(monthRange.value){
+      dateRangeData = curSelectProjectTasksRef.value.filter(x=>{
+        //任务结束时间大于用户选择月 或者 任务开始时间 小于用户选择结结束月
+        const startDate = new Date(x.start_time)
+        const endDate = new Date(x.deadline_time)
+        if(startDate >= monthRange.value[0] && startDate <= monthRange.value[1]) return true
+        if(endDate >= monthRange.value[0] && endDate <= monthRange.value[1]) return true
+      })
+    }else{
+      dateRangeData = curSelectProjectTasksRef.value
+    }
+    if(taskType.value){
+      dateRangeData = dateRangeData.filter(x=> taskType.value === x.status)
+    }
+    return dateRangeData.map(x => ({
       ...x,
       text: x.name,
       start_date: reverseDateStr(x.start_time),
-      duration: x.diff_days,
+      duration:  calWorkdays(x.start_time,x.deadline_time),
       progress: percentToDecimal(x.progress)
     }));
   });
@@ -131,9 +161,9 @@ export const useProjectStore = defineStore('project', () => {
   }
   const commitCurUserEvalution = async (e)=>{
     let ret = null
-    console.log('e',e)
+    
     if(!e.id){
-      console.log('commit')
+      
         ret = await commitEvalution({
           project: curSelectProjectRef.value,
           evaluator: loginUser.value.id,
@@ -145,7 +175,7 @@ export const useProjectStore = defineStore('project', () => {
         })
         }else{
         const {id,...commitData} = e
-        console.log(id,commitData)
+        
         ret = await updateEvalution(id,e)
     }
     updateCurSelectUserEvalution()
@@ -169,9 +199,8 @@ export const useProjectStore = defineStore('project', () => {
 
 
   const updateCurSelectProjectTasks = async () => {
-    const data = await getTaskDataApi({ project: curSelectProjectRef.value })
-
-    const toSortItems = data.result?.items
+    if(!curSelectProjectRef.value  || Object.keys(curSelectProjectRef.value).length === 0) return
+    const toSortItems = await getTaskDataApi({ project: curSelectProjectRef.value })
 
     curSelectProjectTasksRef.value = toSortItems.sort((a, b) => {
       return new Date(a.start_time) - new Date(b.start_time);
@@ -234,6 +263,8 @@ export const useProjectStore = defineStore('project', () => {
   return {
     init,
     // 项目聚焦
+    //月选择
+    taskType,monthRange,updateMonthRange,
     projectFocusRef, curSelectProjectRef, deleteProjectInFocus, addToProjectFocus, cleanFocus,
     curGanttData, curProjectReceiverMap, joinUsers, workLoadSta, totalTasks, completedTasks, pendTasks, draftTasks, runTasks, workloadIntensity, dateRange,
     updateCurSelectProjectTasks,

@@ -54,9 +54,6 @@ import { onUnmounted, onMounted } from "vue";
 
 import { useScheduleStore } from "@/stores/schedule";
 const scheduleStore = useScheduleStore();
-
-import { useUserStore } from "@/stores/user";
-const myUserStore = useUserStore();
 onMounted(() => {
   scheduleStore.getTableData();
   scheduleStore.initScheduleConfig();

@@ -16,14 +16,6 @@
             :title="task.id"
           />
         </div>
-        <div class="detail-item">
-          <span class="detail-label">工作量</span>
-          <el-input 
-            :value="task.workload + ' 天'" 
-            readonly 
-            class="detail-input"
-          />
-        </div>
       </div>
 
       <div class="detail-row">
@@ -152,6 +144,8 @@
 </template>
 
 <script setup>
+
+import {ElProgress,ElInput,ElDrawer} from "element-plus";
 import { computed } from 'vue'
 import { getProgressStatus } from '@/utils/public'
 

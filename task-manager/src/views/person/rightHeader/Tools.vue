@@ -15,7 +15,7 @@
   </div>
 </template>
 <script setup>
-
+import {ElDrawer,ElButton,ElRadioButton,ElRadioGroup} from "element-plus";
 import GanttChart from './GanttChart.vue'
 import Assessment from './Assessment.vue'
 import { ref } from 'vue'

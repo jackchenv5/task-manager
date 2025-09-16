@@ -1,9 +1,17 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/user'
-import { getFisrtAndLastDayOfMonth, getYearAndMonth, getWeeksInMonth,isTaskInWeek,formatDate } from '@/utils/public'
-import { workLoadStat, groupWorkloadSaturation } from '@/utils/tasksStat'
-import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi, getLogList,commitEvalution } from '@/api/data/data'
+import {
+  getFisrtAndLastDayOfMonth,
+  getYearAndMonth,
+  getWeeksInMonth,
+  isTaskInWeek,
+  formatDate,
+  getDateStr,
+  calWorkdays
+} from '@/utils/public'
+import {workLoadStat, groupWorkloadSaturation, sortByString} from '@/utils/tasksStat'
+import { getTaskDataApi, getUserGroupApi, taskPublishApi, taskModifyApi,taskDeleteApi, getLogList,commitEvalution } from '@/api/data/data'
 import { storeToRefs } from 'pinia'
 import { TaskStatus } from '@/constants/public'
 const myUserStore = useUserStore()
@@ -30,12 +38,21 @@ export const useGroupStore = defineStore('group', () => {
   const curTableSelectedIDs = ref([])
   
   //TODO 组员日志
-  // const groupsLogs = await getLogList({})
-  
+  const groupLogs = ref([])
+
+  // 时间段配置
+  const dateRange = ref([])
+
+  const updateDateRange = (newRange)=>{
+      dateRange.value = newRange
+      setGroupCfg('dateRangeConfig',dateRange)
+  }
+
   // 项目日志
-  const updateProjectLogs = async () => {
-    const res = await getLogList({project: curSelectProjectRef.value,timestamp: getDateStr(1)})
-    projectLogs.value = res.length > 0 ? res : []
+  const updateGroupsLogs = async () => {
+    if(selectGroupID.value == -1) return
+    const res = await getLogList({group: selectGroupID.value,timestamp: getDateStr(1)})
+    groupLogs.value = res.length > 0 ? res : []
   }
 
   const changeCurTableSelectedIDs = (ids) => {
@@ -63,10 +80,11 @@ export const useGroupStore = defineStore('group', () => {
     curTaskType.value = TaskStatus.ALL
     selectWeek.value = {}
   }
-  watch(curSeletMonthDate, (newValue, oldValue) => {
+  watch([curSeletMonthDate,selectGroupID], (newValue, oldValue) => {
+    updateGroupsLogs()
     initAllTask()
   })
-  const changeMonth = (isPrev = true) => {
+  const changeMonth =  (isPrev = true) => {
     const currentDate = curSeletMonthDate.value;
     let year = currentDate.getFullYear();
     let month = currentDate.getMonth();
@@ -91,8 +109,9 @@ export const useGroupStore = defineStore('group', () => {
     cleanUser();
     curSeletMonthDate.value = new Date(year, month, 1);
   };
+
   const initSelectGroupID = () => {
-    selectGroupID.value = loginUser.value.group
+    selectGroupID.value = loginUser.value.group ? loginUser.value.group : allGroup.value[0]['id']
   }
   const updateGroupID = (id) => {
     selectGroupID.value = id
@@ -107,7 +126,7 @@ export const useGroupStore = defineStore('group', () => {
   })
 
   const selectGroupUsers = computed(() => {
-    console.log('user ............', selectGroup.value)
+    
     return selectGroup.value?.users || []
   })
 
@@ -119,9 +138,10 @@ export const useGroupStore = defineStore('group', () => {
     // 登陆逻辑完成后， 用户登陆后就可以获取用户组ID
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value)
     const params = { 'group': selectGroupID.value, 'start_time': start, 'deadline_time': end }
-    const response = await getTaskDataApi(params)
-    allTask.value = response.result?.items ? response.result?.items : []
-    console.log('allTask', allTask.value)
+    // allTask.value = await getTaskDataApi(params)
+    getTaskDataApi(params).then((data) =>{
+      allTask.value = sortByString(data,['receiver_name','start_time'])
+    })
   };
 
   const uploadAllChange = async (changeIndexs) => {
@@ -187,6 +207,20 @@ export const useGroupStore = defineStore('group', () => {
     const stat = groupWorkloadSaturation(curSelectUserStat.value.total, userNum, start, end)
     return stat
   })
+
+  const curSelectUserWorkloadSaturationFixRef = computed(() => {
+    const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
+    let userNum = 1
+    if(!curSelectUserName.value) userNum = curSelectTasksReceiverList.value.length
+    const stat = groupWorkloadSaturation(curSelectUserStat.value.fixTotal, userNum, start, end)
+    return stat
+  })
+
+  const groupWorkloadSaturationFixRef = computed(() => {
+    const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
+    const stat = groupWorkloadSaturation(groupStat.value.fixTotal, selectGroupCount.value, start, end)
+    return stat
+  })
   const groupWorkloadSaturationRef = computed(() => {
     const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
     const stat = groupWorkloadSaturation(groupStat.value.total, selectGroupCount.value, start, end)
@@ -196,13 +230,13 @@ export const useGroupStore = defineStore('group', () => {
   //  组方法
   const initAllGroup = async () => {
     // 获取所有组员信息数据
-    const response = await getUserGroupApi()
-    allGroup.value = response?.result?.items
+    allGroup.value = await getUserGroupApi()
   }
 
   // 当前用户Gantt数据 
   const curGanttData = computed(() => {
-     return allTask.value.map(x => ({...x,start_date:x.start_time,end_date:x.deadline_time}))
+    
+     return allTask.value.map(x => ({...x,start_date:x.start_time,end_date:x.deadline_time,duration:  calWorkdays(x.start_time,x.deadline_time)}))
   })
 
 
@@ -210,14 +244,13 @@ export const useGroupStore = defineStore('group', () => {
   const initGroupCfg = async () => {
     // 获取用户组配置信息
     groupCfg.value = myUserStore.getUserConfig("group") ? myUserStore.getUserConfig("group") : {}
-    console.log(groupCfg.value)
+    dateRange.value = groupCfg.value.dateRangeConfig ? groupCfg.value.dateRangeConfig : []
   }
 
   const setGroupCfg = (key, value) => {
     groupCfg.value[key] = value
     myUserStore.setUserConfig("group", groupCfg.value)
   }
-
   const dispatchTask = async () => {
     if(curTableSelectedIDs.value.length === 0){
       return [false,'请至少选择一个任务！']
@@ -229,11 +262,17 @@ export const useGroupStore = defineStore('group', () => {
     }
     
   }
+  const deleteTask = async (id) => {
+    const ret = await taskDeleteApi(id)
+    initAllTask()
+
+  }
   const init = async () => {
     await initAllGroup()
-    await initGroupCfg()
+    initGroupCfg()
     initSelectGroupID()
-    await initAllTask()
+    updateGroupsLogs()
+    initAllTask()
   }
 
   const commitCurUserEvalution = async (user,project,score,comment) => {
@@ -254,14 +293,14 @@ export const useGroupStore = defineStore('group', () => {
     init,curTaskType,
     allGroup, selectGroup, selectGroupID, updateGroupID,
     //任务数据
-    allTask,initAllTask,
+    allTask,initAllTask,deleteTask,
     // 统计数据
-    groupStat, groupWorkloadSaturationRef, selectGroupUsers,
+    groupStat, groupWorkloadSaturationRef,groupWorkloadSaturationFixRef, selectGroupUsers,
     //周 表数据
     curSeletMonthDate, weeksRef, changeMonth,
     // 当前用户
     curSelectUserName, changeSelectUserName,cleanUser,curSelectTasksReceiverList,
-    curSelectUserStat,curSelectUserWorkloadSaturationRef,
+    curSelectUserStat,curSelectUserWorkloadSaturationRef,curSelectUserWorkloadSaturationFixRef,
     //table
     curSelectUserFilterTasks,loading,curTableSelectedIDs,changeCurTableSelectedIDs,dispatchTask,
     // 当前周
@@ -270,6 +309,10 @@ export const useGroupStore = defineStore('group', () => {
     curGanttData,
     // 评价
     commitCurUserEvalution,
+    // 组日志
+    groupLogs,updateGroupsLogs,
+    // 组日期配置
+    dateRange,updateDateRange
   }
 
 })

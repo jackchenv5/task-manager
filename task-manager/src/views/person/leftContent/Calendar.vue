@@ -55,8 +55,8 @@ const getInitViewTemplate = (date) => {
   return `
     <div class="month_day_total ${workloadClass}" data-date="${formatDate(date)}">
       <div class="day-number">${date.getDate()}</div>
-      <div class="month_day_events" title="当天任务数量-当天任务需要的总工时">
-        ${events.length || '0'}-${totalHours}
+      <div class="month_day_events" title="当天任务数量">
+        ${events.length || '0'}
       </div>
     </div>
   `;

@@ -3,14 +3,14 @@ import { ElMessage } from 'element-plus'
 
 // 创建实例
 const service = axios.create({
-  baseURL: import.meta.env.VITE_LOGIN_BASE_URL,
+  baseURL: import.meta.env.VITE_LOGIN_URL,
   timeout: import.meta.env.VITE_API_TIMEOUT,
   headers: { 'Content-Type': 'application/json;charset=UTF-8' }
 })
 
 // 请求拦截器（自动注入Token）
 service.interceptors.request.use(config => {
-  console.log('请求拦截器：...')
+  
   return config
 })
 

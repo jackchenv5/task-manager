@@ -106,11 +106,22 @@ const departLeaderRender = reactive({
 const editClosedEvent = ({ row, column }) => {
   const $table = tableRef.value
   if ($table) {
-    const field = column.field
+    let field = column.field
     const cellValue = row[field]
     // 判断单元格值是否被修改
+    let retValue = cellValue
     if ($table.isUpdateByRow(row, field)) {
-      systemStore.modifyGroup(row.id, { [field]: cellValue }).then(() => {
+
+      if(field === 'users'){
+        const ids = cellValue.map(x=>{
+          const item = userListData.value.find(y=>y.username===x)
+          return item.id
+        })
+        retValue = ids
+        field = 'user_list'
+      }
+
+      systemStore.modifyGroup(row.id, { [field]: retValue }).then(() => {
         VxeUI.modal.message({
           content: `局部保存成功！ ${column.title} ==> ${cellValue}`,
           status: 'success'
@@ -134,7 +145,7 @@ const btnGroupCellRender = reactive({
   ],
   events: {
     click(cellParams, params) {
-      console.log('cellParams', cellParams)
+
       const { id, ...postData } = cellParams.row; // 提取 id 并保留其他属性
       if (params.name === 'copy') {
         systemStore.addGroup({
@@ -168,7 +179,7 @@ const btnGroupCellRender = reactive({
           })
         })
       } else {
-        console.log('not support operator！')
+
       }
 
     }

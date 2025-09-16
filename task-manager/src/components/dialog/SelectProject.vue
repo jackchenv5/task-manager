@@ -16,6 +16,7 @@
 </template>
   
 <script setup>
+import {ElDialog,ElForm,ElFormItem,ElButton} from "element-plus";
 
 const props = defineProps({
     visible: {
@@ -30,7 +31,7 @@ const props = defineProps({
 
 import Select from '@/components/selects/MutiSelect.vue'
 import { getProjectList } from '@/api/data/data'
-import { reactive, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 const emit = defineEmits(['update:modelValue', 'update:visible', 'change','comfirm'])
 const dialogFormVisible = ref(props.visible)
 const selectedOption = ref(props.modelValue)
@@ -46,23 +47,6 @@ watch(() => props.visible, (newVal) => {
 watch(dialogFormVisible, (newVal) => {
     emit('update:visible', newVal, isConfirm)
 })
-
-// 监听 selectedValue 变化并通知父组件
-
-// 目前的需求中，只需要用户在点击确认或者取消的时候将当前组件选择的用户返回给父组件，不需要将子组件用户的变化实时通知父组件，所以注释掉，需要时再开启
-
-
-// watch(selectedOption, (newVal) => {
-//     emit('update:modelValue', newVal)
-//     emit('change', newVal)
-// })
-
-// 目前的需求中，也不会存在父组件向本组件传递选择用户情况
-
-// 监听父组件传递的 modelValue 变化
-// watch(() => props.modelValue, (newVal) => {
-//     selectedOption.value = newVal
-// })
 
 const formLabelWidth = '140px'
 

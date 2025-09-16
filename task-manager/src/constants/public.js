@@ -17,7 +17,7 @@ export const taskStatusArray = Object.entries(TaskStatus).map(([key, value]) => 
 }));
 
 // 将下字符串数组EvaluateMap转为对象，键为元素，值为 从1开始到7
-export const EvaluateList =  ['不合格', '合格', '合格+', '良-', '良', '良+', '优']
+export const EvaluateList =  ['不满意', '一般', '正常', '满意', '超出预期', '优秀', '极佳']
 
 export const EvaluteType = {
   PROJECT: 'project',

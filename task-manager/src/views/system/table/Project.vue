@@ -44,6 +44,7 @@
 </template>
 
 <script setup>
+import {ElDialog,ElForm,ElButton,ElSelect,ElFormItem,ElInput,ElOption} from "element-plus";
 import { onMounted, ref, reactive,watch } from 'vue'
 import { useSystemStore } from '@/stores/system'
 import  Select  from '@/components/selects/MutiSelect.vue'
@@ -119,7 +120,7 @@ const typeEditRender = reactive({
 })
 
 const editClosedEvent = ({ row, column }) => {
-  console.log(row, column)
+
   const $table = tableRef.value
   if ($table) {
     const field = column.field
@@ -157,7 +158,7 @@ const btnGroupCellRender = reactive({
           })
         })
       } else {
-        console.log('not support operator！')
+
       }
 
     }

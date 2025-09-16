@@ -47,12 +47,12 @@ scheduler.templates.lightbox_footer = function (start, end, ev) {
     return "<div class='custom_footer'>Custom Footer Content</div>";
 };
 scheduler.attachEvent("onLightbox", function (id) {
-    console.log("Lightbox opened for event: " + id);
+
     return true; // return false to prevent the lightbox from opening
 });
 
 scheduler.attachEvent("onAfterLightbox", function () {
-    console.log("Lightbox closed");
+
 });
 
 scheduler.config.lightbox.sections = [

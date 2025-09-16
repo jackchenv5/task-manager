@@ -69,7 +69,7 @@ export const getDateStr = (diffDays = 0) => {
 const GetDayTotalWorkHours = (events, transStr = true) => {
     const total = events
         .filter(e => e.status_name !== '草稿')
-        .reduce((sum, e) => sum + ((e.workload * 8) / e.diff_days), 0)
+        .reduce((sum, e) => sum + ((e.workload * 8) / calWorkdays(e.start_time,e.deadline_time)), 0)
     return transStr ? total.toFixed(1) : total
 };
 
@@ -295,7 +295,6 @@ export function calWorkdays(startDate, deadlineDate) {
     let count = 0;
     const currentDate = new Date(startDate);
     const endDate = new Date(deadlineDate);
-
     while (currentDate <= endDate) {
         const day = currentDate.getDay();
         // 1-5 对应周一至周五
@@ -304,7 +303,6 @@ export function calWorkdays(startDate, deadlineDate) {
         }
         currentDate.setDate(currentDate.getDate() + 1);
     }
-
     return count;
 }
 
@@ -375,7 +373,63 @@ export const formatDateTime = (date) => {
 export const getCUrrentMonth = () => {
     return new Date().getMonth() + 1;
 };
-export const getUserWeeksDataMap = (tasks,weeks, users) => {
+export const getUserWeeksDataMap = (tasks, weeks, users) => {
+    const result = {};
+
+    // 初始化结果对象
+    users.forEach(userName => {
+        result[userName] = {};
+        weeks.forEach((week, index) => {
+            result[userName][index] = {
+                bgColor: '#eee',
+                count: 0,
+                saturation: '0'
+            };
+        });
+    });
+
+    // 遍历所有任务
+    tasks.forEach(task => {
+        const userName = task.receiver_name;
+        if (!users.includes(userName)) return;
+
+        const taskDuration = calWorkdays(task.start_time, task.deadline_time);
+        const peerDayWorkload = task.workload / taskDuration;
+
+        // 遍历所有周，检查任务是否在该周内
+        weeks.forEach((week, index) => {
+            if (!isTaskInWeek(week, task)) return;
+
+            const workdaysInWeek = getWorkdaysInWeek(week, task);
+            const weekWorkload = peerDayWorkload * workdaysInWeek;
+
+            // 更新当前用户当前周的数据
+            result[userName][index].count += 1;
+            const currentWeekWorkloads = parseFloat(result[userName][index].saturation) * week.workday / 100 + weekWorkload;
+
+            // 计算饱和度
+            const saturation = week.workday > 0 ? (currentWeekWorkloads / week.workday) * 100 : 0;
+            result[userName][index].saturation = saturation.toFixed(0);
+
+            // 设置背景颜色
+            if (saturation > 0 && saturation < 100) {
+                result[userName][index].bgColor = 'rgb(94, 94, 214)';
+            } else if (saturation >= 100 && saturation <= 110) {
+                result[userName][index].bgColor = 'green';
+            } else if (saturation > 110 && saturation <= 120) {
+                result[userName][index].bgColor = 'orange';
+            } else if (saturation > 120) {
+                result[userName][index].bgColor = 'rgb(129, 9, 9)';
+            }
+
+            week[userName] = saturation.toFixed(0);
+        });
+    });
+
+    return result;
+};
+
+export const getUserWeeksDataMapBak = (tasks,weeks, users) => {
     const result = {}
     users.forEach(userName => {
         result[userName] = {}
@@ -437,7 +491,7 @@ export function objectToQueryString(obj) {
         // 对值进行encodeURIComponent编码，以处理特殊字符
         let value = encodeURIComponent(obj[key]);
         if(!value || value === "undefined") continue;
-        console.log(key,value)
+        
         // 如果是第一个键值对，则不需要添加&
         if (queryString !== "") {
           queryString += "&";

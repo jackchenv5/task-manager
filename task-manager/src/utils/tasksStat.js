@@ -7,7 +7,7 @@ import { calWorkdays, formatDate } from '@/utils/public'
 
 // 统计所选任务的总工作量，已完成量，进度,总数，已完成，未完成，进行中，待下发，项目数
 export const workLoadStat = (tasks) => {
-  const initial = { total: 0, completed: 0, progress: 0, progressPer: 0,achieveCount:0, finish: 0, pend: 0, allCount: 0, finishCount: 0, pendCount: 0, progressCount: 0, projects: [] };
+  const initial = { total: 0,fixTotal:0, completed: 0, progress: 0, progressPer: 0,achieveCount:0, finish: 0, pend: 0, allCount: 0, finishCount: 0, pendCount: 0, progressCount: 0, projects: [] };
 
   if (!tasks || tasks.length === 0) return initial;
 
@@ -30,7 +30,10 @@ export const workLoadStat = (tasks) => {
             // 达成率
       if(compareDateStrings(task.deadline_time, task.feedback_time) >=0) acc.achieveCount += 1
       acc.completed += workload;
+      acc.fixTotal += Number(task.act_workload);
       acc.finishCount += 1;
+    }else {
+      acc.fixTotal += workload;
     }
 
     // 已完成累加进行中
@@ -49,7 +52,7 @@ export const workLoadStat = (tasks) => {
 
 export const groupWorkloadSaturation = (workloads, groupNum, startDate, endDate) => {
   const workdays = calWorkdays(startDate, endDate)
-  console.log('workload staturation', workdays, groupNum, startDate, endDate)
+  
   const per = workloads / (groupNum * workdays) * 100
   return per.toFixed(1)
 };
@@ -80,12 +83,14 @@ export function compareDateStrings(dateStr1, dateStr2) {
 const getEvalutionMap = async (evaluator,users,yearMonth,evaluation_type) =>{
     // 异步获取评价数据
     const evaluationsMap = {}
-    const evaluations = await getEvaluation({
-      evaluator: evaluator,
+    const params = {
+      evaluator:  evaluator ,
       evaluation_type: evaluation_type,
       users: users.join(','),
       year_month: formatDate(yearMonth, true)
-    });
+    }
+    if(evaluation_type === EvaluteType.USER) delete params.evaluator
+    const evaluations = await getEvaluation(params);
   
     for (const evaluation of evaluations) {
       if (!evaluationsMap[evaluation.evaluated_user_username]) {
@@ -97,8 +102,51 @@ const getEvalutionMap = async (evaluator,users,yearMonth,evaluation_type) =>{
     }
     return evaluationsMap
 }
+/**
+ * 通用多字段排序（支持对象数组、Map、普通对象）
+ * @param {Array|Map|Object} data - 待排序数据（对象数组/Map/对象）
+ * @param {Array} fields - 排序配置，格式如 [{key: 'age', order: 'asc'}, {key: 'name', order: 'desc'}]
+ * @returns {Array|Map|Object} - 排序后的数据（与输入类型一致）
+ */
+export function multiFieldSort(data, fields) {
+  // 统一转换为键值对数组
+  let entries;
+  if (Array.isArray(data)) {
+    entries = data.map((item, index) => [index, item]); // 数组转为 [[index, item], ...]
+  } else if (data instanceof Map) {
+    entries = Array.from(data.entries());
+  } else {
+    entries = Object.entries(data); // 普通对象转为 [[key, value], ...]
+  }
+
+  // 多字段比较函数
+  const compare = ([, a], [, b]) => {
+    for (const { key, order } of fields) {
+      const valA = a[key];
+      const valB = b[key];
+      if (valA !== valB) {
+        const direction = order === 'desc' ? -1 : 1;
+        return (valA > valB ? 1 : -1) * direction;
+      }
+    }
+    return 0;
+  };
+
+  // 排序
+  const sortedEntries = entries.sort(compare);
+
+  // 根据输入类型返回对应结构
+  if (Array.isArray(data)) {
+    return sortedEntries.map(([, item]) => item); // 还原为数组
+  } else if (data instanceof Map) {
+    return new Map(sortedEntries);
+  } else {
+    return Object.fromEntries(sortedEntries); // 还原为普通对象
+  }
+}
+
 export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_type=EvaluteType.GROUP) => {
-  console.log(yearMonth,formatDate(yearMonth, true),formatDate(yearMonth))
+  
   const empty = '';
   const retList = [];
   const tmpTasks = sortByString(tasks, ['receiver_name', 'project', 'start_time']);
@@ -128,6 +176,7 @@ export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_t
         retData[task.receiver_name][task.project] = {
           receiver: task.receiver,
           project: task.project,
+          creator:task.creator_name,
           workloads: 0,
           act_workloads: 0,
           start_time: null,
@@ -164,11 +213,11 @@ export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_t
     const curStartTime = retData[task.receiver_name][task.project].start_time;
     const curDeadlineTime = retData[task.receiver_name][task.project].deadline_time;
 
-    if (!curStartTime || compareDateStrings(curStartTime, task.start_time) < 0) {
+    if (!curStartTime || compareDateStrings(curStartTime, task.start_time) > 0) {
       retData[task.receiver_name][task.project].start_time = task.start_time;
     }
 
-    if (!curDeadlineTime || compareDateStrings(curDeadlineTime, task.deadline_time) >= 0) {
+    if (!curDeadlineTime || compareDateStrings(curDeadlineTime, task.deadline_time) < 0) {
       retData[task.receiver_name][task.project].deadline_time = task.deadline_time;
     }
 
@@ -179,8 +228,8 @@ export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_t
   Object.keys(retData).forEach((userName, indexUserName) => {
     const userData = retData[userName];
     let displayName = userName;
-
-    Object.keys(userData).forEach((projectName, indexProject) => {
+    const sortData = multiFieldSort(userData,[{key: 'workloads', order: 'desc'}])
+    Object.keys(sortData).forEach((projectName, indexProject) => {
       if (indexProject !== 0) displayName = empty;
       retList.push({
         receiver_name: displayName,
@@ -188,6 +237,6 @@ export const mergeTasks = async (tasks, evaluator, users, yearMonth,evaluation_t
       });
     });
   });
-  console.log('retList===========================>', retList);
+
   return retList;
 };

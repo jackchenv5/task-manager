@@ -24,7 +24,7 @@ def generate_email_body(tasks, publisher=None, status="首次下发", add_conten
                 <p style="font-size:12px;" > 项目：{task.project} </p>  
                 <p style="font-size:12px">ID：{task.id} &nbsp &nbsp 执行人：{task.receiver.username} &nbsp &nbsp 状态：{status}&nbsp &nbsp 下发人：{publisher} &nbsp &nbsp 创建人：{creator} &nbsp &nbsp</p>  
                 <p> 描述信息：{task.description} </p>  
-                <p class="due-date">工作量: {task.workload} 天<span> &nbsp &nbsp&nbsp &nbsp 开始日期: {task.start_time}</span>&nbsp &nbsp&nbsp &nbsp&nbsp &nbsp<span>截止日期: {task.deadline_time}</span></p>
+                <p class="due-date">&nbsp &nbsp&nbsp &nbsp 开始日期: {task.start_time}</span>&nbsp &nbsp&nbsp &nbsp&nbsp &nbsp<span>截止日期: {task.deadline_time}</span></p>
                 <p style="font-weight: bold;"><span style="font-size:14px;color:#862123">任务内容:</span> {task.content}</p>  
                 <p style="font-weight: bold;"><span style="font-size:14px;color:#862123">挑战目标:</span> {task.challenge}</p>  
                 <div style="background: #f5f5f5;border: 1px solid #bd6767;">{add_content}</div>
@@ -94,7 +94,6 @@ def send_email(html_content,to_email,cc=None,subject="",action="任务下发"):
     email.content_subtype = 'html'  # 明确指定内容为 HTML
     email.body = html_content  # 将 HTML 字符串设置为邮件正文
     # 发送邮件
-    # email.send()
-    return
+    email.send()
 
 

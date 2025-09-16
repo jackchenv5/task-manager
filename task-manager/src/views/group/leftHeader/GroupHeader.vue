@@ -21,8 +21,8 @@
             <div class="group-info-item-content">{{ groupStat.total }} 天</div>
           </div>
           <div class="group-info-item">
-            <div class="group-info-item-title">饱和度</div>
-            <div class="group-info-item-content">{{groupWorkloadSaturationRef}}%</div>
+            <div class="group-info-item-title">饱和度/修正值（%）</div>
+            <div class="group-info-item-content">{{groupWorkloadSaturationRef}}/{{groupWorkloadSaturationFixRef}}</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">项目</div>
@@ -39,14 +39,22 @@
 
 
 <script setup>
+// element component
+  import { ElDropdown, ElDropdownMenu,ElDropdownItem,ElAvatar } from 'element-plus'
+
+// end
+
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
 const groupStore = useGroupStore();
-const {allGroup, selectGroup,selectGroupID,groupStat,groupWorkloadSaturationRef} = storeToRefs(groupStore);
+const {allGroup, selectGroup,groupStat,groupWorkloadSaturationRef,groupWorkloadSaturationFixRef} = storeToRefs(groupStore);
 
 const handleCommand = (command) => {
   groupStore.updateGroupID(command)
 }
+
+
+
 </script>
 
 <style scoped>

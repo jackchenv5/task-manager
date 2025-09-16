@@ -8,6 +8,7 @@
 </template>
   
 <script setup>
+import {ElSelect,ElOption} from 'element-plus'
 //  支持传入api
 //  支持指定 data 字段
 //  支持指定 label 字段
@@ -93,7 +94,7 @@ const loadOptions = async () => {
     try {
         const response = await props.api()
         // 处理API返回数据
-        console.log('ret data....',response)
+
         if(Array.isArray(response)){
         originData.value = response
         orginOptions.value = response
@@ -101,13 +102,13 @@ const loadOptions = async () => {
         return
         }
         if (!response.hasOwnProperty(props.dataFiled)) {
-            console.log(`response:${response} 不存在指定的data字段:${props.dataFiled}`)
+
             loading.value = false
             return
         }
 
         if (!response[props.dataFiled].hasOwnProperty(props.itemsFiled)) {
-            console.log(`response.dataFiled:${response.dataFiled} 不存在指定的items字段:${props.itemsFiled}`)
+
             loading.value = false
             return
         }
@@ -150,7 +151,7 @@ const focus = () =>{
 
 // 监听父组件传递的 modelValue 变化
 watch(() => props.modelValue, (newVal) => {
-    console.log('父组件传入新值:', props.modelValue, newVal)
+
     selectedValue.value = newVal
     options.value = orginOptions.value
     setTimeout(()=>{
@@ -163,7 +164,7 @@ watch(() => props.modelValue, (newVal) => {
 
 // 监听 selectedValue 变化并通知父组件
 watch(selectedValue, (newVal) => {
-    console.log('子组件修改：', selectedValue.value, newVal)
+
     //选项还原为默认值
     //查询字符清空
     emit('update:modelValue', newVal)

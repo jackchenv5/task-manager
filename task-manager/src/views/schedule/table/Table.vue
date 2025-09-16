@@ -78,6 +78,7 @@
     </vxe-table>
 </template>
 <script setup>
+import {ElForm,ElFormItem,ElInput,ElDatePicker,ElRow,ElCol} from "element-plus";
 import { useScheduleStore } from '@/stores/schedule'
 import { ref, reactive, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
@@ -106,14 +107,14 @@ const btnGroupCellRender = reactive({
     ],
     events: {
         click(cellParams, params) {
-            console.log('==============>params', params)
+
             if (params.name === 'edit') {
                 disabled.value = false
-                console.log('=========================', cellParams.row)
-                scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender.split(",") })
+
+                scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender?.split(",") })
                 openDrawer()
             } else if (params.name === 'del') {
-                console.log('========================del=', cellParams.row.id)
+
                 taskDeleteApi(cellParams.row.id).then(() => {
                     scheduleStore.getTableData()
                     VxeUI.modal.message({
@@ -130,7 +131,7 @@ const btnGroupCellRender = reactive({
 
 const handleRowDblClick = (cellParams) => {
     disabled.value = true
-    scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender.split(",") })
+    scheduleStore.updateCurTaskDetail({ ...cellParams.row,sender:cellParams.row.sender?.split(",") })
     openDrawer()
 }
 
@@ -148,11 +149,11 @@ const closeDrawer = () => {
 
 
 const handleConfirm = () => {
-    console.log('确认按钮点击')
-    console.log("modify data====>", curTaskDetailRef.value)
+
+
     taskModifyApi(curTaskDetailRef.value.id, curTaskDetailRef.value).then((data) => {
 
-        console.log('data====>',data)
+
         VxeUI.modal.message({
             content: `任务：${curTaskDetailRef.value.name} 已修改！`,
             status: 'success'
@@ -163,7 +164,7 @@ const handleConfirm = () => {
 }
 
 const handleCancel = () => {
-    console.log('取消按钮点击')
+
     // 处理取消逻辑
 }
 // table 表 END

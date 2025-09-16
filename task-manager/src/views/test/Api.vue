@@ -19,13 +19,13 @@ import { ref, watch } from 'vue'
 const isShowSelectUserDialog = ref(true)
 
 const handleClick = () => {
-    console.log('按钮被点击了')
+
     // isShowSelectUserDialog.value = false
     isShowSelectUserDialog.value = true
 }
 
 const updateVisible= (newValue,isConfirm) =>{
-    console.log('来自子组件的更新:',newValue,'确认或者取消：',isConfirm)
+
     isShowSelectUserDialog.value = newValue
 }
 
@@ -33,11 +33,11 @@ const selectUsers = ref() // 默认选中 Option1
 
 
 const handleSelectChange = (value) => {
-    console.log('在父组件 Selected value:', value)
-    console.log(selectUsers.value)
+
+
 }
 const selectUserConfirm = (isConfirm) =>{
-    console.log('父组件检测到用户点击了确认或者取消：',isConfirm)
+
 }
 
 </script>

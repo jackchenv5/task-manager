@@ -30,10 +30,24 @@ const initGantt = () => {
     }
 
     gantt.config.scale_height = 60;
-    gantt.config.scales = [
-        { unit: "month", format: "%Y年 %F" },
-        { unit: "week", format: "第 %W 周" },
-    ]
+  gantt.config.scales = [
+    { unit: "month", format: "%Y年 %F" },
+    { unit: "week",     format: function(date) {
+        // 获取当月第一天
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        // 计算当前日期是该月的第几周
+        const diff = date.getDate() + firstDay.getDay() - 1;
+        const weekNumber = Math.ceil(diff / 7);
+
+        return `第${weekNumber}周`;
+      }
+    },
+    {
+      unit: "day",
+      step: 1,
+      format: "%j号(周%D)" // 日格式，%j 是日期号，%D 是星期几
+    }
+  ]
 
   gantt.config.columns = [
     { name: "text", label: "任务名", width: 120, tree: true },
@@ -91,7 +105,7 @@ onMounted(() => {
   text-align: start;
   color: white;
   z-index: 0;
-  background: #0c192e;
+  background-color: green !important;
 
 }
 

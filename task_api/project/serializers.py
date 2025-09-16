@@ -20,6 +20,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ['create_time']
 
 class ProjectEvaluationSerializer(serializers.ModelSerializer):
+    project = serializers.CharField(required=False, allow_blank=True)
     evaluator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     evaluated_user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
         # 新增：年月格式字段（只读）

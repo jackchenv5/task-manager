@@ -52,9 +52,19 @@ const initGantt = () => {
   }
 
   gantt.config.scale_height = 60;
+  gantt.config.min_column_width = 200;
   gantt.config.scales = [
     { unit: "month", format: "%Y年 %F" },
-    { unit: "week", format: "第 %W 周" },
+    { unit: "week",     format: function(date) {
+        // 获取当月第一天
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        // 计算当前日期是该月的第几周
+        const diff = date.getDate() + firstDay.getDay() - 1;
+        const weekNumber = Math.ceil(diff / 7);
+
+        return `第${weekNumber}周`;
+      }
+    },
   ]
 
   gantt.config.columns = [
@@ -64,6 +74,21 @@ const initGantt = () => {
     { name: "workload", label: "工时(天)", width: 60, align: "center" },
     { name: "receiver_name", label: "执行者", width: 60, align: "center" },
   ];
+
+  gantt.templates.timeline_cell_class = function(item, date) {
+    const classes = [];
+    if (date.getDate() === 1) {
+      classes.push("month-start");
+    }
+    // 为不同月份交替设置不同背景色
+    if (date.getMonth() % 2 === 0) {
+      classes.push("even-month");
+    } else {
+      classes.push("odd-month");
+    }
+    return classes.join(" ");
+  };
+
 };
 
 const loadSampleData = (data) => {
@@ -89,7 +114,8 @@ watch(curGanttData, (newVal) => {
 
 // 用户切换时强制更新
 watch(selectUser, (newVal) => {
-  const validData = newVal ? curProjectReceiverMap.value[newVal.username] : curGanttData.value;
+  console.log(newVal)
+  const validData = Object.keys(newVal).length !== 0 ? curProjectReceiverMap.value[newVal.username] : curGanttData.value;
   loadSampleData(validData || []);
 });
 const isGanttInitialized = ref(false);
@@ -116,10 +142,9 @@ onMounted(() => {
 
 .gantt_task_progress {
   text-align: start;
-  color: white;
+  color: #736c6c;
   z-index: 0;
-  background: #0c192e;
-
+  background-color: green !important;  /* 浅蓝色 */
 }
 
 .weekend-scale {
@@ -133,10 +158,25 @@ onMounted(() => {
 }
 
 .gantt_cal_quick_info{
-  width: 45vh;
+  width: 600px;
+  overflow-x: auto;
 }
 
 .gantt_cal_qi_controls {
   display: none !important;
+}
+
+/* 月份交替背景色 */
+.even-month {
+  background-color: white;
+}
+
+.odd-month {
+  background-color: rgb(248, 248, 248);
+}
+
+.month-start {
+  border-left: 3px solid #409EFF !important;
+  background-color: #badcec !important;
 }
 </style>

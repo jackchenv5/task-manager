@@ -57,6 +57,7 @@
   </div>
 </template>
 <script setup>
+import {ElScrollbar,ElProgress,ElText} from "element-plus";
 import { useScheduleStore } from "@/stores/schedule";
 import { storeToRefs } from "pinia";
 

@@ -1,6 +1,9 @@
 import { get, patch, post, del } from '@/utils/httpData'
 import { objectToQueryString } from '@/utils/public'
 
+
+export const taskReport = (params) => get('/task/report/',params);
+
 // 获取用户任务数据
 export const getTaskDataApi = (params) => get('/tasks', params)
 
@@ -46,7 +49,7 @@ export const groupAddApi = (params) => {
 // 获取用户任务数据
 
 // 模拟登陆，用于测试
-export const checkLogin = () => get('/users/check_login/')
+// export const checkLogin = () => get('/users/check_login/')
 export const getUserByUsername = (name) => get(`/users/get_by_username/${name}`)
 
 export const getUserApi = (params) => get('/users', params)
@@ -91,29 +94,21 @@ export const getLogList = (params) => get('/logs/', params)
 
 
 export const importTask = (uerId) => {
- const ret = `${import.meta.env.VITE_API_BASE_URL}task/import/${uerId}/`
- console.log('ret url ...',ret)
+ const ret = `${import.meta.env.VITE_API_BASE_URL}/task/import/${uerId}/`
+ 
  return ret
 }
 
-export const exportUrl = (filterObj) => {
+export const exportUrl = (filterObj,exportType) => {
   let params = objectToQueryString(filterObj)
-  let url = `${import.meta.env.VITE_API_BASE_URL}task/export/`
+  let url = `${import.meta.env.VITE_API_BASE_URL}/task/${exportType}/`
   if (params) {
-    url = `${import.meta.env.VITE_API_BASE_URL}task/export/?${params}`
+    url = `${import.meta.env.VITE_API_BASE_URL}/task/${exportType}/?${params}`
   }
   window.open(url);
 }
 
-export const exportTestUrl = (filterObj) => {
-  let params = objectToQueryString(filterObj)
-  let url = `${import.meta.env.VITE_API_BASE_URL}task/export_test/`
-  if (params) {
-    url = `${import.meta.env.VITE_API_BASE_URL}task/export_test/?${params}`
-  }
-  window.open(url);
-}
 export const exportTemplateUrl = () => {
-  let url = `${import.meta.env.VITE_API_BASE_URL}task/export_template/`
+  let url = `${import.meta.env.VITE_API_BASE_URL}/task/export_template/`
   window.open(url);
 }

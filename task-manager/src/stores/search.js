@@ -12,7 +12,7 @@ export const useGroupStore = defineStore('group', () => {
     // 获取所有组员信息数据
     const params = {};
     const response = await getUserGroupApi(params);
-    return response.result.items;
+    return response;
   };
 
   return { getAllGroup }

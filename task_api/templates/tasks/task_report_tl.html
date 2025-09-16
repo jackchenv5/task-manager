@@ -72,6 +72,7 @@
         <th style="width: 5%;">当前状态</th>
         <th style="width: 6%;">任务进度(%)</th>
         <th style="width: 7%;">实际工作量/天</th>
+        <th style="width: 19%;">任务内容</th>
         <th style="width: 19%;">反馈描述信息</th>
         <th style="width: 6%;">任务反馈时间</th>
     </tr>
@@ -89,8 +90,10 @@
             <td>{{ task.status.name|default:"-" }}</td>
             <td>{{ task.progress |default:"-" }}%</td>
             <td>{{ task.act_workload | default:"-" }}</td>
+            <td><pre> {{ task.content }} </pre> </td>
             <td><pre style="font-size: 12px;!important;">{{ task.feedback  |default:"-" }}</pre></td>
             <td>{{ task.feedback_time | date:"Y年/m月/d日" }}</td>
+
         </tr>
     {% endfor %}
     </tbody>

@@ -1,9 +1,9 @@
 import { ref, computed } from 'vue'
 import { defineStore, storeToRefs } from 'pinia'
-import { getTaskDataApi,taskModifyApi } from '@/api/data/data'
+import {getTaskDataApi, taskAddApi, taskModifyApi} from '@/api/data/data'
 import { useUserStore } from '@/stores/user'
 
-import { reverseDateStr, percentToDecimal, TaskStatus, formatDate } from '@/utils/public'
+import { reverseDateStr, percentToDecimal, TaskStatus, formatDate,calWorkdays } from '@/utils/public'
 
 const myUserStore = useUserStore()
 const { loginUser } = storeToRefs(myUserStore)
@@ -22,7 +22,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       ...x,
       text: x.name,
       start_date: reverseDateStr(x.start_time),
-      duration: x.diff_days,
+      duration:  calWorkdays(x.start_time,x.deadline_time),
       progress: percentToDecimal(x.progress)
     }));
   }
@@ -48,10 +48,24 @@ export const useScheduleStore = defineStore('schedule', () => {
   }
 
   // 一次加载所有关于schedule 的config
+  // const initScheduleConfig1 = () => {
+  //   userPool.value = myUserStore.getUserConfig('schedule_user_pool', [])
+  //   projectPool.value = myUserStore.getUserConfig('schedule_project_pool', [])
+  // }
+
   const initScheduleConfig = () => {
-    userPool.value = myUserStore.getUserConfig('schedule_user_pool', [])
-    projectPool.value = myUserStore.getUserConfig('schedule_project_pool', [])
+    // 添加类型转换确保总是返回数组
+    const getUserArrayConfig = (key, defaultValue = []) => {
+      const value = myUserStore.getUserConfig(key, defaultValue)
+      return value && typeof value === 'object' && !Array.isArray(value)
+          ? Object.values(value)
+          : (Array.isArray(value) ? value : defaultValue)
+    }
+
+    userPool.value = getUserArrayConfig('schedule_user_pool')
+    projectPool.value = getUserArrayConfig('schedule_project_pool')
   }
+
 
   const saveScheduleConfig = () => {
     myUserStore.setUserConfig('schedule_user_pool', userPool.value)
@@ -140,7 +154,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   // 当前选中人员任务跟新
   const getCurUserTasks = async (id, start_time, deadline_time) => {
     const curUserTasks = await getTaskDataApi({ receiver: id, start_time: start_time, deadline_time: deadline_time })
-    curUserTasksRef.value = curUserTasks.result.items.sort((a, b) => b.workload - a.workload)
+    curUserTasksRef.value = curUserTasks.sort((a, b) => b.workload - a.workload)
   }
 
 
@@ -154,7 +168,7 @@ export const useScheduleStore = defineStore('schedule', () => {
   const getTableData = async () => {
     const curCreatorTasks = await getTaskDataApi({ creator: loginUser.value.id })
     if (curSelectUser.value) getCurUserTasks(curSelectUser.value)
-    schduleTableData.value = curCreatorTasks.result?.items.sort((a, b) => {
+    schduleTableData.value = curCreatorTasks.sort((a, b) => {
       return new Date(a.start_time) - new Date(b.start_time);
     });
   }
@@ -168,7 +182,7 @@ export const useScheduleStore = defineStore('schedule', () => {
       ...x,
       text: x.name,
       start_date: reverseDateStr(x.start_time),
-      duration: x.diff_days,
+      duration:  calWorkdays(x.start_time,x.deadline_time),
       progress: percentToDecimal(x.progress)
     }));
   });
@@ -195,10 +209,26 @@ const modifyCurTask = async ()=>{
       ...curTaskDetailRef.value,
     start_time:formatDate(curTaskDetailRef.value.start_time),
     deadline_time:formatDate(curTaskDetailRef.value.deadline_time),
-    sender: curTaskDetailRef.value.sender.join(",")}
+    sender: curTaskDetailRef.value.sender ? curTaskDetailRef.value.sender.join(",") : ''
+    }
     )
   await getTableData()
+  return curTaskDetailRef.value
 }
+
+const copyCurTask = async ()=>{
+    const data = await taskAddApi({
+          ...curTaskDetailRef.value,
+          status:TaskStatus.PEND,
+          creator:loginUser.value.id,
+          start_time:formatDate(curTaskDetailRef.value.start_time),
+          deadline_time:formatDate(curTaskDetailRef.value.deadline_time),
+          sender: curTaskDetailRef.value.sender ? curTaskDetailRef.value.sender.join(",") : ''
+        }
+    )
+    console.log('data======>',data)
+    return data
+  }
   // 当前要展示的任务数据END
   const curPendTasksLength = computed(() => curPendGanttData.value.length)
   const lastPendTasksLength = computed(() => lastAddTasksRef.value.length);
@@ -213,7 +243,7 @@ const modifyCurTask = async ()=>{
     //项目池
     projectPool, curSelectProjectRef, addToProjectPool, deleteProjectInPool, cleanProjectPool,
     // 任务详情
-    curTaskDetailRef, updateCurTaskDetail,modifyCurTask,
+    curTaskDetailRef, updateCurTaskDetail,modifyCurTask,copyCurTask,
     //
     initScheduleConfig, saveScheduleConfig,
     // 甘特数据

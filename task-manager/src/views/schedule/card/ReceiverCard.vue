@@ -15,7 +15,7 @@
     <div class="card-label">执行人员：</div>
     <div class="user-list">
       <el-scrollbar >
-      <div class="user-scrollbar">
+      <div class="rec-user-scrollbar">
         <el-tag
           v-for="tag in curReceivers"
           :key="tag.id"
@@ -48,6 +48,7 @@
 
 <script setup>
 // 添加執行者
+import {ElPopconfirm,ElButton,ElTag} from "element-plus";
 import { ref } from "vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { getCurMonthStartAndEndStr } from "@/utils/public";
@@ -59,15 +60,7 @@ import { storeToRefs } from "pinia";
 
 const {
   curReceivers,
-  curReceiverIDs,
   curSelectUser,
-  curSelectUserInfo,
-  userPool,
-  userPoolIds,
-  curUserTasksRef,
-  curUserTasksWorkloadsRef,
-  curSelectDateStat,
-  schduleTableData,
 } = storeToRefs(scheduleStore);
 
 const isShowSelectUserDialog = ref(false);
@@ -136,7 +129,7 @@ const SelectUserConfirm = (isConfirm, users) => {
   display: flex;
   padding: 1vh 1vw;
 }
-.user-scrollbar {
+.rec-user-scrollbar {
     padding: 0.8rem 0;
 }
 </style>

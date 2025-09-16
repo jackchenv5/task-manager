@@ -19,7 +19,7 @@
     <div class="metric-card intensity-card">
       <div class="card-title">
         <h3 class="card-name">项目调度</h3>
-        <el-button size="small">提醒</el-button>
+<!--        <el-button size="small">提醒</el-button>-->
       </div>
 
       <div class="card-content">
@@ -60,6 +60,8 @@
   </div>
 </template>
 <script setup>
+import {ElTooltip,ElProgress} from 'element-plus'
+
 import { useProjectStore } from "@/stores/project";
 import { storeToRefs } from "pinia";
 import { Icon } from '@iconify/vue';
@@ -72,8 +74,6 @@ const {
   completedTasks,
   pendTasks,
   runTasks,
-  draftTasks,
-  workloadIntensity,
 } = storeToRefs(projectStore);
 </script>
 

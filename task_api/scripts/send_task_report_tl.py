@@ -1,3 +1,4 @@
+import argparse
 import os
 import string
 import sys
@@ -32,6 +33,11 @@ def get_current_week_range():
 
 if __name__ == '__main__':
     # 进行中的任务
+    parser = argparse.ArgumentParser(description='project report...')
+    parser.add_argument('--project', type=str,help='project')
+    args = parser.parse_args()
+
+
     today = datetime.today()
     current_month = today.month
     current_year = today.year
@@ -63,6 +69,7 @@ if __name__ == '__main__':
     #通知执行者
     for project,tasks in tasks_project_dict.items():
         # u = User.objects.get(username=user)
+
         u = User.objects.get(username="陈成F")
         # print(creator_dict[project])
         if not project:
@@ -74,4 +81,8 @@ if __name__ == '__main__':
         # email = EmailMessage(subject, html_message, from_email, [u.email])
         email.content_subtype = 'html'
         print(project,creator_dict[project])
+
+        #如果为前端触发，则只发送该项目周报
+        if args.project and project != args.project:
+                continue
         email.send()

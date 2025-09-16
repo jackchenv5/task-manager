@@ -9,6 +9,7 @@ export const useNavStore = defineStore('navigation', () => {
     { path: '/project', title: '项目视图',name :'project' },
     { path: '/schedule', title: '任务编排', name: 'schedule' },
     { path: '/search', title: '任务查询',name :'search' },
+    { path: '/stat', title: '统计',name :'stat' },
     { path: '/system', title: '系统配置',name: 'system' }
   ])
 

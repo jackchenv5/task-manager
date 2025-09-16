@@ -19,23 +19,31 @@ class TaskCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class TaskSerializer(serializers.ModelSerializer):
-    category = serializers.PrimaryKeyRelatedField(queryset=TaskCategory.objects.all(), required=False)
+    # category = serializers.PrimaryKeyRelatedField(queryset=TaskCategory.objects.all(), required=False)
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     publisher = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     start_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
-    done_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
+    # done_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
     deadline_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
-    feedback_time = serializers.DateTimeField(format='%Y-%m-%d',allow_null=True,required=False)
-    category_name = serializers.SerializerMethodField(required=False)
-    creator_name = serializers.SerializerMethodField(required=False)
-    receiver_name = serializers.SerializerMethodField(required=False)
-    publisher_name = serializers.SerializerMethodField(required=False)
-    status_name = serializers.SerializerMethodField(required=False)
-    related_task_name = serializers.SerializerMethodField(required=False)
-    workload_intensity = serializers.SerializerMethodField()
+    # feedback_time = serializers.DateTimeField(format='%Y-%m-%d',allow_null=True,required=False)
+    # category_name = serializers.SerializerMethodField(required=False)
+    status_name = serializers.CharField(source='status.name', read_only=True)
+
+    creator_name = serializers.CharField(source='creator.username', read_only=True)
+    receiver_name = serializers.CharField(source='receiver.username', read_only=True)
+    publisher_name = serializers.CharField(source='publisher.username', read_only=True)
+    publisher_name = serializers.CharField(source='publisher.username', read_only=True)
+
+    # creator_name = serializers.SerializerMethodField(required=False)
+    # receiver_name = serializers.SerializerMethodField(required=False)
+
+    # publisher_name = serializers.SerializerMethodField(required=False)
+    # status_name = serializers.SerializerMethodField(required=False)
+    # related_task_name = serializers.SerializerMethodField(required=False)
+    # workload_intensity = serializers.SerializerMethodField()
     diff_days = serializers.SerializerMethodField()
-    workloads = serializers.SerializerMethodField()
+    # workloads = serializers.SerializerMethodField()
     description  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
     content  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
     feedback  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
@@ -44,17 +52,15 @@ class TaskSerializer(serializers.ModelSerializer):
     sender  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
     class Meta:
             model = Task
-            fields = ['id','name','category','content','challenge','feedback','feedback_time','creator','receiver','publisher',
-                      'start_time','done_time','deadline_time','description','sender','workload','act_workload','progress',
-                      'status','project','related_task_name','related_task'
-                      ,'category_name','creator_name','receiver_name','publisher_name','status_name','workload_intensity','diff_days','workloads']
-
-    def get_workloads(self, obj):
-        # 这里你需要传递receiver_id, start_date, end_date
-        if not obj.start_time or not obj.deadline_time:
-            return 0
-        return Task.calculate_workload_intensity(obj.receiver_id, obj.start_time, obj.deadline_time)
-
+            fields = ['id','name','content','challenge','feedback','creator','receiver',
+                      'start_time','deadline_time','description','sender','workload','act_workload','progress',
+                      'status','project',
+                      'creator_name','receiver_name','status_name','publisher','publisher_name',
+                      'diff_days',
+                      # 'done_time','feedback_time',
+                      # ,''category'','category_name','related_task_name','related_task'
+                      # 'workload_intensity',,'workloads'
+                      ]
     def get_diff_days(self, obj):
         # 这里你需要传递receiver_id, start_date, end_date
         if not obj.start_time or not obj.deadline_time:
@@ -62,20 +68,28 @@ class TaskSerializer(serializers.ModelSerializer):
         days_difference =  workdays_between_with_holidays(obj.start_time,obj.deadline_time)
         return days_difference
 
-    def get_workload_intensity(self, obj):
-        # 这里你需要传递receiver_id, start_date, end_date
-        #不在统计范围的任务不统计
-        if (not obj.status) or (obj.status.name not in common.TASK_STATUS_FOR_WORKLOAD):
-            return 0
-        #创建任务时，开始结束时间可能为空
-        if (not obj.start_time) or (not obj.deadline_time):
-            return 0
-        days_difference = workdays_between_with_holidays(obj.start_time,obj.deadline_time)
-        if days_difference == 0:
-            return 0
-        workloads =  Task.calculate_workload_intensity(obj.receiver_id, obj.start_time, obj.deadline_time)
-        get_workload_intensity = int(100 * workloads / days_difference)
-        return get_workload_intensity
+    # def get_workloads(self, obj):
+    #     # 这里你需要传递receiver_id, start_date, end_date
+    #     if not obj.start_time or not obj.deadline_time:
+    #         return 0
+    #     return Task.calculate_workload_intensity(obj.receiver_id, obj.start_time, obj.deadline_time)
+
+
+
+    # def get_workload_intensity(self, obj):
+    #     # 这里你需要传递receiver_id, start_date, end_date
+    #     #不在统计范围的任务不统计
+    #     if (not obj.status) or (obj.status.name not in common.TASK_STATUS_FOR_WORKLOAD):
+    #         return 0
+    #     #创建任务时，开始结束时间可能为空
+    #     if (not obj.start_time) or (not obj.deadline_time):
+    #         return 0
+    #     days_difference = workdays_between_with_holidays(obj.start_time,obj.deadline_time)
+    #     if days_difference == 0:
+    #         return 0
+    #     workloads =  Task.calculate_workload_intensity(obj.receiver_id, obj.start_time, obj.deadline_time)
+    #     get_workload_intensity = int(100 * workloads / days_difference)
+    #     return get_workload_intensity
 
     def get_status_name(self, obj):
         if obj.status is not None:

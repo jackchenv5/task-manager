@@ -135,32 +135,32 @@ class GroupViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = GroupFilter
 
-    def list(self, request, *args, **kwargs):  
-        queryset = self.filter_queryset(self.get_queryset()).order_by('-id')
-        empty_group = [{'id': 0, 'name': '', 'users': []}]
-        page = self.paginate_queryset(queryset)  
-        if page is not None:  
-            serializer = self.get_serializer(page, many=True)
-            return Response({  
-                'code': 0,  
-                'message': 'ok',  
-                 'result': {  
-                    'items':serializer.data ,
-                    'total': queryset.count(),  # 这里获取总条目数
-                },   
-                'type': 'success',  
-            })  
-  
-        serializer = self.get_serializer(queryset, many=True)  
-        return Response({  
-            'code': 0,  
-            'message': 'No data',  # 或者你可以自定义没有数据的消息  
-            'result': {  
-                    'items': serializer.data ,
-                    'total': queryset.count(),  # 这里获取总条目数
-             },  
-            'type': 'success',  
-        })
+    # def list(self, request, *args, **kwargs):
+    #     queryset = self.filter_queryset(self.get_queryset()).order_by('-id')
+    #     empty_group = [{'id': 0, 'name': '', 'users': []}]
+    #     page = self.paginate_queryset(queryset)
+    #     if page is not None:
+    #         serializer = self.get_serializer(page, many=True)
+    #         return Response({
+    #             'code': 0,
+    #             'message': 'ok',
+    #              'result': {
+    #                 'items':serializer.data ,
+    #                 'total': queryset.count(),  # 这里获取总条目数
+    #             },
+    #             'type': 'success',
+    #         })
+    #
+    #     serializer = self.get_serializer(queryset, many=True)
+    #     return Response({
+    #         'code': 0,
+    #         'message': 'No data',  # 或者你可以自定义没有数据的消息
+    #         'result': {
+    #                 'items': serializer.data ,
+    #                 'total': queryset.count(),  # 这里获取总条目数
+    #          },
+    #         'type': 'success',
+    #     })
 
 class UserIDsByUsernamesAPIView(APIView):  
     def get(self, request, usernames, format=None):  

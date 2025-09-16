@@ -77,14 +77,14 @@ def parse_date_range(date_str):
             start_date = parser.parse(start_date_str, yearfirst=True, dayfirst=False)
         else:
             month, day = map(int, start_date_str.split('.'))
-            start_date = datetime(current_year, month, day)
+            start_date = date(current_year, month, day)
 
         # 解析结束日期
         if has_year_end:
             end_date = parser.parse(end_date_str, yearfirst=True, dayfirst=False)
         else:
             month, day = map(int, end_date_str.split('.'))
-            end_date = datetime(current_year, month, day)
+            end_date = date(current_year, month, day)
 
         # 确保结束日期晚于或等于起始日期
         if end_date < start_date:
@@ -123,6 +123,7 @@ def workdays_between_with_holidays(start_date, end_date):
 def custom_model_to_dict(instance):
     from django.db.models.fields import DateTimeField,DateField
     from django.contrib.auth import get_user_model
+    from task.models import TaskStatus
     User = get_user_model()
     data = {}
     for field in instance._meta.fields:
@@ -130,6 +131,8 @@ def custom_model_to_dict(instance):
         value = getattr(instance, field.name)
         if isinstance(value, User):
             data[field.name] = value.username
+        elif isinstance(value, TaskStatus):
+            data[field.name] = value.name
         elif isinstance(field, (DateField, DateTimeField)):
             data[field.name] = value.strftime('%Y-%m-%d') if value else None
         else:

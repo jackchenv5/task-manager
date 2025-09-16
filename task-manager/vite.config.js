@@ -9,6 +9,9 @@ export default defineConfig({
    server: {
     allowedHosts: ['5173-jackchenv5-taskmanager-wkdc62kryle.ws-us117.gitpod.io']
   },
+  build: {
+      target: 'chrome74'
+  },
   plugins: [
     vue(),
     vueDevTools(),

@@ -20,11 +20,9 @@
 </template>
 
 <script setup>
-// 选中人员
-
+import {ElRow,ElCol,ElScrollbar,ElTag,ElButton} from 'element-plus'
 import { useProjectStore } from '@/stores/project'
 import { storeToRefs } from 'pinia'
-import project from '@/router/modules/project';
 
 const projectStore = useProjectStore()
 const { selectUser, joinUsers } = storeToRefs(projectStore)
@@ -75,7 +73,8 @@ const handleSelectUser = (userObj) => {
 .user-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  /*gap: 8px;*/
+
   padding: 4px;
 }
 
@@ -87,6 +86,7 @@ const handleSelectUser = (userObj) => {
   background: #f5f7fa;
   color: #606266;
   border: 1px solid #e4e7ed;
+  margin:2px 2px;
 }
 
 .user-tag:hover {

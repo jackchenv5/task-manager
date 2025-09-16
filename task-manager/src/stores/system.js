@@ -28,20 +28,20 @@ export const useSystemStore = defineStore('system', () => {
 
     const deleteGroup = async (id) => {
         const ret = await groupDeleteApi(id)
-        console.log('返回组修改结果：', id, ret)
+        
         updateGroupTableData()
     }
 
     const modifyGroup = async (id, data) => {
         const ret = await groupModifyApi(id, data)
-        console.log('返回组修改结果：', id, ret)
+        
         updateGroupTableData()
     }
 
     const updateGroupTableData = async (params) => {
         const groupList = await groupListApi(params)
 
-        groupTableDataRef.value = groupList?.result?.items.length > 0 ? groupList.result.items : []
+        groupTableDataRef.value = groupList
     }
 
     // 组数据 END
@@ -65,7 +65,7 @@ export const useSystemStore = defineStore('system', () => {
 
     const modifyUser = async (id, data) => {
         const ret = await userModifyApi(id, data)
-        console.log('返回组修改结果：', id, ret)
+        
         updateUserData()
     }
 
@@ -76,7 +76,7 @@ export const useSystemStore = defineStore('system', () => {
     const updateProjectList = async () => {
         const tmpData = await getProjectList()
         projectListRef.value = tmpData?.length > 0 ? tmpData : []
-        console.log(projectListRef.value)
+        
     }
     const modifyP = async (name,data) => {
         const ret = await modifyProject(name,data)

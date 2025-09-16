@@ -8,7 +8,8 @@
             </el-col>
             <el-col :span="12">
                 <el-form-item label="项目:">
-                    <el-input v-model="curTaskDetailRef.project"></el-input>
+                  <Select style="width: 95%;" v-model="curTaskDetailRef.project" :api="getProjectList" label-field="name"
+                          value-field="name" filterable  :filter-field="['name']"></Select>
                 </el-form-item>
             </el-col>
         </el-row>
@@ -66,11 +67,11 @@
 </template>
 
 <script setup>
-
+import {ElForm,ElFormItem,ElInput,ElDatePicker,ElRow,ElCol,ElInputNumber} from "element-plus";
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 import Select from '@/components/selects/MutiSelect.vue'
-import { getUserApi} from '@/api/data/data'
+import { getUserApi,getProjectList} from '@/api/data/data'
 
 const scheduleStore = useScheduleStore()
 const {curTaskDetailRef } = storeToRefs(scheduleStore)

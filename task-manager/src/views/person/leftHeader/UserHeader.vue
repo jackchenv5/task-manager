@@ -10,10 +10,6 @@
         </div>
         <div style="display:flex;width: 30vw;justify-content: space-around;">
           <div class="group-info-item">
-            <div class="group-info-item-title">工作量</div>
-            <div class="group-info-item-content">{{stat?.completed}}/{{ stat?.total }}</div>
-          </div>
-          <div class="group-info-item">
             <div class="group-info-item-title">饱和度</div>
             <div class="group-info-item-content">{{ workloadSaturation }}%</div>
           </div>
@@ -32,6 +28,7 @@
 
 
 <script setup>
+import {ElAvatar} from "element-plus";
 import {usePersonStore  } from '@/stores/person.js'
 import {useUserStore} from '@/stores/user.js'
 

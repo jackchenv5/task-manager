@@ -17,29 +17,28 @@
       </div>
     </div>
     <div class="pool-list">
-      <el-tag v-for="tag in userPool" :key="tag.id" closable
-        :type="tag.id === curSelectUser ? 'success' : (curReceiverIDs.includes(tag.id) ? 'warning' : 'primary')"
-        style="cursor: pointer;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
-        @click="handleSelectUser(tag.id)">
-        {{ tag.username }}
-      </el-tag>
+      <el-scrollbar>
+        <el-tag v-for="tag in userPool" :key="tag.id" closable
+                :type="tag.id === curSelectUser ? 'success' : (curReceiverIDs.includes(tag.id) ? 'warning' : 'primary')"
+                style="cursor: pointer;margin:5px 5px;" :disable-transitions="false" @close="handleDeleteUser(tag.id)"
+                @click="handleSelectUser(tag.id)">
+          {{ tag.username }}
+        </el-tag>
+      </el-scrollbar>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import {ElTag,ElPopconfirm,ElButton,ElScrollbar} from "element-plus";
+import { ref } from 'vue'
 import SelectUserDialog from '@/components/dialog/SelectUser.vue'
 import { useScheduleStore } from '@/stores/schedule'
 import { storeToRefs } from 'pinia'
 
 const scheduleStore = useScheduleStore()
-const { curReceivers, curReceiverIDs, curSelectUser, userPool, userPoolIds } = storeToRefs(scheduleStore)
+const { curReceiverIDs, curSelectUser, userPool, userPoolIds } = storeToRefs(scheduleStore)
 
-//人员池逻辑
-//===================================================================================================
-
-const userDialogTitle = ref()
 // 添加人员池
 const isShowSelectUserDialog = ref(false)
 
@@ -52,7 +51,7 @@ const updateVisible = (newValue) => {
 }
 
 const SelectUserConfirm = (isConfirm, users) => {
-  console.log('=====', isConfirm, users)
+
   if (!isConfirm) return
   if (!users) return
   // 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
@@ -85,7 +84,7 @@ const handleSelectUser = (id) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  flex-shrink: 0
+  /*flex-shrink: 0*/
 }
 
 
@@ -99,6 +98,7 @@ const handleSelectUser = (id) => {
 
 .pool-list {
   flex-grow: 1;
+  min-height: 0px;
   padding:0 5px;
   /* border:1px solid; */
   /* height: 14vh; */
@@ -106,7 +106,8 @@ const handleSelectUser = (id) => {
   justify-content: start;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  /*overflow-y: auto;*/
+
 }
 
 

@@ -30,11 +30,11 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import {ElButton,ElPopconfirm,ElTag,ElText,ElScrollbar} from "element-plus";
+import { ref } from "vue";
 import SelectProject from "@/components/dialog/SelectProject.vue";
 import { useScheduleStore } from "@/stores/schedule";
 import { storeToRefs } from "pinia";
-import project from "@/router/modules/project";
 
 const scheduleStore = useScheduleStore();
 const isShowSelectProjectDialog = ref(false);
@@ -54,7 +54,7 @@ const updateVisible = (newValue) => {
 }
 
 const SelectProjectConfirm = (isConfirm, projects) => {
-  console.log('=====', isConfirm, projects)
+
   if (!isConfirm) return
   if (!projects) return
   // 界面选择的用户，默认都加入用户池，如何是执行者对话框，则加入执行者池
@@ -74,8 +74,6 @@ const SelectProjectConfirm = (isConfirm, projects) => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  /* height: 18vh; */
-  /* flex-shrink: 0 */
 }
 
 
@@ -83,15 +81,12 @@ const SelectProjectConfirm = (isConfirm, projects) => {
   display: flex;
   justify-content: space-between;
   padding: 5px 10px;
-  /* height: 5vh; */
-  /* padding-top: 10px; */
   border-bottom: 1px solid rgb(243, 233, 233);
 }
 
 .pool-list {
+  flex: 1;
   min-height: 0px;
-  flex: 1; 
-  /* border: 1px solid red; */
 }
 
 .my-tag {
@@ -99,7 +94,4 @@ const SelectProjectConfirm = (isConfirm, projects) => {
   cursor: pointer;
 }
 
-.tag-content {
-  max-width: 100%;
-}
 </style>

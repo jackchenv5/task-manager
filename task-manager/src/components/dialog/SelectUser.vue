@@ -16,6 +16,7 @@
 </template>
   
 <script setup>
+import {ElDialog,ElForm,ElFormItem,ElButton} from "element-plus";
 
 const props = defineProps({
     title:{
@@ -42,7 +43,7 @@ const selectedOption = ref(props.modelValue)
 const isConfirm = ref(false)
 
 // const handleSelectChange = (value) => {
-//     console.log('Selected value:', value)
+//
 // }
 
 //监听父组件visable的变化

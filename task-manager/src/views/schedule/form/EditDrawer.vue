@@ -11,6 +11,7 @@
     <template #footer>
       <div style="flex: auto">
         <el-button @click="handleCancel">{{ cancelText }}</el-button>
+        <el-button type="primary" @click="handleCopy">复制</el-button>
         <el-button type="primary" @click="handleConfirm">{{ confirmText }}</el-button>
       </div>
     </template>
@@ -18,7 +19,7 @@
 </template>
 
 <script setup>
-
+import {ElDrawer} from "element-plus";
 import { ref,watch} from 'vue'
 // ====================组件属性代码 ============================================
 const props = defineProps({
@@ -57,7 +58,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'confirm', 'cancel', 'close'])
+const emit = defineEmits(['update:modelValue', 'confirm','copy', 'cancel', 'close'])
 
 const visible = ref(props.modelValue)
 // 监听外部modelValue变化
@@ -81,6 +82,11 @@ const handleBeforeClose = (done) => {
 
 const handleConfirm = () => {
   emit('confirm')
+  visible.value = false
+}
+
+const handleCopy = () => {
+  emit('copy')
   visible.value = false
 }
 

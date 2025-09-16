@@ -51,11 +51,11 @@ class AbstractTask(models.Model):
     # 任务类型
     category = models.ForeignKey(TaskCategory, related_name="%(class)s", on_delete=models.SET_DEFAULT, default=1)
     # 任务内容
-    content = models.CharField(max_length=2056, null=True)
+    content = models.TextField(max_length=10280, null=True)
     # 挑战目标
     challenge = models.CharField(max_length=2056, null=True)
     # 反馈
-    feedback = models.CharField(max_length=2056, null=True)
+    feedback = models.CharField(max_length=6000, null=True)
 
     feedback_time = models.DateTimeField(auto_now=False, auto_now_add=False, null=True)
 
@@ -64,7 +64,7 @@ class AbstractTask(models.Model):
     creator = models.ForeignKey(User, related_name="%(class)s_of_creator", on_delete=models.CASCADE, null=True)
 
     # 关联项目
-    project = models.CharField(max_length=512, null=True)
+    project = models.CharField(max_length=512, null=True,db_index=True)
     # 负责人
     receiver = models.ForeignKey(User, related_name="%(class)s_of_receiver", on_delete=models.CASCADE, null=True)
     # 发布者
@@ -89,6 +89,7 @@ class AbstractTask(models.Model):
     class Meta:
         abstract = True  # 设置为抽象基类
 
+
 class Task(AbstractTask):
     # 描述信息
     description = models.CharField(max_length=512, null=True)
@@ -99,7 +100,6 @@ class Task(AbstractTask):
 
     class Meta:
         db_table = 'task'
-
     def __str__(self):
         return self.name
 
@@ -163,14 +163,14 @@ class Task(AbstractTask):
                     change_fields.append(f)
                     # 状态改变
                     # pend状态只能由草稿触发
-                    if new == common.TASK_STATUS_PENDING and old != common.TASK_STATUS_DRAFT:
-                        return
+                    # if new == common.TASK_STATUS_PENDING and old != common.TASK_STATUS_DRAFT:
+                    #     return
                     # 进行状态只能由PEND状态触发
-                    elif new == common.TASK_STATUS_PROGRESS and old != common.TASK_STATUS_PENDING:
-                        return
-                    # 完成只能由进行状态触发
-                    elif new == common.TASK_STATUS_COMPLETED and old != common.TASK_STATUS_PROGRESS:
-                       return
+                    # if new == common.TASK_STATUS_PROGRESS and old != common.TASK_STATUS_PENDING:
+                    #     return
+                    # # 完成只能由进行状态触发
+                    # elif new == common.TASK_STATUS_COMPLETED and old != common.TASK_STATUS_PROGRESS:
+                    #    return
 
                     #发生修改并且修改内容为反馈信息
                     if f in ['feedback','progress','act_workload','feedback_time']:
@@ -243,7 +243,10 @@ class Task(AbstractTask):
         action = SIGNAL_ACTIONS[action]
         title,content_list = '',[]
         # title 的信息
-        title = f'{self.receiver.username} 任务({self.id})被{action},任务名：{self.name},操作人员：{user.username}'
+        try:
+            title = f'{self.receiver.username} 任务({self.id})被{action},任务名：{self.name},操作人员：{user.username}'
+        except AttributeError:
+            title = ''
         if action == '删除':
             content = custom_model_to_dict(self)
         elif action == '新增':

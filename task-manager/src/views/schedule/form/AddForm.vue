@@ -7,15 +7,19 @@
       label-position="top"
       :model="formData"
     >
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit(formRef)">提交</el-button>
+        <el-button @click="resetForm">清空</el-button>
+      </el-form-item>
       <el-row>
         <el-col :span="12">
-          <el-form-item label="名称:" prop="name">
-            <el-input v-model="formData.name"></el-input>
+          <el-form-item label="项目:" >
+            <Select style="width: 95%" v-model="formData.project" :api="getProjectList" label-field="name" value-field="name" filterable  :filter-field="['name']"></Select>
           </el-form-item>
         </el-col>
-        <el-col :span="11">
-          <el-form-item label="项目:">
-            <el-input v-model="formData.project"></el-input>
+        <el-col :span="12">
+          <el-form-item label="名称:" prop="name">
+            <el-input v-model="formData.name" style="width: 95%"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
@@ -51,21 +55,25 @@
       <el-row>
         <el-col :span="12">
           <el-form-item label="时间范围:" required>
-            <el-date-picker
-              v-model="formData.start_time"
-              type="date"
-              placeholder="Pick a day"
-              size="default"
-              style="width: 11vw"
-            />
+            <el-config-provider :locale="locale">
+              <el-date-picker style="max-width:150px"
+                  v-model="formData.start_time"
+                  type="date"
+                  placeholder="开始日期"
+                  value-format="YYYY-MM-DD"
+                  clearable
+              />
             <span>~</span>
-            <el-date-picker
-              v-model="formData.deadline_time"
-              type="date"
-              placeholder="Pick a day"
-              size="default"
-              style="width: 11vw"
-            />
+
+              <el-date-picker style="max-width:150px"
+                  v-model="formData.deadline_time"
+                  type="date"
+                  placeholder="截止日期"
+                  value-format="YYYY-MM-DD"
+                  clearable
+              />
+            </el-config-provider>
+
           </el-form-item>
         </el-col>
         <el-col :span="11">
@@ -94,27 +102,25 @@
         <el-form-item label="任务描述:">
           <el-input type="textarea" :rows="4" v-model="formData.description"></el-input>
         </el-form-item>
-        <!-- <el-form-item label="关联任务:">
-        <Select style="width: 95%;" v-model="formData.related_task" :api="getTaskDataApi({project:formData.project})" label-field="name" data-filed="result"
-            value-field="id" filterable :filter-field="['name']" clearable></Select>
-      </el-form-item> -->
       </el-scrollbar>
-      <el-form-item>
-        <el-button type="primary" @click="onSubmit(formRef)">提交</el-button>
-        <el-button @click="resetForm">清空</el-button>
-      </el-form-item>
+
     </el-form>
   </div>
 </template>
 
 <script setup>
+import {ElForm,ElFormItem,ElInput,ElDatePicker,ElRow,ElCol,ElConfigProvider,ElInputNumber,ElButton} from "element-plus";
 import { ref, reactive, watch } from "vue";
 import { storeToRefs } from "pinia";
-import { getUserApi, taskAddApi, getTaskDataApi } from "@/api/data/data";
+import { getUserApi, taskAddApi, getProjectList } from "@/api/data/data";
 import { formatDate, TaskStatus } from "@/utils/public";
-import Select from "@/components/selects/MutiSelect.vue";
+import Select from "@/components/selects/MutiSelect.vue"
+
 import { useScheduleStore } from "@/stores/schedule";
 import { useUserStore } from "@/stores/user";
+
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+const locale = zhCn
 
 const userStore = useUserStore();
 
@@ -148,7 +154,7 @@ const formData = reactive({ ...initFormData.value, receiver: curReceivers.value 
 watch(
   curSelectDateStat,
   (newVal) => {
-    // console.log('curSelectDateStat====================================================>')
+    //
     // console(curSelectDateStat)
     formData.start_time = curSelectDateStat.value.startDate;
     formData.deadline_time = curSelectDateStat.value.endDate;
@@ -158,7 +164,7 @@ watch(
 
 watch(formData, (newVal) => {
   curReceivers.value = formData.receiver;
-  console.log("newValue formData", newVal);
+
 });
 
 watch(curSelectProjectRef, (newVal) => {
@@ -208,7 +214,6 @@ const formRules = reactive({
 });
 
 import { VxeUI } from "vxe-pc-ui";
-import { notificationEmits } from "element-plus";
 const onSubmit = async (formRef) => {
   //TODO 提交前验证！
   // 准备所有请求的Promise数组

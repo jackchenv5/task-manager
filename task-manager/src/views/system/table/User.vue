@@ -80,7 +80,7 @@ const roleEditRender = reactive({
 })
 
 const editClosedEvent = ({ row, column }) => {
-  console.log(row, column)
+
   const $table = tableRef.value
   if ($table) {
     const field = column.field

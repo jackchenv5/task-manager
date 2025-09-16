@@ -65,9 +65,9 @@
   
   // 监听内部visible变化
   watch(visible, (newVal) => {
-    console.log('visible',visible,newVal)
+
     emit('update:modelValue', newVal)
-    console.log('visible END')
+
   })
   
   const handleBeforeClose = (done) => {

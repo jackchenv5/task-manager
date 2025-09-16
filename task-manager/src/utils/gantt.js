@@ -6,7 +6,8 @@ export const transToProjectGanttData = (tasks) => {
     let isFirst = true
     if( tasks?.length == 0) return retData
     tasks.forEach(x => {
-        const tmpProject = x.project
+        const tmpProject = x.project ?  x.project : '空项目'
+        console.log('tmpProject ===>',tmpProject)
         let tmpData = {}
         // 项目级配置
         if (!(projectData.includes(tmpProject))) {

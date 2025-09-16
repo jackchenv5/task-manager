@@ -28,10 +28,12 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+
+import {ElRow,ElCol,ElScrollbar,ElTag,ElPopconfirm,ElButton} from 'element-plus'
+
+import { ref } from 'vue'
 import { useProjectStore } from '@/stores/project'
 import { storeToRefs } from 'pinia'
-import project from '@/router/modules/project';
 import SelectProject from "@/components/dialog/SelectProject.vue";
 const projectStore = useProjectStore()
 const { projectFocusRef, curSelectProjectRef } = storeToRefs(projectStore)

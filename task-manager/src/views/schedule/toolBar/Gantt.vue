@@ -1,20 +1,19 @@
 <template>
-    <div class="gantt-container" ref="ganttContainer" @click="handleClick"></div>
+    <div class="gantt-container" ref="ganttContainer" @click="handleClick" @dblclick="handleDBClick"></div>
     <el-dialog v-model="dialogFormVisible" title="任务修改" width="800">
         <EditForm></EditForm>
         <template #footer>
             <div class="dialog-footer">
                 <el-button @click="dialogFormVisible = false">取消</el-button>
-                <el-button type="primary" @click="confirmModifyTask">
-                    确认
-                </el-button>
+                <el-button type="warning" @click="confirmCopyTask">复制</el-button>
+                <el-button type="primary" @click="confirmModifyTask">确认</el-button>
             </div>
         </template>
     </el-dialog>
 </template>
 
 <script setup>
-
+import {ElDialog,ElButton} from "element-plus";
 import { ref, onMounted, watch } from 'vue'
 const dialogFormVisible = ref(false)
 
@@ -31,9 +30,9 @@ import EditForm from '../form/EditForm.vue'
 
 import { transToProjectGanttData, transToRecevierGanttData } from '@/utils/gantt'
 
-import { taskDeleteApi, taskModifyApi } from '@/api/data/data'
+import { taskDeleteApi } from '@/api/data/data'
 const scheduleStore = useScheduleStore()
-const { curPendGanttData, lastAddTasksRef, curTaskDetailRef } = storeToRefs(scheduleStore)
+const { curPendGanttData, lastAddTasksRef } = storeToRefs(scheduleStore)
 
 const ganttContainer = ref(null);
 
@@ -66,7 +65,7 @@ const initGanttRender = () => {
     }
     // 组织结构
     let joinData = []
-    console.log('orginData', orginData)
+
     if (props.joinType === 'project') {
         joinData = transToProjectGanttData(orginData)
     } else if (props.joinType === 'recevier') {
@@ -74,27 +73,38 @@ const initGanttRender = () => {
     } else {
         joinData = orginData
     }
-    console.log('.... join data', joinData)
+
     gantt.clearAll();
     gantt.init(ganttContainer.value); // 重新绑定DOM容器
     gantt.render(); // 强制重绘
     gantt.parse({
         tasks: joinData,
     });
-    gantt.attachEvent("onBeforeTaskDrag", function(id, mode, e){
-        console.log('before drag task...', id, mode, e)
-        return false;
-    //...
-});
+
 }
 const initGantt = () => {
     // 基本配置
     gantt.i18n.setLocale("cn");
     gantt.config.date_format = "%Y-%m-%d";
     gantt.plugins({
-        quick_info: true
+      quick_info: true
     });
+    gantt.templates.quick_info_date = function (start, end, task) {
+      return ""
+    };
+    gantt.templates.quick_info_content = function (start, end, task) {
 
+      return `
+          <div class="quick-info-content">
+              <p>开始时间: ${gantt.templates.tooltip_date_format(start)}</p>
+              <p>结束时间: ${gantt.templates.tooltip_date_format(end)}</p>
+              <p>进度: ${task.progress * 100}%</p>
+
+              <p>任务内容:</p>
+              <pre>${task.content || ''}</pre>
+          </div>
+      `;
+    };
 
     gantt.showLightbox = function () {
         // code of the custom form
@@ -107,26 +117,53 @@ const initGantt = () => {
     });
 
     gantt.config.scale_height = 60;
-    gantt.config.scales = [
-        { unit: "month", format: "%Y年 %F" },
-        { unit: "week", format: "第 %W 周" },
-    ]
+  gantt.config.scales = [
+    { unit: "month", format: "%Y年 %F", css: ()=>"month-scale"},
+    { unit: "week",     format: function(date) {
+        // 获取当月第一天
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        // 计算当前日期是该月的第几周
+        const diff = date.getDate() + firstDay.getDay() - 1;
+        const weekNumber = Math.ceil(diff / 7);
 
+        return `第${weekNumber}周`;
+      },
+      css: ()=>"week-scale"
+    },
+    {
+      unit: "day",
+      step: 1,
+      format: function(date) {
+        const month = date.getMonth() + 1; // 月份 (1-12)
+        const day = date.getDate();        // 日 (1-31)
+        return `${month}.${day}`;          // 返回 "月.日" 格式
+      },
+      css: ()=>"day-scale"
+    },
+  ]
+    gantt.config.drag_progress = false
+    gantt.config.drag_move = true;  // 禁止任务拖动
+    gantt.config.drag_resize = true; // 禁止调整任务时间
     gantt.attachEvent("onTaskDrag", function (id, mode, task, original, e) {
-        console.log('drag task...', id, mode, task, original)
-        console.log("只能调整时间...")
+      gantt.attachEvent("onBeforeTaskDrag", function(id, mode, e){
+        return false;
+      });
     })
 
     gantt.config.columns = [
-        { name: "text", label: "任务名", width: 170, tree: true },
-        { name: "start_date", label: "开始时间", width: 140, align: "center" },
-        { name: "duration", label: "持续/天", width: 50, align: "center" },
+        { name: "text", label: "任务名", width: 170, tree: true,
+          template: function(obj) {
+            return "<div class='gantt-cell-content' title='" + (obj.text || "") + "'>" + (obj.text || "") + "</div>";
+          }
+          },
+        { name: "start_date", label: "开始时间", width: 160, align: "center" },
+        // { name: "duration", label: "持续/天", width: 50, align: "center" },
         { name: "workload", label: "工时/天", width: 50, align: "center" },
         { name: "receiver_name", label: "执行者", width: 60, align: "center" },
         {
             name: "btns", label: "操作", width: 60, align: "center",
             template: function (task) {
-                console.log('in template', task)
+
                 if (task.type === "project") return ''
                 return ` 
             <span> 
@@ -139,54 +176,102 @@ const initGantt = () => {
     ];
 
 
+
+  gantt.templates.timeline_cell_class = function(item, date) {
+    const classes = [];
+    if (date.getDate() === 1) {
+      classes.push("month-start");
+    }
+    // 为不同月份交替设置不同背景色
+    if (date.getMonth() % 2 === 0) {
+      classes.push("even-month");
+    } else {
+      classes.push("odd-month");
+    }
+    return classes.join(" ");
+  };
     gantt.config.drag_progress = false;
 };
 
 import { VxeUI } from 'vxe-pc-ui'
-const handleClick = async (event) => {
-    const target = event.target;
-    // 判断点击目标是否为删除按钮
-    if (target.matches('button.delete-task[data-id]')) {
-        const taskId = target.dataset.id;
-        console.log(event)
-        await taskDeleteApi(taskId)
-        await scheduleStore.getTableData()
-        initGanttRender()
-        VxeUI.modal.message({
-            content: `任务：${taskId} 已删除！`,
-            status: 'success'
-        })
-        // 执行删除逻辑
-    }
-    if (target.matches('button.edit-task[data-id]')) {
-        const taskId = target.dataset.id;
-        console.log('动态编辑任务ID:', taskId);
+import {calWorkdays, reverseDateStr} from "@/utils/public.js";
+const clickTimeout = ref(null);
 
-        // 执行删除逻辑
-        modifyTask(taskId)
+const handleClick = async (event) => {
+    clearTimeout(clickTimeout.value);
+  clickTimeout.value = setTimeout(() => {
+    const target = event.target;
+    if (target.matches('button.edit-task[data-id]')) {
+      const taskId = target.dataset.id;
+      // 执行编辑逻辑
+      modifyTask(taskId)
     }
+
+    if (target.matches('button.delete-task[data-id]')) {
+      VxeUI.modal.message({
+        zIndex: 9999,
+        content: '请双击确认删除！！！',
+        status: 'success'
+      })
+    }
+    // 这里放置单击事件的处理逻辑
+  }, 250); // 250ms延迟，可根据需要调整
+
+}
+
+
+const handleDBClick = async (event) => {
+  clearTimeout(clickTimeout.value);
+  const target = event.target;
+  // 判断点击目标是否为删除按钮
+  if (target.matches('button.delete-task[data-id]')) {
+    const taskId = target.dataset.id;
+
+    await taskDeleteApi(taskId)
+    await scheduleStore.getTableData()
+    gantt.deleteTask(taskId);
+    VxeUI.modal.message({
+      zIndex: 9999,
+      content: `任务：${taskId} 已删除！`,
+      status: 'success'
+    })
+    // 执行删除逻辑
+  }
 
 }
 
 const modifyTask = async (id) => {
     const taskObj = gantt.getTask(id);
-    await scheduleStore.updateCurTaskDetail({ ...taskObj, sender: taskObj.sender.split(",") })
+    await scheduleStore.updateCurTaskDetail({ ...taskObj, sender: taskObj.sender?.split(",") })
     dialogFormVisible.value = true
 }
 
 const confirmModifyTask = async () => {
     await scheduleStore.modifyCurTask()
-    initGanttRender()
+    // initGanttRender()
     VxeUI.modal.message({
+        zIndex: 9999,
         content: `任务修改成功！`,
         status: 'success'
     })
     dialogFormVisible.value = false
     // 执行删除逻辑
 }
-onMounted(async () => {
+
+const confirmCopyTask = async () => {
+  await scheduleStore.copyCurTask()
+  // initGanttRender()
+  VxeUI.modal.message({
+    zIndex: 9999,
+    content: `任务复制成功！`,
+    status: 'success'
+  })
+  dialogFormVisible.value = false
+  // 执行删除逻辑
+}
+
+onMounted(() => {
     if (!ganttContainer.value) return;
-    if (!gantt) return
     gantt.init(ganttContainer.value);
     initGantt();
     initGanttRender();
@@ -199,7 +284,7 @@ onMounted(async () => {
 <style>
 .gantt-container {
     width: 100%;
-    height: 100%;
+    height: 95%;
 }
 
 .gantt_cal_qi_controls {
@@ -233,4 +318,55 @@ onMounted(async () => {
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
 }
+
+/* 月份交替背景色 */
+.even-month {
+  background-color: white;
+}
+
+.odd-month {
+  background-color: rgba(236, 220, 220, 0.3);
+}
+.gantt-cell-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  display: inline-block;
+}
+
+.gantt_grid_data .gantt_row:hover .gantt-cell-content {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  z-index: 1000;
+  position: relative;
+}
+
+.gantt_cal_quick_info{
+  width: 800px;
+}
+.quick-info-content{
+  width:750px;
+  overflow-x: auto;
+}
+
+/* 月份刻度 - 浅蓝色 */
+.month-scale {
+  background-color: #e6f2ff !important;
+  border-right: 1px solid #cce0ff;
+}
+
+/* 周刻度 - 浅绿色 */
+.week-scale {
+  background-color: #e6ffe6 !important;
+  border-right: 1px solid rgb(29, 65, 103);
+}
+
+/* 天刻度 - 浅黄色 */
+.day-scale {
+  background-color: #fffae6 !important;
+  border-right: 1px solid rgb(227, 230, 238);
+}
+
 </style>

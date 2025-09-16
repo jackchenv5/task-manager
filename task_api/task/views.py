@@ -1,8 +1,7 @@
 import io
 import math
 import string
-from datetime import datetime
-
+from datetime import datetime,date
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpResponse
@@ -54,15 +53,15 @@ class TaskCategoryViewSet(viewsets.ModelViewSet):
     queryset = TaskCategory.objects.all()
     serializer_class = TaskCategorySerializer
 
-
+from django.db.models import Q
 class TaskFilter(filters.FilterSet):
     # 假设您的时间字段是datetime类型，使用DateTimeFilter
-    start_time = filters.DateTimeFilter(field_name="start_time", lookup_expr='gte')
-    deadline_time = filters.DateTimeFilter(field_name="deadline_time", lookup_expr='lte')
+    start_time = filters.DateTimeFilter(method='filter_time_range')
+    deadline_time = filters.DateTimeFilter(method='filter_time_range')
     receiver = filters.NumberFilter(field_name="receiver_id")  # 假设receiver是一个关联到User的外键
-    creator = filters.NumberFilter(field_name="creator_id")  # 假设receiver是一个关联到User的外键
-    status = filters.NumberFilter(field_name="status_id")  # 假设status是一个关联到Status的外键
-
+    creator = filters.NumberFilter(field_name="creator_id")
+    status = filters.NumberFilter(field_name="status_id")
+    group = filters.NumberFilter(method="filter_group")
     # 使用CharFilter进行文本搜索，并使用icontains进行不区分大小写的包含搜索
     search_text = filters.CharFilter(
         method='filter_search_text',
@@ -73,6 +72,24 @@ class TaskFilter(filters.FilterSet):
     class Meta:
         model = Task
         fields = ['start_time', 'deadline_time', 'receiver', 'creator', 'status', 'project']  # 这里只列出用于自动生成查询参数的字段
+    def filter_time_range(self, queryset, name, value):
+        # 获取查询参数
+        if not self.request:
+            start_time = self.data.get('start_time')
+            deadline_time = self.data.get('deadline_time')
+        else:
+            params = self.request.query_params
+            start_time = params.get('start_time')
+            deadline_time = params.get('deadline_time')
+
+        if not (start_time and deadline_time):
+            return queryset
+
+        # 使用 Q 对象组合 OR 条件
+        return queryset.filter(
+            Q(start_time__gte=start_time, start_time__lte=deadline_time) |  # 开始时间在范围内
+            Q(deadline_time__gte=start_time, deadline_time__lte=deadline_time)  # 结束时间在范围内
+        )
 
     def filter_search_text(self, queryset, name, value):
         from django.db.models import Q
@@ -90,12 +107,22 @@ class TaskFilter(filters.FilterSet):
         if value and name == "flag_time":
             return queryset.filter(start_time__lte = value,deadline_time__gte = value)
 
+    def filter_group(self,queryset,name,value):
+        if value and name == "group":
+            return queryset.filter(receiver__group__id=value)
+
 class TaskViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list` and `retrieve` actions.hello
     """
-    queryset = Task.objects.all()
+    # queryset = Task.objects.all()
+    queryset = Task.objects.select_related('receiver', 'creator','publisher', 'status').filter(workload__gt=0)
+
     serializer_class = TaskSerializer
+
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = TaskFilter  # 新增过滤器类
+
 
     def update(self, request, *args, **kwargs):
         partial = True  # 允许部分更新
@@ -131,7 +158,7 @@ class TaskViewSet(viewsets.ModelViewSet):
             extra_str = '<p style="font-size:12px;"><b>由于关联任务删除，上述关联任务设置为空！</b></p>'
             add_content = generate_email_body(list(sub_tasks), status="子任务", add_content=extra_str, has_footer=False)
         email_body = generate_email_body(instance, status="被删除", add_content=add_content)
-        if instance.status.name == common.TASK_STATUS_PROGRESS:
+        if instance.status and instance.status.name == common.TASK_STATUS_PROGRESS:
             if instance.publisher and instance.publisher.email not in add_emails:
                 add_emails.append(instance.publisher.email)
             if instance.receiver and instance.receiver.email not in add_emails:
@@ -145,93 +172,32 @@ class TaskViewSet(viewsets.ModelViewSet):
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def list(self, request, *args, **kwargs):
-        # 获取查询参数  
-        filter_params = request.query_params.dict()
-        workload_intensity_order = False
-        # 从查询参数中提取group（如果存在）  
-        group_id = filter_params.pop('group', None)
-        order_filed = filter_params.pop('field', None)
-        if order_filed == 'receiver_name':
-            order_filed = 'receiver'
-        if order_filed == 'workload_intensity':
-            order_filed = ''
-            workload_intensity_order = True
-        order = filter_params.pop('order', None)
-
-        # 创建FilterSet实例
-        task_filter = TaskFilter(data=filter_params, queryset=Task.objects.filter(workload__gt=0))
-
-        # 检查过滤是否有效  
-        if not task_filter.is_valid():
-            return Response(task_filter.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        filtered_tasks = task_filter.qs
-
-        # 如果提供了group_id，则进一步过滤tasks  
-        if group_id:
-            try:
-                group = Group.objects.get(id=group_id)
-                # 使用Django ORM来查询接收者在给定组内的任务  
-                filtered_tasks = filtered_tasks.filter(receiver__group__id=group_id)
-            except Group.DoesNotExist:
-                # 处理组不存在的情况
-                return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
-                # 排序 id降序
-        if order_filed:
-            if order == 'descend':
-                filtered_tasks = filtered_tasks.order_by(f'-{order_filed}')
-            else:
-                filtered_tasks = filtered_tasks.order_by(order_filed)
-        else:
-            filtered_tasks = filtered_tasks.order_by('-pk')
-        # 使用TaskSerializer序列化查询集  
-        data = TaskSerializer(filtered_tasks, many=True).data
-        # workload_intensity
-        if workload_intensity_order:
-            if order == 'descend':
-                data = sorted(data, key=lambda x: x['workload_intensity'], reverse=True)
-            else:
-                data = sorted(data, key=lambda x: x['workload_intensity'])
-        # 计算
-        start_min, end_max = None, None
-        task_user_info = {}
-        for tmp in data:
-            user = tmp['receiver']
-            if not tmp['status_name'] in ["进行中", "待下发"]:
-                continue
-            try:
-                start_time = datetime.strptime(tmp['start_time'], '%Y-%m-%d')
-                end_time = datetime.strptime(tmp['deadline_time'], '%Y-%m-%d')
-            except TypeError:
-                continue
-            if not start_min or start_time < start_min:
-                start_min = start_time
-            if not end_max or end_time > end_max:
-                end_max = end_time
-            if user not in task_user_info:
-                task_user_info[user] = 0.0
-            task_user_info[user] += tmp['workload']
-        work_days = workdays_between_with_holidays(start_min, end_max)
-        ret_data = []
-        for tmp in data:
-            user = tmp['receiver']
-            tmp['duration_workload'] = ""
-            if tmp['status_name'] in ["进行中", "待下发"]:
-                if work_days > 0 and user in task_user_info:
-                    tmp['duration_workload'] = "%s|%s|%s" % (int(100 * task_user_info[user] / work_days), task_user_info[user], work_days)
-            ret_data.append(tmp)
-        # 返回序列化后的数据  
-        # return Response(serializer.data)
-        return Response({
-            'code': 0,
-            'message': 'ok',
-            'result': {
-                'items': ret_data,
-                'total': filtered_tasks.count(),  # 这里获取总条目数
-            },
-            'type': 'success',
-        })
+    # def list(self, request, *args, **kwargs):
+    #     # 获取查询参数
+    #     filter_params = request.query_params.dict()
+    #
+    #     # 创建FilterSet实例
+    #     # task_filter = TaskFilter(data=filter_params, queryset=Task.objects.filter(workload__gt=0))
+    #     task_filter = TaskFilter(data=filter_params)
+    #
+    #
+    #     filtered_tasks = task_filter.qs
+    #     filtered_tasks.only('id', 'name', 'start_time', 'deadline_time', 'receiver_id', 'workload', 'status_id')
+    #     # filtered_tasks = filtered_tasks.order_by('-pk')
+    #     # 使用TaskSerializer序列化查询集
+    #     data = TaskSerializer(filtered_tasks, many=True).data
+    #     # workload_intensity
+    #
+    #     # return Response(serializer.data)
+    #     return Response({
+    #         'code': 0,
+    #         'message': 'ok',
+    #         'result': {
+    #             'items': data,
+    #             # 'total': filtered_tasks.count(),  # 这里获取总条目数
+    #         },
+    #         'type': 'success',
+    #     })
 
 
 class NotifyTasksByReceiverAPI(APIView):
@@ -322,16 +288,17 @@ class ExportExcel(APIView):
             row = {
                 'ID': task.id,
                 '任务名': task.name,
-                '执行人': task.receiver.username if task.receiver else "未指定",  # 假设 TaskCategory 有一个 name 字段
-                '发布人': task.publisher.username if task.publisher else "未指定",  # 假设 TaskCategory 有一个 name 字段
-                '创建人': task.creator.username if task.creator else "未指定",  # 假设 TaskCategory 有一个 name 字段
-                '开始时间': task.start_time.strftime("%Y-%m-%d") if task.start_time else "未指定",
-                '截止时间': task.deadline_time.strftime("%Y-%m-%d") if task.deadline_time else "未指定",
+                '执行人': task.receiver.username if task.receiver else "-",  # 假设 TaskCategory 有一个 name 字段
+                '发布人': task.publisher.username if task.publisher else "-",  # 假设 TaskCategory 有一个 name 字段
+                '创建人': task.creator.username if task.creator else "-",  # 假设 TaskCategory 有一个 name 字段
+                '开始时间': task.start_time.strftime("%Y-%m-%d") if task.start_time else "-",
+                '截止时间': task.deadline_time.strftime("%Y-%m-%d") if task.deadline_time else "-",
                 '工作量/天': task.workload,
                 '实际工作量/天': task.act_workload,
                 '项目': task.project,
-                '关联任务': task.related_task.name if task.related_task else "未指定",
-                '当前状态': task.status.name,
+                '关联任务': task.related_task.name if task.related_task else "-",
+                '当前状态': task.status.name if task.status else '-',
+                '进度': f'{task.progress}%' if task.progress else '-',
                 '任务内容': task.content,
                 '挑战目标': task.challenge,
                 '反馈信息': task.feedback,
@@ -364,12 +331,13 @@ class ReportTask(APIView):
 
         type = filter_params.get('type','个人报告')
         user = filter_params.get('user','')
+        project = filter_params.get('project', '')
         if type == '个人报告':
             scripts_path = os.path.join(settings.BASE_DIR, 'scripts/send_task_report_receiver.py')
         elif type == '组报告':
             scripts_path = os.path.join(settings.BASE_DIR, 'scripts/send_task_report_group.py --user %s'% user)
         else :
-            scripts_path = os.path.join(settings.BASE_DIR, 'scripts/send_task_report_tl.py')
+            scripts_path = os.path.join(settings.BASE_DIR, 'scripts/send_task_report_tl.py --project "%s"'% project)
         os.system("/WebServer/cc/task-admin/task_api/env/bin/python %s"%scripts_path)
         # 从查询参数中提取group（如果存在）
         return Response({"status": "success"}, status=200)
@@ -383,7 +351,10 @@ class ExportTestExcel(APIView):
         count = int(index / len(uppercase_letters))
         COL_LETTER = uppercase_letters[new_index]
         if count > 0:
-            AFFIX = uppercase_letters[count - 1]
+            try:
+                AFFIX = uppercase_letters[count - 1]
+            except IndexError:
+                return
             COL_LETTER = AFFIX + COL_LETTER
         return COL_LETTER
 
@@ -468,7 +439,10 @@ class ExportTestExcel(APIView):
         real_data, date_range_list = cls.get_data(tasks)
         real_table_info, header_row_1, header_row_2, merge_list, width_config = cls.get_table_info(date_range_list)
         for key, value in width_config.items():
-            ws.column_dimensions[key].width = value
+            try:
+                ws.column_dimensions[key].width = value
+            except TypeError:
+                ws.column_dimensions[key].width = '200'
         # 项目最长的排前面
         # header_row_1 = ['项目', '执行人', '2024-08-01~2024-08-14', '', '', '', '', '2024-08-15~2024-08-21', '', '', '', '']  # 通过函数获取
         # header_row_2 = ['    ', '     ', 'ID', '任务名', '任务内容', '任务目标', '工作量', 'ID', '任务名', '任务内容', '任务目标', '工作量']  # 通过函数获取
@@ -624,34 +598,40 @@ class ImportExcel(APIView):
         try:
             creator = User.objects.get(id=userid)
         except User.DoesNotExist:
-            return Response({"error": "No creator !"}, status=400)  # 返回一个空的Job查询集
+            return Response({"status": False, 'message': '非法用户'}, status=400)
 
         excel_file = request.FILES['file']
 
         # 验证是否收到了文件
         if not excel_file:
-            return Response({"error": "No file uploaded."}, status=400)
+            return Response({"status": False, 'message': '无法识别的文件'}, status=400)
 
         # 使用 pandas 读取 Excel 文件
         try:
             df1 = pd.read_excel(excel_file)
             df2 = pd.read_excel(excel_file, header=[0, 1])
         except ValueError:
-            return Response({"error": "Uploaded file is not an Excel file."}, status=400)
+
+            return Response({"status": False, 'message': '不是有效的Excel文件'}, status=400)
         head1 = set(df1.columns)
         head2 = df2.columns
         head2_1 = [i[0].strip() for i in head2]
         head2_2 = [i[1].strip() for i in head2 if isinstance(i[1], str)]
         col_style1 = ['ID', '任务名', '执行人', '发布人', '创建人', '开始时间', '截止时间', '工作量/天', '项目', '关联任务', '当前状态', '任务内容', '挑战目标', '反馈信息']
         if set(col_style1).issubset(head1):
+            ret_success = []
             for index, row in df1.iterrows():
+                info = ''
                 try:
-                    task = Task.objects.get(id=row['ID'])
+                    task = Task.objects.get(id=int(row['ID']))
+                    info += '修改任务：' + str(row['ID'])
                     # 暂时不能通过excel改变数据库已存在的任务
                 except:
                     task = Task()
-                receiver, publisher = None, None
+                    info += '新增任务：'
+                receiver, publisher,tmp_creator = None, None,None
                 try:
+                    info += ' 执行人：' + row['执行人']
                     receiver = User.objects.get(username=row['执行人'])
                 except User.DoesNotExist:
                     continue
@@ -659,26 +639,32 @@ class ImportExcel(APIView):
                     publisher = User.objects.get(username=row['发布人'])
                 except:
                     pass
+                try:
+                    tmp_creator = User.objects.get(username=row['创建人'])
+                except:
+                    pass
+
                 task.name = row['任务名']
+                info += row['任务名']
                 if receiver:
                     task.receiver = receiver
                 if publisher:
                     task.publisher = publisher
-                if creator:
+                if not tmp_creator:
                     task.creator = creator
                 time_format1 = "%Y-%m-%d"
                 try:
-                    if isinstance(row['开始时间'], datetime):
+                    if isinstance(row['开始时间'], (datetime)) or isinstance(row['开始时间'], (date)):
                         task.start_time = row['开始时间'].date()
                     else:
-                        task.start_time = datetime.strptime(row['开始时间'], time_format1)
+                        task.start_time = datetime.strptime(row['开始时间'], time_format1).date()
                 except TypeError:
                     task.start_time = row['开始时间'].to_pydatetime()
                 try:
-                    if isinstance(row['截止时间'], datetime):
+                    if isinstance(row['截止时间'], (datetime)):
                         task.deadline_time = row['截止时间'].date()
                     else:
-                        task.deadline_time = datetime.strptime(row['截止时间'], time_format1)
+                        task.deadline_time = datetime.strptime(row['截止时间'], time_format1).date()
                 except TypeError:
                     task.deadline_time = row['截止时间'].to_pydatetime()
                 task.workload = row['工作量/天']
@@ -686,29 +672,32 @@ class ImportExcel(APIView):
                 task.content = row['任务内容']
                 task.challenge = row['挑战目标']
                 task.feedback = row['反馈信息']
-                task.status = TaskStatus.objects.get(name=common.TASK_STATUS_DRAFT)
+                if not task.status:
+                    task.status = TaskStatus.objects.get(name=common.TASK_STATUS_PENDING)
                 task.save()
-
+                ret_success.append({'info': info})
+            return Response({"status": True, "message": {'success': ret_success, 'fail': []}}, status=200)
         elif '任务目标' in head2_2 and '工作量' in head2_2 and ('执行人' in head2_1 or '测试人员' in head2_1):
             data_map = {'receiver': -1, 'creator': -1, 'date': {}}
             # {'receiver': 4, 'date': {'7.29-8.4': {'任务内容': 6, '任务目标': 7, '工作量': 8}, '8.5-8.11': {'任务内容': 9, '任务目标': 10, '工作量': 11}}}
-            user_map = {}
             for index in range(len(head2_1)):
                 head_item = head2_1[index]
                 if head_item == '执行人' or head_item == '测试人员':
                     data_map['receiver'] = index
-                if head_item == '测试负责人':
+                elif head_item == '测试负责人':
                     data_map['creator'] = index
-                if head_item == '项目名称' or head_item == '项目':
+                elif head_item == '项目名称' or head_item == '项目':
                     data_map['project'] = index
                 elif is_date_range(head_item):
                     second_item = head2_2[index]
                     if second_item not in ['任务内容', '任务目标', '工作量', '质量目标']:
-                        continue
-                        # return Response({"error": ('%s not support' % second_item)}, status=400)
+                        return Response({"status": False, 'message': f'不支持的二级字段名：{second_item},支持字段名：任务内容、任务目标、工作量'}, status=200)
                     if head_item not in data_map['date']:
                         data_map['date'][head_item] = {}
                     data_map['date'][head_item][second_item] = index
+                else:
+                    return Response({"status": False, 'message': f'不支持的一级字段名：{head_item},支持字段名：测试负责人、执行人、项目名称、日期：格式：7.28-8.3'}, status=200)
+            ret_success,ret_fail=[],[]
             for index, row in df2.iterrows():
                 values = list(row.values)
                 if isinstance(values[0], str) and "汇总" in values[0]:
@@ -716,25 +705,25 @@ class ImportExcel(APIView):
                 tmp_reciver = values[data_map['receiver']]
                 tmp_creator = values[data_map['creator']]
                 if isinstance(tmp_reciver, float) and math.isnan(tmp_reciver):
-                    continue
+                    return Response({"status": False, 'message': f'无效的任务接收者:{tmp_reciver} 行号：{ index + 3 },列号：{data_map["receiver"]}'}, status=200)
                 project = values[data_map['project']]
                 for date_range, date_map in data_map['date'].items():
                     # TODO 处理用户不存在
                     flag, start, end = parse_date_range(date_range)
                     if not flag:
-                        continue
+                        return Response({"status": False, 'message': '无效的“时间格式”:%s' % date_range}, status=200)
                     task = Task()
                     try:
                         receiver = User.objects.get(username__icontains=tmp_reciver)
                     except:
-                        continue
+                        return Response({"status": False, 'message': f'无效的“任务接收者”:{tmp_reciver} 行号：{ index + 3 },列号：{data_map["receiver"] + 1 }'}, status=200)
                     try:
                         if "/" in tmp_creator:
                             creator = User.objects.get(username__icontains=tmp_creator.split("/")[0])
                         else:
                             creator = User.objects.get(username__icontains=tmp_creator)
                     except:
-                        creator = None
+                        return Response({"status": False, 'message': f'无效的 “测试负责人”:{tmp_creator} 行号：{index + 3},列号：{data_map["creator"] + 1 }'}, status=200)
                     task.start_time = start
                     task.deadline_time = end
                     task.receiver = receiver
@@ -753,7 +742,7 @@ class ImportExcel(APIView):
                                    task_content = split_list[1]
                            except:
                                print('error name:%s'% task_content)
-                               task_name = '-'    
+                               continue
                     if "任务目标" in date_map and not task_content and isinstance(values[date_map['任务目标']], str):
                         task_content = values[date_map['任务目标']]
                         task_name = task_content[:10]
@@ -761,20 +750,34 @@ class ImportExcel(APIView):
                         task_challenge = values[date_map['任务目标']]
                     if "质量目标" in date_map and not task_challenge and isinstance(values[date_map['质量目标']], str):
                         task_challenge = values[date_map['质量目标']]
-                    task.name = task_name if not pd.isna(task_name) else ""
-                    task.content = task_content if not pd.isna(task_content) else ""
-                    task.challenge = task_challenge if not pd.isna(task_challenge) else ""
+                    task_name = task_name if not pd.isna(task_name) else ""
+                    task_content = task_content if not pd.isna(task_content) else ""
+                    task_challenge = task_challenge if not pd.isna(task_challenge) else ""
+                    task.name = task_name
+                    task.content = task_content
+                    task.challenge = task_challenge
                     if pd.isna(values[date_map['工作量']]) or str(values[date_map['工作量']]) == '-':
                         task.workload = 0
                     else:
                         task.workload = values[date_map['工作量']]
-                    task.status = TaskStatus.objects.get(name=common.TASK_STATUS_DRAFT)
-                    task.save()
+                    if not task.content:
+                        continue
+                    if task.workload == 0:
+                        ret_fail.append({'info': f'{tmp_reciver}:{date_range}:{task_name}：行号{index + 3} 未设置工作量，自动设置为0.1'})
+                        task.workload = 0.1
+                    #检查是否有同配置的任务
+                    try:
+                        Task.objects.get(name=task_name,content=task_content,start_time=start,deadline_time=end,receiver=receiver)
+                        return Response({"status": False, 'message': f'数据库已包含相同的任务:{task_name}：日期：{date_range}：执行人：{tmp_reciver}， 行号：{index + 3}'}, status=200)
+                    except Task.DoesNotExist:
+                        task.status = TaskStatus.objects.get(name=common.TASK_STATUS_PENDING)
+                        task.save()
+                    ret_success.append({'info':f'{tmp_reciver}:{date_range}:{task_name}：行号{index + 3}添加成功！'})
+            return Response({"status": True, "message": {'success': ret_success, 'fail': ret_fail}}, status=200)
         else:
-            return Response({"error": "Not support!"}, status=400)
-            pass
+            return Response({"status": False,'message':'不支持的列名，支持的列名：项目名称	执行人	测试负责人 7.21-7.27 任务内容、任务目标、工作量'}, status=200)
         # 返回响应
-        return Response({"message": "Excel file processed successfully", "data": {}}, status=200)
+
 
 
 class ExportTemplateExcel(APIView):

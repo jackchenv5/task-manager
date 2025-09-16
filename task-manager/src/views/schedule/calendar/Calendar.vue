@@ -4,7 +4,6 @@
 </template>
 
 <script setup>
-// import "dhtmlx-scheduler";
 import  'dhtmlx-scheduler';
 import { initSchedulerConfig } from '@/utils/scheduler'
 import { ref, watch, onMounted, reactive,nextTick,onBeforeUnmount } from 'vue'
@@ -53,7 +52,7 @@ watch(() => [...selectedDates.value], (newDates) => {
   })
   // 饱和度
   const workLoadPer = Math.floor(100 * totalHours / (dateSize * 8))
-  console.log(workLoadPer)
+
   scheduleStore.updateSelectDateStat(startDateStr, endDateStr, totalHours, eventCount, workLoadPer)
 
 }, { deep: true })
@@ -81,7 +80,7 @@ const handleMouseDown = (event) => {
 };
 
 const handleClick = (event) => {
-  console.log('in handle click')
+
   if (event.button !== 0) return;
 
   const cell = event.target.closest('.dhx_cal_month_cell [data-date]');
@@ -146,7 +145,7 @@ const updateDragSelection = (endDateStr) => {
 }
 // 处理日期点击事件
 const handleDateClick = (date) => {
-  console.log('in data check date')
+
   const weekBoundaries = getWeekBoundaries(date);
   dragSelectState.startDate = weekBoundaries.monday
   updateDragSelection(formatDate(weekBoundaries.friday))

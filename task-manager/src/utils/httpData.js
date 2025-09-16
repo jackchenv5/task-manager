@@ -5,7 +5,12 @@ import { ElMessage } from 'element-plus'
 const service = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: import.meta.env.VITE_API_TIMEOUT,
-  headers: { 'Content-Type': 'application/json;charset=UTF-8' }
+  headers: {
+      'Content-Type': 'application/json;charset=UTF-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate', // 禁止缓存
+      'Pragma': 'no-cache', // 兼容旧版 HTTP/1.0
+      'Expires': '0' // 过期时间为 0
+  }
 })
 
 // 请求拦截器（自动注入Token）
