@@ -5,6 +5,9 @@ PEND = 1
 FINISH = 2
 # DRAFT = 3
 PROGRESS = 4
+# 任务类型
+TASK_CATEGORY_TEST = "测试"
+TASK_CATEGORY_DEV = "开发"
 
 STATUS_TO_CHE = {
     # DRAFT:'草稿',

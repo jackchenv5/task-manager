@@ -32,11 +32,11 @@ class Signals(models.Model):
     changed_fields = models.JSONField(null=True, blank=True)  # 修改的字段
     
     #关联项目
-    project = models.CharField(max_length=128, null=True,blank=True)
+    project = models.CharField(max_length=512, null=True,blank=True)
     
     # 日志内容
-    title = models.CharField(max_length=128, null=True, blank=True)
-    content = models.CharField(max_length=1024, null=True, blank=True)
+    title = models.CharField(max_length=512, null=True, blank=True)
+    content = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = '变更日志'

@@ -393,12 +393,29 @@ export const getUserWeeksDataMap = (tasks, weeks, users) => {
         const userName = task.receiver_name;
         if (!users.includes(userName)) return;
 
-        const taskDuration = calWorkdays(task.start_time, task.deadline_time);
-        const peerDayWorkload = task.workload / taskDuration;
-
         // 遍历所有周，检查任务是否在该周内
         weeks.forEach((week, index) => {
             if (!isTaskInWeek(week, task)) return;
+            const taskDuration = calWorkdays(task.start_time, task.deadline_time);
+            
+            // 判断周是否为已经过去的周
+            const currentDate = new Date();
+            const weekEnd = new Date(week.end);
+            const isPastWeek = weekEnd < currentDate;
+            
+            let peerDayWorkload = 0;
+            
+            if (isPastWeek) {
+                // 如果是已经过去的周
+                if (task.status === TaskStatus.PEND) {
+                    peerDayWorkload = 0;
+                } else if (task.status === TaskStatus.PROGRESS || task.status === TaskStatus.FINISH) {
+                    peerDayWorkload = task.act_workload / taskDuration;
+                }
+            } else {
+                // 如果是当前或未来的周，使用原来的计算方式
+                peerDayWorkload = task.workload / taskDuration;
+            }
 
             const workdaysInWeek = getWorkdaysInWeek(week, task);
             const weekWorkload = peerDayWorkload * workdaysInWeek;
@@ -502,3 +519,22 @@ export function objectToQueryString(obj) {
   
     return queryString;
   }
+
+// 获取近6个月的日期范围
+// 返回格式: [startDate, endDate]
+export function getLastSixMonthsRange() {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(startDate.getMonth() - 5); // 6个月前
+  startDate.setDate(1); // 设置为当月第一天
+  
+  return [formatDate(startDate), formatDate(endDate)];
+}
+
+// 格式化月份为 YYYY-MM 格式
+export function formatMonth(date) {
+  if (!(date instanceof Date)) date = new Date(date);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}-${month}`;
+}

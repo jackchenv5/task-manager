@@ -9,15 +9,22 @@ class UserSerializer(serializers.ModelSerializer):
     group = serializers.SerializerMethodField()
     group_name = serializers.SerializerMethodField()
     group_leader = serializers.SerializerMethodField()
+    group_category = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id','username','emp_num','role','email','config','role_name','group','group_name','group_leader']
+        fields = ['id','username','emp_num','role','email','config','role_name','group','group_name','group_leader','group_category']
 
         extra_kwargs = {
             'config': {'required': False}  # 允许不传此字段
         }
         
+    def get_group_category(self, obj):
+        groups = obj.group.all()
+        if groups:
+            return groups[0].category
+        return ''
+    
     def get_group(self, obj):
         groups = obj.group.all()
         if groups:
@@ -60,7 +67,7 @@ class GroupSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = Group
-        fields = ['id', 'name','users','group_leader','depart_leader','user_list']
+        fields = ['id', 'name','users','group_leader','depart_leader','category','user_list']
 
     def get_users(self, obj):  
         # obj 是 Group 对象  

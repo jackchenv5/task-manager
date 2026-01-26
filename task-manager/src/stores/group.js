@@ -62,14 +62,14 @@ export const useGroupStore = defineStore('group', () => {
   const changeSelectUserName = (name) => {
     curSelectUserName.value = name
     selectWeek.value = {}
-    curTaskType.value = TaskStatus.ALL
+    // curTaskType.value = TaskStatus.ALL
   }
 
 
   const changeWeek = (userName,week) => {
     curSelectUserName.value = userName
     selectWeek.value = week
-    curTaskType.value = TaskStatus.ALL
+    // curTaskType.value = TaskStatus.ALL
   }
   const goToday = () => {
     curSeletMonthDate.value = new Date()
@@ -167,6 +167,11 @@ export const useGroupStore = defineStore('group', () => {
   }
 
   const groupStat = computed(() => {
+    // const filteredTasks = allTask.value.filter(item => {
+    //   if (TaskStatus.ALL === curTaskType.value) return true
+    //   return item.status === curTaskType.value
+    // })
+    // const stat = workLoadStat(filteredTasks)
     const stat = workLoadStat(allTask.value)
     return stat
   })
@@ -189,6 +194,11 @@ export const useGroupStore = defineStore('group', () => {
     } )
   })
   const curSelectUserStat = computed(() => {
+    // const filteredTasks = curSelectUserTasks.value.filter(item => {
+    //   if (TaskStatus.ALL === curTaskType.value) return true
+    //   return item.status === curTaskType.value
+    // })
+    // const stat = workLoadStat(filteredTasks)
     const stat = workLoadStat(curSelectUserTasks.value)
     return stat
   })
@@ -213,6 +223,21 @@ export const useGroupStore = defineStore('group', () => {
     let userNum = 1
     if(!curSelectUserName.value) userNum = curSelectTasksReceiverList.value.length
     const stat = groupWorkloadSaturation(curSelectUserStat.value.fixTotal, userNum, start, end)
+    return stat
+  })
+
+  const curSelectUserWorkloadSaturationExcludePendRef = computed(() => {
+    const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
+    let userNum = 1
+    if(!curSelectUserName.value) userNum = curSelectTasksReceiverList.value.length
+    const stat = groupWorkloadSaturation(curSelectUserStat.value.excludePend, userNum, start, end)
+    return stat
+  })
+
+
+  const groupWorkloadSaturationExcludePendRef = computed(() => {
+    const [start, end] = getFisrtAndLastDayOfMonth(curSeletMonthDate.value, false)
+    const stat = groupWorkloadSaturation(groupStat.value.excludePend, selectGroupCount.value, start, end)
     return stat
   })
 
@@ -295,12 +320,12 @@ export const useGroupStore = defineStore('group', () => {
     //任务数据
     allTask,initAllTask,deleteTask,
     // 统计数据
-    groupStat, groupWorkloadSaturationRef,groupWorkloadSaturationFixRef, selectGroupUsers,
+    groupStat, groupWorkloadSaturationRef,groupWorkloadSaturationFixRef, selectGroupUsers,groupWorkloadSaturationExcludePendRef,
     //周 表数据
     curSeletMonthDate, weeksRef, changeMonth,
     // 当前用户
     curSelectUserName, changeSelectUserName,cleanUser,curSelectTasksReceiverList,
-    curSelectUserStat,curSelectUserWorkloadSaturationRef,curSelectUserWorkloadSaturationFixRef,
+    curSelectUserStat,curSelectUserWorkloadSaturationRef,curSelectUserWorkloadSaturationFixRef,curSelectUserWorkloadSaturationExcludePendRef,
     //table
     curSelectUserFilterTasks,loading,curTableSelectedIDs,changeCurTableSelectedIDs,dispatchTask,
     // 当前周

@@ -19,20 +19,20 @@ class TaskCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class TaskSerializer(serializers.ModelSerializer):
-    # category = serializers.PrimaryKeyRelatedField(queryset=TaskCategory.objects.all(), required=False)
+    category = serializers.PrimaryKeyRelatedField(queryset=TaskCategory.objects.all(), required=False)
     creator = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     receiver = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     publisher = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), required=False)
     start_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
-    # done_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
+    create_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
     deadline_time = serializers.DateField(format='%Y-%m-%d',allow_null=True,required=False)
     # feedback_time = serializers.DateTimeField(format='%Y-%m-%d',allow_null=True,required=False)
     # category_name = serializers.SerializerMethodField(required=False)
+    category_name = serializers.CharField(source='category.name', read_only=True)
     status_name = serializers.CharField(source='status.name', read_only=True)
 
     creator_name = serializers.CharField(source='creator.username', read_only=True)
     receiver_name = serializers.CharField(source='receiver.username', read_only=True)
-    publisher_name = serializers.CharField(source='publisher.username', read_only=True)
     publisher_name = serializers.CharField(source='publisher.username', read_only=True)
 
     # creator_name = serializers.SerializerMethodField(required=False)
@@ -52,11 +52,11 @@ class TaskSerializer(serializers.ModelSerializer):
     sender  = serializers.CharField(required=False,allow_null=True, allow_blank=True, default="")
     class Meta:
             model = Task
-            fields = ['id','name','content','challenge','feedback','creator','receiver',
+            fields = ['id','name','content','challenge','feedback','creator','receiver','create_time',
                       'start_time','deadline_time','description','sender','workload','act_workload','progress',
                       'status','project',
                       'creator_name','receiver_name','status_name','publisher','publisher_name',
-                      'diff_days',
+                      'diff_days','category','category_name',
                       # 'done_time','feedback_time',
                       # ,''category'','category_name','related_task_name','related_task'
                       # 'workload_intensity',,'workloads'

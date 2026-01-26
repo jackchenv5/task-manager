@@ -1,261 +1,121 @@
 <template>
   <div class="stat-container">
-    <div class="stat-header">
-      <h1>任务统计</h1>
-      <p class="stat-description">查看任务完成情况、工作量统计和项目进度分析</p>
-    </div>
+    <!-- 标签页导航 -->
+    <el-tabs 
+      v-model="activeTab" 
+      type="card" 
+      @tab-change="handleTabChange"
+      class="stat-tabs"
+    >
+      <el-tab-pane 
+        v-for="stat in statStore.supportedStats" 
+        :key="stat.value"
+        :label="stat.name" 
+        :name="String(stat.value)"
+      >
+        <!-- 图表内容直接放在tab-pane内 -->
+        <component 
+          :is="currentChart"
+          v-if="currentChart && activeTab === String(stat.value)"
+        />
+      </el-tab-pane>
+    </el-tabs>
     
-    <div class="stat-content">
-      <!-- 统计卡片区域 -->
-      <div class="stat-cards">
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>任务总量</h3>
-            <el-icon><Document /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-number">0</div>
-            <div class="stat-label">个任务</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>已完成</h3>
-            <el-icon><CircleCheck /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-number">0</div>
-            <div class="stat-label">个任务</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>进行中</h3>
-            <el-icon><Clock /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-number">0</div>
-            <div class="stat-label">个任务</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="card-header">
-            <h3>总工作量</h3>
-            <el-icon><DataAnalysis /></el-icon>
-          </div>
-          <div class="card-content">
-            <div class="stat-number">0</div>
-            <div class="stat-label">人天</div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 图表区域 -->
-      <div class="stat-charts">
-        <div class="chart-section">
-          <h3>任务状态分布</h3>
-          <div class="chart-placeholder">
-            <el-icon><PieChart /></el-icon>
-            <p>饼图区域 - 待实现</p>
-          </div>
-        </div>
-        
-        <div class="chart-section">
-          <h3>工作量趋势</h3>
-          <div class="chart-placeholder">
-            <el-icon><TrendCharts /></el-icon>
-            <p>折线图区域 - 待实现</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 数据表格区域 -->
-      <div class="stat-table">
-        <h3>项目统计</h3>
-        <div class="table-placeholder">
-          <el-icon><Grid /></el-icon>
-          <p>数据表格区域 - 待实现</p>
-        </div>
-      </div>
-    </div>
+    <!-- 空状态 -->
+    <el-empty 
+      v-if="!currentChart" 
+      description="请选择要显示的统计图表" 
+      class="empty-chart"
+    />
   </div>
 </template>
 
 <script setup>
-import {
-  Document,
-  CircleCheck,
-  Clock,
-  DataAnalysis,
-  PieChart,
-  TrendCharts,
-  Grid
-} from '@element-plus/icons-vue'
+import { ElTabs, ElTabPane, ElEmpty } from "element-plus"
+import { useNavStore } from '@/stores/stat'
+import { ref, computed, watch } from 'vue'
+import { StatType } from '@/constants/public.js'
 
-// 这里可以添加统计数据的获取逻辑
-// 后续可以添加：任务统计、用户统计、项目统计等功能
+// 动态导入图表组件
+import TaskSaturationChart from './charts/TaskSaturationChart.vue'
+
+const statStore = useNavStore()
+
+// 当前激活的标签页
+const activeTab = ref('')
+
+// 根据激活的标签页获取对应的图表组件
+const currentChart = computed(() => {
+  const tabValue = parseInt(activeTab.value)
+  switch (tabValue) {
+    case StatType.TASK_SATURATION:
+      return TaskSaturationChart
+    case StatType.TASK_WORKLOAD:
+      return TaskWorkloadChart
+    case StatType.PROJECT_PROGRESS:
+      return ProjectProgressChart
+    default:
+      return null
+  }
+})
+
+// 标签页切换处理
+const handleTabChange = (tabName) => {
+  activeTab.value = tabName
+}
+
+// 初始化时选择第一个标签页
+if (statStore.supportedStats.length > 0) {
+  activeTab.value = String(statStore.supportedStats[0].value)
+}
 </script>
 
 <style scoped>
 .stat-container {
-  padding: 20px;
-  min-height: calc(100vh - 60px);
+  min-height: 88vh;
   background-color: #f5f7fa;
+  padding: 20px;
 }
 
-.stat-header {
-  margin-bottom: 24px;
+.stat-tabs {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.stat-header h1 {
-  color: #303133;
-  font-size: 24px;
-  font-weight: 600;
+.stat-tabs :deep(.el-tabs__header) {
   margin: 0;
+  border-bottom: 1px solid #e4e7ed;
 }
 
-.stat-description {
-  color: #606266;
-  margin: 8px 0 0 0;
-  font-size: 14px;
+.stat-tabs :deep(.el-tabs__content) {
+  padding: 0;
+  height: calc(100vh - 180px);
 }
 
-.stat-content {
+.stat-tabs :deep(.el-tab-pane) {
+  height: 100%;
+  padding: 0;
+}
+
+.empty-chart {
+  height: 400px;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-}
-
-.stat-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e4e7ed;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-}
-
-.card-header h3 {
-  color: #606266;
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0;
-}
-
-.card-header .el-icon {
-  color: #409eff;
-  font-size: 20px;
-}
-
-.card-content {
-  text-align: center;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 700;
-  color: #303133;
-  line-height: 1;
-}
-
-.stat-label {
-  color: #909399;
-  font-size: 12px;
-  margin-top: 4px;
-}
-
-.stat-charts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 16px;
-}
-
-.chart-section {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e4e7ed;
-}
-
-.chart-section h3 {
-  color: #303133;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-}
-
-.chart-placeholder {
-  height: 300px;
-  display: flex;
-  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  color: #909399;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border: 1px dashed #dcdfe6;
-}
-
-.chart-placeholder .el-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
-.stat-table {
   background: white;
   border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e4e7ed;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 
-.stat-table h3 {
-  color: #303133;
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-}
-
-.table-placeholder {
-  height: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: #909399;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border: 1px dashed #dcdfe6;
-}
-
-.table-placeholder .el-icon {
-  font-size: 48px;
-  margin-bottom: 12px;
-}
-
+/* 响应式调整 */
 @media (max-width: 768px) {
-  .stat-cards {
-    grid-template-columns: 1fr;
+  .stat-container {
+    padding: 12px;
   }
   
-  .stat-charts {
-    grid-template-columns: 1fr;
+  .stat-tabs :deep(.el-tabs__content) {
+    height: calc(100vh - 140px);
   }
 }
 </style>

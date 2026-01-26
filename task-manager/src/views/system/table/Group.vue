@@ -12,6 +12,7 @@
       @edit-closed="editClosedEvent">
       <vxe-column field="id" title="ID" min-width="60"></vxe-column>
       <vxe-column field="name" title="组名" width="300" :edit-render="{ name: 'VxeInput' }"></vxe-column>
+      <vxe-column field="category" title="任务类型" width="300" :edit-render="categoryEditRender"></vxe-column>
       <vxe-column field="users" title="组员" min-width="600" :edit-render="userEditRender"></vxe-column>
       <vxe-column field="group_leader" title="组长" width="200" :edit-render="groupLeaderEditRender"></vxe-column>
       <vxe-column field="depart_leader" title="处长" width="200" :edit-render="departLeaderRender"> </vxe-column>
@@ -101,6 +102,18 @@ const departLeaderRender = reactive({
     value: 'username'
   },
   options: []
+})
+
+const categoryEditRender = reactive({
+  name: 'VxeSelect',
+  optionProps: {
+    label: 'label',
+    value: 'value'
+  },
+  options: [
+    { label: '测试', value: '1' },
+    { label: '开发', value: '2' }
+  ]
 })
 
 const editClosedEvent = ({ row, column }) => {

@@ -1,11 +1,46 @@
 import { get, patch, post, del } from '@/utils/httpData'
 import { objectToQueryString } from '@/utils/public'
+import { useUserStore } from '@/stores/user'
 
 
 export const taskReport = (params) => get('/task/report/',params);
 
+// 获取用户任务数据（优化分页版本，固定每页100条）
+export const getTaskDataPaginatedApi = (params) => {
+  const userStore = useUserStore()
+  
+  if (userStore.loginUser && userStore.loginUser.group_category) {
+    if (!params) {
+      params = {}
+    }
+    if (!params.category) {
+      params.category = userStore.loginUser.group_category
+    }
+  }
+  console.log('getTaskDataPaginatedApi params:',params)
+  return get('/tasks-paginated', params)
+}
+
 // 获取用户任务数据
-export const getTaskDataApi = (params) => get('/tasks', params)
+export const getTaskDataApi = (params) => {
+  // 获取用户存储实例
+  const userStore = useUserStore()
+  
+  // 如果用户已登录且有分组类别信息，自动添加到查询参数中
+  if (userStore.loginUser && userStore.loginUser.group_category) {
+    // 确保params是对象
+    if (!params) {
+      params = {}
+    }
+    // 如果category参数未设置，使用用户的分组类别作为默认值
+    if (!params.category) {
+      params.category = userStore.loginUser.group_category
+    }
+  }
+  //加入console信息，查看params
+  console.log('getTaskDataApi params:',params)
+  return get('/tasks', params)
+}
 
 // 提交任务修改
 export const taskModifyApi = (pk, params) => patch(`/tasks/${pk}/`, params);

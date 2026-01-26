@@ -30,11 +30,11 @@
               <el-collapse  accordion  v-model="activeNames" >
                 <el-collapse-item  v-for="item in row.tasks"  :name="item.id">
                   <template #title>
-                    <div style="display:flex;gap:10px;align-items: center;">
-                      <el-tag  type="primary"  effect="dark" style="width:200px">{{ item.name }} </el-tag>
-                      <el-tag  type="danger"  effect="dark" style="width:90px">状态：{{ item.status_name }} </el-tag>
-                      <el-tag  type="success" effect="dark" style="width:120px">计划工时：{{ item.workload }}</el-tag>
-                      <el-tag  type="warning" effect="dark" style="width:120px">实际工时：{{ item.act_workload.toFixed(1) }}</el-tag>
+                    <div style="display:flex;align-items: center;">
+                      <el-tag  type="primary"  effect="dark" style="width:200px;margin-left:20px;">{{ item.name }} </el-tag>
+                      <el-tag  type="danger"  effect="dark" style="width:90px;margin-left:20px;">状态：{{ item.status_name }} </el-tag>
+                      <el-tag  type="success" effect="dark" style="width:120px;margin-left:20px;">计划工时：{{ item.workload }}</el-tag>
+                      <el-tag  type="warning" effect="dark" style="width:120px;margin-left:20px;">实际工时：{{ item.act_workload.toFixed(1) }}</el-tag>
                     </div>
                   </template>
                   <div style="background-color:#f1f3f6">
@@ -43,7 +43,7 @@
                       <div class="task-info"><el-text type="primary">时间：</el-text> <el-text type="info"> 开始时间：{{item.start_time}} 截止时间： {{ item.deadline_time}}</el-text> </div>
                       <div class="task-info"><el-text type="primary">工作内容：</el-text> <el-text > <pre> {{ item.content}} </pre></el-text> </div>
                       <div class="task-info" v-if="item.challenge && item.challenge !== 'nan'"><el-text type="primary">挑战目标：</el-text> <el-text > <pre>{{ item.challenge}}</pre></el-text> </div>
-                      <div class="task-info" v-if="item.challenge && item.challenge !== 'nan'"><el-text type="primary">任务反馈：</el-text> <el-text > <pre>{{ item.feedback }}</pre></el-text> </div>
+                      <div class="task-info" v-if="item.feedback && item.feedback !== 'nan'"><el-text type="primary">任务反馈：</el-text> <el-text > <pre>{{ item.feedback }}</pre></el-text> </div>
                     </div>
                   </div>
                 </el-collapse-item>
@@ -51,23 +51,23 @@
 
             </template>
         </vxe-column>
-        <vxe-column field="start_time" title="开始时间" show-overflow></vxe-column>
-        <vxe-column field="deadline_time" title="截止时间" show-overflow></vxe-column>
-        <vxe-column field="workloads" title="计划工作量(天)"></vxe-column>
-        <vxe-column field="act_workloads" title="实际工作量(天)">
+        <vxe-column field="start_time" title="开始时间" show-overflow width="200" ></vxe-column>
+        <vxe-column field="deadline_time" title="截止时间" show-overflow width="200"></vxe-column>
+        <vxe-column field="workloads" title="计划工作量(天)" width="200"></vxe-column>
+        <vxe-column field="act_workloads" title="实际工作量(天)" width="200">
           <template #default="{ row }">
             {{ row.act_workloads.toFixed(1)}}
           </template>
         </vxe-column>
-        <vxe-column field="evaluation_comment" title="评语" width="300">
+        <vxe-column field="evaluation_comment" title="评语" >
         </vxe-column>
-        <vxe-column field="evalution_score" title="满意度" width="250">
+        <vxe-column field="evalution_score" title="满意度" width="150">
             <template #default="{ row }">
                 <el-rate v-model="row.evaluation_score" :max="7" text-color="gray" disabled :texts="EvaluateList" show-text>
                 </el-rate>
             </template>
         </vxe-column>
-        <vxe-column title="操作" width="130" fixed="right">
+        <vxe-column title="操作" width="100" fixed="right">
             <template #default="{ row }">
                 <el-button type="primary" size="small" @click="handleEvaluteClick(row.evaluation)">自评</el-button>
             </template>

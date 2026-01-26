@@ -25,3 +25,10 @@ export const EvaluteType = {
   USER: 'user'
 }
 
+// 统计类型常量
+export const StatType = {
+  TASK_SATURATION: 0,
+  TASK_WORKLOAD: 1,
+  PROJECT_PROGRESS: 2
+}
+

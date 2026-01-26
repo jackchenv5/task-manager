@@ -1,6 +1,6 @@
 from django.urls import path
 from task.views import TaskStatusViewSet,TaskCategoryViewSet,\
-    TaskViewSet,NotifyTasksByReceiverAPI,ExportExcel,ReportTask,ExportTestExcel,ImportExcel,ExportTemplateExcel
+    TaskViewSet,NotifyTasksByReceiverAPI,ExportExcel,ReportTask,ExportTestExcel,ImportExcel,ExportTemplateExcel,TaskListPaginationViewSet
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
@@ -9,6 +9,7 @@ router = DefaultRouter()
 router.register(r'task_status', TaskStatusViewSet, basename='task_status')
 router.register(r'task_category', TaskCategoryViewSet, basename='task_category')
 router.register(r'tasks', TaskViewSet, basename='task')
+router.register(r'tasks-paginated', TaskListPaginationViewSet, basename='task-paginated')
 
 
 urlpatterns = [

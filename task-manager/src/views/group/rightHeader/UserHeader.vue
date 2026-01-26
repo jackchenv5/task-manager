@@ -14,8 +14,8 @@
             <div class="group-info-item-content">{{curSelectUserStat.completed.toFixed(1)}}/{{ curSelectUserStat?.total.toFixed(1) }}</div>
           </div>
           <div class="group-info-item">
-            <div class="group-info-item-title">饱和度/修正值（%）</div>
-            <div class="group-info-item-content">{{ curSelectUserWorkloadSaturationRef }}/{{ curSelectUserWorkloadSaturationFixRef }}</div>
+            <div class="group-info-item-title">饱和度/修正值/排除待下发（%）</div>
+            <div class="group-info-item-content">{{ curSelectUserWorkloadSaturationRef }}/{{ curSelectUserWorkloadSaturationFixRef }}/{{curSelectUserWorkloadSaturationExcludePendRef}}</div>
           </div>
           <div class="group-info-item">
             <div class="group-info-item-title">项目</div>
@@ -36,7 +36,7 @@ import {ElAvatar} from 'element-plus'
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
 const groupStore = useGroupStore();
-const {selectWeek,curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,curSelectUserWorkloadSaturationFixRef} = storeToRefs(groupStore);
+const {selectWeek,curSelectUserStat,curSelectUserName,curSelectUserWorkloadSaturationRef,curSelectUserWorkloadSaturationFixRef,curSelectUserWorkloadSaturationExcludePendRef} = storeToRefs(groupStore);
 </script>
 
 

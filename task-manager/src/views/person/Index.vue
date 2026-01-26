@@ -1,14 +1,16 @@
 <template>
-  <div style="display: flex; height: 90vh; width: 100%;">
-    <div class="left">
-      <UserHeader></UserHeader>
-      <Calendar></Calendar>
-    </div>
-    
-    <div class="right">
-      <ToolBar></ToolBar>
-      <TaskTable></TaskTable>
-    </div>
+  <div style="height: 90vh; width: 100%;display: flex;flex-direction: column">
+<!--    <div class="left">-->
+<!--      <UserHeader></UserHeader>-->
+<!--      <Calendar></Calendar>-->
+<!--    </div>-->
+<!--    -->
+    <ToolBar></ToolBar>
+    <TaskTable></TaskTable>
+<!--    <div class="right">-->
+<!--      <ToolBar></ToolBar>-->
+<!--      <TaskTable></TaskTable>-->
+<!--    </div>-->
   </div>
 </template>
 
@@ -42,8 +44,18 @@ myPersonStore.init()
     background: #5d6d96;
   }
 
-.left, .right {
-  flex: 1;
+.left{
+  width:40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  border: 1px solid #ccc;
+  background-color: white;
+}
+
+.right {
+  width:100%;
   display: flex;
   flex-direction: column;
   justify-content: start;

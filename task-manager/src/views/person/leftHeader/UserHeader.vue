@@ -4,15 +4,10 @@
           <el-avatar :size="50" fit="full" style="font-size: 1.2rem;background-color: rgb(16, 136, 116);" shape="square">{{ loginUser?.username[0] }}</el-avatar>
           <div style="display: flex;flex-direction:column;justify-content: space-around">
             <div style="font-size: 1.125rem;font-weight: 500;color: black;"> {{ loginUser?.username  }}</div>
-            <div style="color:#00000073">今日状态：忙</div>
           </div>
 
         </div>
         <div style="display:flex;width: 30vw;justify-content: space-around;">
-          <div class="group-info-item">
-            <div class="group-info-item-title">饱和度</div>
-            <div class="group-info-item-content">{{ workloadSaturation }}%</div>
-          </div>
           <div class="group-info-item">
             <div class="group-info-item-title">项目</div>
             <div class="group-info-item-content">{{stat?.projects?.length}}个</div>

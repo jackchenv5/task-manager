@@ -6,7 +6,6 @@ from django.db.models import Sum
 
 from common.email import generate_email_body, send_email
 from common.utils import custom_model_to_dict
-from user.models import Group
 
 import common
 
@@ -51,11 +50,11 @@ class AbstractTask(models.Model):
     # 任务类型
     category = models.ForeignKey(TaskCategory, related_name="%(class)s", on_delete=models.SET_DEFAULT, default=1)
     # 任务内容
-    content = models.TextField(max_length=10280, null=True)
+    content = models.TextField(null=True)
     # 挑战目标
     challenge = models.CharField(max_length=2056, null=True)
     # 反馈
-    feedback = models.CharField(max_length=6000, null=True)
+    feedback = models.TextField(null=True)
 
     feedback_time = models.DateTimeField(auto_now=False, auto_now_add=False, null=True)
 
@@ -74,7 +73,7 @@ class AbstractTask(models.Model):
     #
     act_workload = models.FloatField(null=True, default=0.0)  # 更改为FloatField并设置默认值为0.0
     # 创建时间
-    create_time = models.DateField(auto_now=False, auto_now_add=False, null=True)
+    create_time = models.DateField(auto_now=True, null=True)
 
     start_time = models.DateField(auto_now=False, auto_now_add=False, null=True)
     # 完成时间,用于标记
@@ -111,6 +110,14 @@ class Task(AbstractTask):
         # TL
         if self.creator and self.creator.email and self.creator.email not in to:
             to.append(self.creator.email)
+        # 增加任务，查看所在组的类型是否为测试组,是测试组，则将任务类型设置为测试任务，否则设置为开发任务
+        if self._state.adding:
+            if self.receiver.is_test_group():
+                print(self.receiver.username,'是测试组')
+                self.category = TaskCategory.objects.get(name=common.TASK_CATEGORY_TEST)
+            else:
+                print(self.receiver.username,'是开发组')
+                self.category = TaskCategory.objects.get(name=common.TASK_CATEGORY_DEV)
 
         # 增加任务，只通知平台创建的
         if self._state.adding and self.status_id == common.PEND:

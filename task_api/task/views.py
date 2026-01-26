@@ -37,6 +37,10 @@ import os
 class StandardPagination(PageNumberPagination):
     page_size_query_param = 'pageSize'  # 允许客户端通过查询参数来覆盖默认设置
 
+class FixedPageSizePagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = None
+
 
 class TaskStatusViewSet(viewsets.ModelViewSet):
     """
@@ -61,6 +65,7 @@ class TaskFilter(filters.FilterSet):
     receiver = filters.NumberFilter(field_name="receiver_id")  # 假设receiver是一个关联到User的外键
     creator = filters.NumberFilter(field_name="creator_id")
     status = filters.NumberFilter(field_name="status_id")
+    category = filters.NumberFilter(field_name="category_id")
     group = filters.NumberFilter(method="filter_group")
     # 使用CharFilter进行文本搜索，并使用icontains进行不区分大小写的包含搜索
     search_text = filters.CharFilter(
@@ -71,7 +76,7 @@ class TaskFilter(filters.FilterSet):
 
     class Meta:
         model = Task
-        fields = ['start_time', 'deadline_time', 'receiver', 'creator', 'status', 'project']  # 这里只列出用于自动生成查询参数的字段
+        fields = ['start_time', 'deadline_time', 'receiver', 'creator', 'status', 'project','category']  # 这里只列出用于自动生成查询参数的字段
     def filter_time_range(self, queryset, name, value):
         # 获取查询参数
         if not self.request:
@@ -171,6 +176,27 @@ class TaskViewSet(viewsets.ModelViewSet):
             send_email(email_body, list(set(add_emails)), cc=[], subject=instance.name.replace("\n",""), action="任务删除")
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+class TaskListPaginationViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    优化的任务列表查询接口，固定分页大小为100
+    """
+    queryset = Task.objects.select_related(
+        'receiver', 'creator', 'publisher', 'status', 'category'
+    ).filter(workload__gt=0).only(
+        'id', 'name', 'content', 'challenge', 'feedback', 'project',
+        'start_time', 'deadline_time', 'workload', 'act_workload',
+        'progress', 'create_time', 'done_time',
+        'receiver__id', 'receiver__username', 'receiver__email',
+        'creator__id', 'creator__username', 'creator__email',
+        'publisher__id', 'publisher__username', 'publisher__email',
+        'status__id', 'status__name',
+        'category__id', 'category__name'
+    ).order_by('-start_time')
+    serializer_class = TaskSerializer
+    pagination_class = FixedPageSizePagination
+    filter_backends = [filters.DjangoFilterBackend]
+    filterset_class = TaskFilter
 
     # def list(self, request, *args, **kwargs):
     #     # 获取查询参数
@@ -635,6 +661,8 @@ class ImportExcel(APIView):
                     receiver = User.objects.get(username=row['执行人'])
                 except User.DoesNotExist:
                     continue
+                except TypeError as e:
+                    print(e)
                 try:
                     publisher = User.objects.get(username=row['发布人'])
                 except:
@@ -652,6 +680,8 @@ class ImportExcel(APIView):
                     task.publisher = publisher
                 if not tmp_creator:
                     task.creator = creator
+                else:
+                    task.creator = tmp_creator
                 time_format1 = "%Y-%m-%d"
                 try:
                     if isinstance(row['开始时间'], (datetime)) or isinstance(row['开始时间'], (date)):
@@ -691,12 +721,12 @@ class ImportExcel(APIView):
                 elif is_date_range(head_item):
                     second_item = head2_2[index]
                     if second_item not in ['任务内容', '任务目标', '工作量', '质量目标']:
-                        return Response({"status": False, 'message': f'不支持的二级字段名：{second_item},支持字段名：任务内容、任务目标、工作量'}, status=200)
+                        return Response({"status": False, 'message': f'不支持的二级字段名：|{second_item} |,支持字段名：任务内容、任务目标、工作量'}, status=200)
                     if head_item not in data_map['date']:
                         data_map['date'][head_item] = {}
                     data_map['date'][head_item][second_item] = index
                 else:
-                    return Response({"status": False, 'message': f'不支持的一级字段名：{head_item},支持字段名：测试负责人、执行人、项目名称、日期：格式：7.28-8.3'}, status=200)
+                    return Response({"status": False, 'message': f'不支持的一级字段名：| {head_item} |,支持字段名：测试负责人、执行人、项目名称、日期：格式：7.28-8.3'}, status=200)
             ret_success,ret_fail=[],[]
             for index, row in df2.iterrows():
                 values = list(row.values)
@@ -763,8 +793,7 @@ class ImportExcel(APIView):
                     if not task.content:
                         continue
                     if task.workload == 0:
-                        ret_fail.append({'info': f'{tmp_reciver}:{date_range}:{task_name}：行号{index + 3} 未设置工作量，自动设置为0.1'})
-                        task.workload = 0.1
+                        return Response({"status": False, 'message': f'{tmp_reciver}:{date_range}:{task_name}：行号{index + 3} 未设置工作量'}, status=200)
                     #检查是否有同配置的任务
                     try:
                         Task.objects.get(name=task_name,content=task_content,start_time=start,deadline_time=end,receiver=receiver)

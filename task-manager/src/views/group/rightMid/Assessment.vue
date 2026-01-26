@@ -35,11 +35,11 @@
         <el-collapse  accordion  v-model="activeNames" >
           <el-collapse-item  v-for="item in row.tasks"  :name="item.id">
             <template #title>
-              <div style="display:flex;gap:10px;align-items: center;">
-                <el-tag  type="primary"  effect="dark" style="width:200px">{{ item.name }} </el-tag>
-                <el-tag  type="danger"  effect="dark" style="width:90px">状态：{{ item.status_name }} </el-tag>
-                <el-tag  type="success" effect="dark" style="width:120px">计划工时：{{ item.workload }}</el-tag>
-                <el-tag  type="warning" effect="dark" style="width:120px">实际工时：{{ item.act_workload }}</el-tag>
+              <div style="display:flex;align-items: center;">
+                <el-tag  type="primary"  effect="dark" style="width:200px;margin-left:10px;">{{ item.name }} </el-tag>
+                <el-tag  type="danger"  effect="dark" style="width:90px;margin-left:20px;">状态：{{ item.status_name }} </el-tag>
+                <el-tag  type="success" effect="dark" style="width:120px;margin-left:20px;">计划工时：{{ item.workload }}</el-tag>
+                <el-tag  type="warning" effect="dark" style="width:120px;margin-left:20px;">实际工时：{{ item.act_workload }}</el-tag>
               </div>
             </template>
             <div style="background-color:#f1f3f6">
@@ -48,7 +48,7 @@
                 <div class="task-info"><el-text type="primary">时间：</el-text> <el-text type="info"> 开始时间：{{item.start_time}} 截止时间： {{ item.deadline_time}}</el-text> </div>
                 <div class="task-info"><el-text type="primary">工作内容：</el-text> <el-text > <pre> {{ item.content}} </pre></el-text> </div>
                 <div  class="task-info"v-if="item.challenge && item.challenge !== 'nan'"><el-text type="primary">挑战目标：</el-text> <el-text > <pre>{{ item.challenge}}</pre></el-text> </div>
-                <div class="task-info" v-if="item.challenge && item.challenge !== 'nan'"><el-text type="primary">任务反馈：</el-text> <el-text > <pre>{{ item.feedback }}</pre></el-text> </div>
+                <div class="task-info" v-if="item.feedback && item.feedback !== 'nan'"><el-text type="primary">任务反馈：</el-text> <el-text > <pre>{{ item.feedback }}</pre></el-text> </div>
               </div>
             </div>
           </el-collapse-item>

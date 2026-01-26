@@ -44,7 +44,7 @@ import { getYearAndMonth,getUserWeeksDataMap} from '@/utils/public'
 import {useGroupStore  } from '@/stores/group.js'
 import {  storeToRefs } from 'pinia'
 const groupStore = useGroupStore();
-const {weeksRef,curSeletMonthDate,selectGroupUsers,allTask} = storeToRefs(groupStore);
+const {weeksRef,curSeletMonthDate,selectGroupUsers,allTask,curTaskType} = storeToRefs(groupStore);
 
 // 获取表头
 const headers = computed(() => {
@@ -55,7 +55,7 @@ const headers = computed(() => {
 const userTaskData = shallowRef({});
 
 watchEffect(() => {
-  userTaskData.value = getUserWeeksDataMap(allTask.value, weeksRef.value, selectGroupUsers.value);
+  userTaskData.value = getUserWeeksDataMap(allTask.value, weeksRef.value, selectGroupUsers.value,curTaskType.value);
 });
 
 

@@ -169,7 +169,17 @@
                 />
               </div>
             </div>
-
+            <!-- 开始时间和截止时间 -->
+            <div class="detail-row">
+              <div class="detail-item full-width">
+                <span class="detail-label">创建时间</span>
+                <el-input
+                    :value="`${currentTask.create_time} `"
+                    readonly
+                    class="detail-input"
+                />
+              </div>
+            </div>
             <!-- 开始时间和截止时间 -->
             <div class="detail-row">
               <div class="detail-item full-width">
@@ -340,7 +350,7 @@
         
         <el-row :gutter="20">
           <!-- 第二行筛选条件 -->
-          <el-col :span="8">
+          <el-col :span="4">
             <el-form-item label="状态">
               <el-select
                 v-model="queryForm.status"
@@ -355,8 +365,24 @@
                 />
               </el-select>
             </el-form-item>
+            
           </el-col>
-          
+          <el-col :span="4">
+            <el-form-item label="任务类型">
+              <el-select
+                v-model="queryForm.category"
+                placeholder="请选择任务类型"
+                clearable
+              >
+                <el-option
+                  v-for="item in categoryOptions"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id"
+                />
+              </el-select>
+            </el-form-item>
+          </el-col>
           <el-col :span="8">
             <el-form-item label="时间范围">
             <el-config-provider :locale="locale">
@@ -396,6 +422,7 @@
                       value-field="name" filterable  :filter-field="['name']"></Select>
             </el-form-item>
           </el-col>
+        
           
           <el-col :span="8">
             <el-form-item label="关键字查询">
@@ -440,7 +467,7 @@
         <vxe-column type="seq" width="60" title="序号"></vxe-column>
         <vxe-column field="id" title="ID" width="100"></vxe-column>
         <vxe-column field="name" title="名称" min-width="150" show-overflow></vxe-column>
-        
+        <vxe-column field="category_name" title="任务类型" min-width="150" show-overflow></vxe-column>
         <vxe-column field="status" title="状态" width="120">
           <template #default="{ row }">
             <el-tag :type="getStatusTagType(row.status)">
@@ -516,9 +543,8 @@
       <vxe-pager
         perfect
         v-model:current-page="page.currentPage"
-        v-model:page-size="page.pageSize"
         :total="page.total"
-        :layouts="['PrevJump', 'PrevPage', 'JumpNumber', 'NextPage', 'NextJump', 'Sizes', 'FullJump', 'Total']"
+        :layouts="['PrevJump', 'PrevPage', 'JumpNumber', 'NextPage', 'NextJump', 'FullJump', 'Total']"
         @page-change="handlePageChange"
       >
       </vxe-pager>
@@ -534,7 +560,7 @@ import {
   getUserGroupApi,
   getUserApi,
   getProjectList,
-  getTaskDataApi,
+  getTaskDataPaginatedApi,
   exportUrl,
   taskModifyApi,
   taskAddApi, taskDeleteApi
@@ -545,7 +571,6 @@ const locale = zhCn
 
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import {sortByString} from "@/utils/tasksStat.js";
 const userStore = useUserStore()
 const { loginUser } = storeToRefs(userStore)
 
@@ -716,6 +741,7 @@ const queryForm = reactive({
   timeRange: [],
   flag_time: '',
   project: '',
+  category: loginUser.value.group_category,
   search_text: ''
 })
 
@@ -729,12 +755,17 @@ const page = reactive({
 // 表格数据
 const tableData = ref([])
 const loading = ref(false)
-const queryItems = ref([])
 
 const statusOptions = ref([
   { value: 'PEND', label: '待下发' },
   { value: 'PROGRESS', label: '进行中' },
   { value: 'FINISH', label: '已完成' }
+])
+
+const categoryOptions = ref([
+  { id: 1, name: '测试' },
+  { id: 2, name: '研发' },
+  { id: 3, name: '未知' }
 ])
 
 // 获取状态标签类型
@@ -763,9 +794,7 @@ const taskStatus = {
 // 查询方法
 const handleQuery = async () => {
   loading.value = true
-  page.currentPage = 1
-  // 获取所有的筛选条件\
-
+  
   const params = {
     group: queryForm.group? queryForm.group : "",  // 组内人员（数组）
     receiver: queryForm.receiver? queryForm.receiver : "",          // 执行人
@@ -775,13 +804,14 @@ const handleQuery = async () => {
     deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
     flag_time: queryForm.flag_time ? queryForm.flag_time : "", // 标定时间
     project: queryForm.project? queryForm.project : "",           // 项目
-    search_text: queryForm.search_text             // 关键字
+    category: queryForm.category? queryForm.category : "",       // 任务类型
+    search_text: queryForm.search_text,             // 关键字
+    page: page.currentPage  // 添加分页参数
   }
 
-  const response = await getTaskDataApi(params)
-  queryItems.value = sortByString(response,['start_time']).reverse()
-  tableData.value = queryItems.value.slice(0, page.pageSize)
-  page.total = queryItems.value.length
+  const response = await getTaskDataPaginatedApi(params)
+  tableData.value = response.results || []
+  page.total = response.count || 0
   loading.value = false;
 }
 
@@ -795,6 +825,7 @@ const exportExcel = () => {
     deadline_time: queryForm.timeRange.length == 2? queryForm.timeRange[1] : "",    // 时间范围结束
     flag_time: queryForm.flag_time ? queryForm.flag_time : "", // 标定时间
     project: queryForm.project? queryForm.project : "",           // 项目
+    category: queryForm.category? queryForm.category : "",     // 任务类型
     search_text: queryForm.search_text             // 关键字
   }
   exportUrl(params,exportType.value)
@@ -810,13 +841,14 @@ const resetQuery = () => {
     timeRange: [],
     flag_time: '',
     project: '',
+    category: 1,
     search_text: ''
   })
 }
 
 // 分页变化
 const handlePageChange = () => {
-  tableData.value = queryItems.value.slice((page.currentPage - 1) * page.pageSize, page.currentPage * page.pageSize)
+  handleQuery()
 }
 
 // 导出数据

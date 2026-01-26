@@ -48,12 +48,41 @@ export const usePersonStore = defineStore('person', () => {
     }));
   });  
   
-  const changeMonthDate = (date) => {
-      curSeletMonthDate.value = date
-      curTaskType.value =  TaskStatus.PROGRESS
-  }
+  // const changeMonthDate = (date) => {
+  //     console.log('cur date ===>',date)
+  //     curSeletMonthDate.value = date
+  //     curTaskType.value =  TaskStatus.PROGRESS
+  // }
 
-  watch(curSeletMonthDate, () => {
+  const changeMonth =  (isPrev = true) => {
+        const currentDate = curSeletMonthDate.value;
+        let year = currentDate.getFullYear();
+        let month = currentDate.getMonth();
+
+        if (isPrev) {
+            // 处理上个月（1月时跳转到去年12月）
+            if (month === 0) {
+                year--;
+                month = 11; // 12月
+            } else {
+                month--;
+            }
+        } else {
+            // 处理下个月（12月时跳转到明年1月）
+            if (month === 11) {
+                year++;
+                month = 0; // 1月
+            } else {
+                month++;
+            }
+        }
+        curSeletMonthDate.value = new Date(year, month, 1);
+    };
+
+  const goToday = () => {
+        curSeletMonthDate.value = new Date()
+  }
+    watch(curSeletMonthDate, () => {
     getPersonTasks()
   })
   const  getPersonTasks = async () => {
@@ -88,7 +117,7 @@ export const usePersonStore = defineStore('person', () => {
   return { 
     init,
     // 当前选中月
-    curSeletMonthDate,changeMonthDate,
+    curSeletMonthDate,changeMonth,goToday,
     // 统计数据
     stat,workloadSaturation,
     curTaskType,allTask,filteredTasks,

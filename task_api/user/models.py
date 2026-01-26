@@ -36,11 +36,16 @@ class User(AbstractUser):
             depart_emails = list(set([ User.objects.get(username=g.depart_leader).email for g in groups]))
         return depart_emails
 
+    def is_test_group(self):
+        return self.group.all().filter(category="测试").exists()
+
 class Group(models.Model):
     name = models.CharField(max_length=48, blank=True,unique=True)
     users = models.ManyToManyField(User,related_name='%(class)s')
     group_leader = models.CharField(max_length=48, blank=True,unique=False,default="")
     depart_leader = models.CharField(max_length=48, blank=True,unique=False,default="")
+    category = models.IntegerField(max_length=5, blank=True,unique=False,default=1)
+    # 任务类型
     class Meta:
         db_table = 'group'
 
